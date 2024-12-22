@@ -22,3 +22,40 @@ model User {
   password String?
   image    String?
 }
+
+model Freelancer {
+  id    String @id @default(cuid())
+  name  String
+  posts Post[]
+}
+
+model Post {
+  id           String     @id @default(cuid())
+  title        String
+  description  String
+  freelancerId String
+  tags         PostTag[]
+  freelancer   Freelancer @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+}
+
+model PostTag {
+  id            String      @id @default(cuid())
+  postId        String
+  subcategoryId String
+  post          Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id            String        @id @default(cuid())
+  name          String
+  subcategories Subcategory[]
+}
+
+model Subcategory {
+  id         String    @id @default(cuid())
+  name       String
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  PostTag    PostTag[]
+}

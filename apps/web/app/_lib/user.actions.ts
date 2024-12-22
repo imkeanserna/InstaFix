@@ -1,11 +1,5 @@
 import { prisma } from "@/server/index";
-
-interface IAddUser {
-  email: string;
-  name?: string;
-  password?: string;
-  image?: string;
-}
+import { IAddUser } from "@repo/types";
 
 export async function getUserByEmail(email: string) {
   const result = await prisma.user.findUnique({

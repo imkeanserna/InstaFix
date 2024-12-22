@@ -3,7 +3,11 @@
     "type": "module",
     "scripts": {
         "dev": "tsc --watch",
-        "build": "tsc"
+        "build": "tsc",
+       "db:seed": "prisma db seed"
+    },
+    "prisma": {
+        "seed": "npx tsx prisma/seed.ts"
     },
     "exports": {
         "./schema": "./src/index.ts"
