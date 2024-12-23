@@ -5,3 +5,15 @@ export interface IFetchPredictionResponse {
   endpoint: string;
   fn_index: number;
 }
+
+export interface IChatGPTResponse {
+  tag: string[];
+  ratings: number;
+  location: string;
+  price: number;
+  message: string;
+}
+
+export interface IHuggingFaceResponse {
+  generated_text: string;
+}

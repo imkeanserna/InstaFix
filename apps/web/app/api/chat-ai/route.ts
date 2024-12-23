@@ -1,40 +1,45 @@
-import { fetchAIResponse, generateInstaFixQuery } from '@/app/_lib/ai/queryInstafixChat';
-import { IFetchPredictionResponse } from '@repo/types';
+import { IChatGPTResponse, IFetchPredictionResponse } from '@repo/types';
 import type { NextRequest } from 'next/server'
+import { fetchAIResponse, generateInstaFixQuery } from '../_action/ai/queryInstafixChat';
+import { isValidQuestion, parseJsonResponse } from '@/lib/parseJsonResponse';
+import { errorResponse } from '@/lib/errorResponse';
 
-export async function POST(request: NextRequest) {
+interface IRequestBody {
+  question: string;
+}
+
+export async function POST(request: NextRequest): Promise<Response> {
   try {
-    const body: any = await request.json();
+    const body = await request.json() as Partial<IRequestBody>;
     const { question } = body;
 
     if (!question) {
-      return Response.json(
-        { error: 'Question is required' },
-        { status: 400 }
+      return errorResponse('Question is required', undefined, 400);
+    }
+
+    if (!isValidQuestion(question)) {
+      return errorResponse(
+        'Invalid question format',
+        'Question must be a non-empty string with maximum 1000 characters',
+        400
       );
     }
+
     const fullQuery = generateInstaFixQuery(question);
     const result: IFetchPredictionResponse = await fetchAIResponse(fullQuery);
 
-    if (result.data[0]?.includes("```json")) {
-      return Response.json({
-        success: true,
-        data: {
-          message: JSON.parse(result.data[0]?.replace("```json\n", "").replace("```", ""))
-        }
-      });
+    if (!result?.data?.[0]) {
+      throw new Error('Invalid AI response');
     }
 
+    const parsedData: IChatGPTResponse = parseJsonResponse(result.data[0]);
     return Response.json({
       success: true,
-      data: JSON.parse(result.data[0])
+      data: parsedData
     });
-
   } catch (error) {
     console.error('Error processing query:', error);
-    return Response.json(
-      { error: 'Failed to process query' },
-      { status: 500 }
-    );
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return errorResponse('Failed to process query', errorMessage);
   }
 }

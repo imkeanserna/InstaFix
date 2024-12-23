@@ -127,29 +127,18 @@ async function main() {
   const freelancerList = await prisma.freelancer.findMany();
 
   for (const freelancer of freelancerList) {
-    const samplePosts = [
-      {
-        title: `Expert ${subcategories[0].name}`,
-        description: `I am a professional ${subcategories[0].name} with years of experience.`,
-        tags: [subcategories[0].id],
-      },
-      {
-        title: `Reliable ${subcategories[1].name}`,
-        description: `Offering top-notch services as a ${subcategories[1].name}.`,
-        tags: [subcategories[1].id],
-      },
-    ];
-
-    for (const postData of samplePosts) {
+    for (const subcategory of subcategories) {
       await prisma.post.create({
         data: {
-          title: postData.title,
-          description: postData.description,
+          title: `Expert ${subcategory.name}`,
+          description: `I am a professional ${subcategory.name} with years of experience.`,
           freelancerId: freelancer.id,
           tags: {
-            create: postData.tags.map((subcategoryId) => ({
-              subcategoryId,
-            })),
+            create: [
+              {
+                subcategoryId: subcategory.id,
+              },
+            ],
           },
         },
       });

@@ -1,0 +1,10 @@
+export function errorResponse(message: string, details?: string, status: number = 500): Response {
+  return Response.json(
+    {
+      success: false,
+      error: message,
+      details
+    },
+    { status }
+  );
+}
