@@ -1,3 +1,4 @@
+import { DiaglogCamera } from "@/components/ui/dialogCamera";
 import { ImageUpload } from "@/components/ui/imageUpload";
 
 export const runtime = "edge";
@@ -7,6 +8,7 @@ const Page = () => {
     <div className="text-white">
       <h1>Find</h1>
       <ImageUpload />
+      <DiaglogCamera />
     </div>
   )
 }
