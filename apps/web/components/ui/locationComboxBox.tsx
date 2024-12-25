@@ -24,7 +24,7 @@ const languages = [
   { label: "Chinese", value: "zh" },
 ] as const
 
-export function ComboboxLocation() {
+export const ComboboxLocation = React.memo(() => {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -129,4 +129,6 @@ export function ComboboxLocation() {
       </Command>
     </div>
   );
-}
+});
+
+ComboboxLocation.displayName = "ComboboxLocation";

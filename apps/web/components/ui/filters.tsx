@@ -5,11 +5,12 @@ import {
   ToggleGroupItem,
 } from "@repo/ui/components/ui/toggle-group"
 import { DualRangeSlider } from '@repo/ui/components/ui/dual-range-slider';
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
 import { Building2, SquareUser } from "lucide-react";
 
-export function Filters() {
+
+export const Filters = React.memo(() => {
   const [values, setValues] = useState([5, 250]);
   const [minMax, setMinMax] = useState([5, 250]);
   const [workType, setWorkType] = useState("individual");
@@ -75,7 +76,6 @@ export function Filters() {
             <h3 className="text-lg font-semibold text-gray-800">Price range</h3>
             <p className="text-sm text-gray-500">Hourly rate or project budget</p>
           </div>
-
           <div className="px-4">
             <DualRangeSlider
               value={[values[0], values[1]]}
@@ -98,7 +98,9 @@ export function Filters() {
       </div>
     </Card>
   );
-}
+});
+
+Filters.displayName = "Filters";
 
 export function Separator({ className }: { className?: string }) {
   return <div className={`w-full h-px bg-gray-200 ${className}`} />;

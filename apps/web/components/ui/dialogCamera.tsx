@@ -1,24 +1,33 @@
 "use client";
 
 import { Button } from "@repo/ui/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/components/ui/dialog";
-import { useEffect, useRef, useState } from "react";
+import { Dialog, DialogContent, DialogOverlay, DialogTrigger } from "@repo/ui/components/ui/dialog";
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { ComboboxLocation } from "./locationComboxBox";
-import { Camera, Grid, ImagePlus, MapPin, MapPinPlus, SlidersHorizontal, X } from "lucide-react";
+import { Camera, Grid, ImagePlus, MapPin, MapPinPlus, SlidersHorizontal, Upload, X } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
 import { Filters } from "./filters";
+import { CubeLoader } from "./cubeLoading";
+import { Alert } from "@repo/ui/components/ui/alert";
+import { ObjectDetectionResponse } from "@/app/api/object-detection/route";
+
+const messages = [
+  "Choose the right skills for your project.",
+  "Check freelancer profiles and reviews.",
+  "Start a conversation to ensure a good fit."
+];
 
 export function DiaglogCamera() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [isFooterExpanded, setIsFooterExpanded] = useState(false);
   const [error, setError] = useState<string>("");
   const settingsRef = useRef<HTMLDivElement>(null);
   const filtersRef = useRef<HTMLDivElement>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const startCamera = async () => {
     try {
@@ -41,7 +50,6 @@ export function DiaglogCamera() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to access camera";
       setError(errorMessage);
-      console.error("Error accessing the camera:", errorMessage);
     }
   };
 
@@ -58,7 +66,7 @@ export function DiaglogCamera() {
   const handleDialogChange = (open: boolean) => {
     setIsOpen(open);
     if (open) {
-      startCamera();
+      setTimeout(startCamera, 300);
     } else {
       stopCamera();
     }
@@ -74,29 +82,51 @@ export function DiaglogCamera() {
     setIsFiltersOpen(false);
   };
 
-  const captureImage = () => {
-    if (!videoRef.current) return;
+  const handleImageProcessing = async (imageData: Blob | null, source: 'camera' | 'upload') => {
+    setIsLoading(true);
+    setError("");
 
-    const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext('2d');
+    try {
+      let blob = imageData;
 
-    if (ctx) {
-      ctx.drawImage(videoRef.current, 0, 0);
-      // You can handle the captured image here
-      // For example, convert to base64:
-      // const imageData = canvas.toDataURL('image/jpeg');
-      // Or handle as a blob:
-      // canvas.toBlob(blob => { /* handle blob */ }, 'image/jpeg');
-      alert("Yah")
+      if (source === 'camera') {
+        if (!videoRef.current) throw new Error("Video reference is missing.");
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.drawImage(videoRef.current, 0, 0);
+        blob = await new Promise<Blob | null>((resolve) => {
+          canvas.toBlob(resolve, 'image/jpeg');
+        });
+      }
+
+      if (!blob) return;
+
+      const response = await fetch('http://localhost:3000/api/object-detection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'image/jpeg' },
+        body: blob
+      });
+
+      const result: ObjectDetectionResponse = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || 'Unknown error occurred');
+      }
+      handleDialogChange(false);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    handleDialogChange(false);
-  };
-  const toggleFooter = () => {
-    setIsFooterExpanded(!isFooterExpanded);
-  };
+  useEffect(() => {
+    if (isOpen && !stream) {
+      startCamera();
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: any) => {
@@ -137,60 +167,52 @@ export function DiaglogCamera() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="w-[80vw] h-[90vh] max-w-none max-h-none p-0 border-none">
+      <DialogOverlay className="bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+
+      <DialogContent
+        className={cn(
+          "w-[80vw] h-[90vh] max-w-none max-h-none p-0 border-none",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
+          "data-[state=open]:slide-in-from-bottom-2 data-[state=closed]:slide-out-to-bottom-2",
+          "data-[state=open]:duration-500 data-[state=closed]:duration-500"
+        )}
+      >
         {/* Main Camera View */}
+        {isLoading && (
+          <div className="absolute inset-0 pointer-events-none z-30">
+            <CubeLoader messages={messages} />
+          </div>
+        )}
+
         <div className="relative h-full flex justify-center items-center bg-black">
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-500 bg-transparent hover:bg-transparent rounded-full hover:text-gray-200 absolute top-4 right-4"
+            className="text-gray-500 bg-transparent hover:bg-transparent rounded-full hover:text-gray-200 absolute top-4 right-4 z-50"
             onClick={() => handleDialogChange(false)}
           >
             <X className="h-4 w-4 rounded-full" />
           </Button>
-          {error ? (
-            <div className="text-white text-center p-6 bg-black/60 rounded-lg backdrop-blur-sm">
-              <p className="text-red-400 mb-2">Camera Error</p>
-              <p className="text-sm opacity-80 mb-4">{error}</p>
-              <Button
-                variant="outline"
-                onClick={startCamera}
-                className="bg-white/10 hover:bg-white/20"
-              >
-                Retry
-              </Button>
-            </div>
-          ) : (
-            <>
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-contain"
-              />
 
-              {/* Focus Area Overlay */}
-              {showGrid && (
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="h-full w-full flex items-center justify-center">
-                    <div className="rounded-lg w-4/5 h-4/5 flex items-center justify-center relative">
-                      {/* Corner Markers */}
-                      <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 border-yellow-400/60 rounded-tl" />
-                      <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 border-yellow-400/60 rounded-tr" />
-                      <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 border-yellow-400/60 rounded-bl" />
-                      <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 border-yellow-400/60 rounded-br" />
-
-                      <div className="text-white/80 text-center space-y-2 bg-black/20 px-6 py-4 rounded-lg backdrop-blur-sm">
-                        <Camera className="h-8 w-8 mx-auto mb-2 text-yellow-400/80" />
-                        <p className="text-sm font-medium">Center the broken item</p>
-                        <p className="text-xs text-yellow-400/80">For the clearest capture</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
+          {error && (
+            <Alert
+              type="warning"
+              title="Camera Error"
+              body={error}
+              className={`bottom-10 right-0 z-30`}
+            />
           )}
+
+          <div>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="w-full h-full object-contain"
+            />
+            {showGrid && <GridCamera handleImageProcessing={handleImageProcessing} />}
+          </div>
 
           {/* Camera Controls Overlay */}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent border-b-4 border-yellow-600">
@@ -255,8 +277,9 @@ export function DiaglogCamera() {
               {/* Center - Snap Button */}
               <div className="flex flex-col items-center">
                 <Button
-                  onClick={captureImage}
+                  onClick={() => { handleImageProcessing(null, 'camera') }}
                   size="lg"
+                  disabled={isLoading}
                   className="rounded-full w-20 h-20 p-0 bg-yellow-500 hover:bg-yellow-400 shadow-lg border-4 border-yellow-400/20 transition-all duration-200 hover:scale-105"
                 >
                   <Camera className="h-8 w-8 text-white" />
@@ -288,3 +311,55 @@ export function DiaglogCamera() {
     </Dialog>
   );
 }
+
+const GridCamera = React.memo(({ handleImageProcessing }: {
+  handleImageProcessing: (imageData: Blob | null, source: 'camera' | 'upload') => void
+}) => {
+  const handleUploadImage = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) handleImageProcessing(file, 'upload');
+  };
+
+  return (
+    <div className="absolute inset-0">
+      <div className="h-full w-full flex items-center justify-center">
+        <div className="rounded-lg w-4/5 h-4/5 flex items-center justify-center relative">
+          {/* Corner Markers */}
+          <div className="absolute top-0 left-0 w-6 h-6 border-l-2 border-t-2 border-yellow-400/60 rounded-tl" />
+          <div className="absolute top-0 right-0 w-6 h-6 border-r-2 border-t-2 border-yellow-400/60 rounded-tr" />
+          <div className="absolute bottom-0 left-0 w-6 h-6 border-l-2 border-b-2 border-yellow-400/60 rounded-bl" />
+          <div className="absolute bottom-0 right-0 w-6 h-6 border-r-2 border-b-2 border-yellow-400/60 rounded-br" />
+
+          <div className="text-white/80 text-center bg-black/20 px-8 py-6 rounded-xl backdrop-blur-sm">
+            <Camera className="h-8 w-8 mx-auto mb-2 text-yellow-400/80" />
+            <p className="text-sm font-medium">Center the broken item</p>
+            <p className="text-xs text-yellow-400/80">For the clearest capture</p>
+
+            {/* Upload Button */}
+            <div className="relative mt-4  group cursor-pointer inline-block">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleUploadImage}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <button className="w-full flex items-center justify-center gap-2 p-2 bg-white/10 hover:bg-white/20 rounded-lg border border-yellow-400/30 hover:border-yellow-400/60 transition-all duration-200">
+                <Upload className="h-4 w-4 text-yellow-400/80 group-hover:text-yellow-400" />
+                <span className="text-[10px] text-white/80 group-hover:text-white">
+                  Upload Photo
+                </span>
+              </button>
+            </div>
+
+            {/* Optional text */}
+            <p className="text-[8px] text-white/50 mt-2">
+              Supports JPG, PNG up to 10MB
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+GridCamera.displayName = 'GridCamera';

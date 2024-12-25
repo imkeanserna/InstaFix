@@ -4,7 +4,19 @@ import { getPostsByProfession } from '../_action/posts/getPosts';
 import { fetchAIResponse, handleServiceDetectionQuery } from '../_action/ai/queryInstafixChat';
 import { analyzeImageWithHuggingFace } from '../_action/ai/fetchPrediction';
 import { parseJsonResponse } from '@/lib/parseJsonResponse';
-import { errorResponse } from '@/lib/errorResponse';
+import { ErrorResponse, errorResponse } from '@/lib/errorResponse';
+import { Post } from '@prisma/client';
+
+type ObjectDetectionResponseData = {
+  posts: Post[]
+};
+
+export type SuccessResponse = {
+  success: true
+  data: ObjectDetectionResponseData | null;
+}
+
+export type ObjectDetectionResponse = SuccessResponse | ErrorResponse;
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
@@ -31,15 +43,14 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     const fullQuery = handleServiceDetectionQuery(objectDetection[0].generated_text);
+    console.log(fullQuery)
     const result: IFetchPredictionResponse = await fetchAIResponse(fullQuery);
+    console.log(result)
 
     const parsedData = parseJsonResponse(result.data[0]);
 
-    console.log(parsedData);
-
     if ('Professions' in parsedData) {
       const { posts } = await getPostsByProfession(parsedData.Professions);
-      console.log(posts);
       return Response.json({
         success: true,
         data: posts
@@ -52,6 +63,6 @@ export async function POST(request: NextRequest): Promise<Response> {
   } catch (error) {
     console.error('Error processing image:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    return errorResponse('Failed to process image', errorMessage);
+    return errorResponse('Please make sure your image is valid, Try again', errorMessage);
   }
 }
