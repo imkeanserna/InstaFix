@@ -7,7 +7,7 @@ export function ImageUpload() {
     const file = event.target.files?.[0];
 
     if (file) {
-      const response = await fetch('http://localhost:3000/api/object-detection', {
+      const response = await fetch(`${process.env.NEXT_BASE_URL}/api/object-detection`, {
         method: 'POST',
         body: file
       });

@@ -1,7 +1,7 @@
 import { Client } from "@gradio/client";
 import { IHuggingFaceResponse } from "@repo/types";
 
-const HUGGING_FACE_URL = "https://api-inference.huggingface.co/models/microsoft/git-base";
+// const HUGGING_FACE_URL = "https://api-inference.huggingface.co/models/microsoft/git-base";
 
 class GradioClientSingleton {
   private static instance: Client | null = null;
@@ -37,7 +37,7 @@ export const fetchPrediction = async (query: string) => {
 };
 
 export async function analyzeImageWithHuggingFace(imageData: Blob): Promise<IHuggingFaceResponse[]> {
-  const response = await fetch(HUGGING_FACE_URL, {
+  const response = await fetch(process.env.HUGGING_FACE_URL!, {
     headers: {
       Authorization: `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
       "Content-Type": "application/json",

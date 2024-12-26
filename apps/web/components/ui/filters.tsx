@@ -9,8 +9,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
 import { Building2, SquareUser } from "lucide-react";
 
-
-export const Filters = React.memo(() => {
+export const Filters = React.memo(({ className }: { className?: string }) => {
   const [values, setValues] = useState([5, 250]);
   const [minMax, setMinMax] = useState([5, 250]);
   const [workType, setWorkType] = useState("individual");
@@ -22,7 +21,7 @@ export const Filters = React.memo(() => {
           Filters
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6 p-6 max-h-[400px] overflow-y-auto">
+      <CardContent className={`space-y-6 p-6 ${className}`}>
         {/* Work Type Section */}
         <div className="space-y-4">
           <div className="space-y-1">
@@ -34,7 +33,7 @@ export const Filters = React.memo(() => {
             type="single"
             value={workType}
             onValueChange={(value) => value && setWorkType(value)}
-            className="grid grid-cols-2 gap-2"
+            className="grid md:grid-cols-2 grid-cols-1 gap-2"
           >
             <ToggleGroupItem
               value="individual"
@@ -91,7 +90,7 @@ export const Filters = React.memo(() => {
 
         {/* Apply Filters Button */}
       </CardContent>
-      <div className="sticky bottom-0 border-t-2 border-gray-100 p-2">
+      <div className="sticky bottom-0 bg-white border-t-2 border-gray-100 p-2">
         <button className="w-full p-4 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
           Apply Filters
         </button>

@@ -1,4 +1,4 @@
-import { DiaglogCamera } from "@/components/ui/dialogCamera";
+import { DiaglogCamera } from "@/components/camera/diaglogCamera";
 import { ImageUpload } from "@/components/ui/imageUpload";
 
 export const runtime = "edge";
