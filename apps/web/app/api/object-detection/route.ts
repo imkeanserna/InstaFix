@@ -1,4 +1,4 @@
-import { IFetchPredictionResponse } from '@repo/types';
+import { IFetchPredictionResponse, IHuggingFaceResponse } from '@repo/types';
 import type { NextRequest } from 'next/server'
 import { getPostsByProfession } from '../_action/posts/getPosts';
 import { fetchAIResponse, handleServiceDetectionQuery } from '../_action/ai/queryInstafixChat';
@@ -37,12 +37,12 @@ export async function POST(request: NextRequest): Promise<Response> {
       );
     }
 
-    const objectDetection = await analyzeImageWithHuggingFace(imageData);
-    if (!objectDetection?.[0]?.generated_text) {
+    const objectDetection: IHuggingFaceResponse = await analyzeImageWithHuggingFace(imageData);
+    if (objectDetection.generated_text === '') {
       throw new Error('Invalid response from image analysis');
     }
 
-    const fullQuery = handleServiceDetectionQuery(objectDetection[0].generated_text);
+    const fullQuery = handleServiceDetectionQuery(objectDetection.generated_text);
     console.log(fullQuery)
     const result: IFetchPredictionResponse = await fetchAIResponse(fullQuery);
     console.log(result)

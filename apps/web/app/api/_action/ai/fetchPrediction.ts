@@ -1,54 +1,75 @@
 import { Client } from "@gradio/client";
-import { IHuggingFaceResponse } from "@repo/types";
+import { IFetchPredictionResponse, IHuggingFaceResponse } from "@repo/types";
 
-// const HUGGING_FACE_URL = "https://api-inference.huggingface.co/models/microsoft/git-base";
+interface ClientConfig {
+  url: string;
+  endpoint: string;
+}
 
 class GradioClientSingleton {
-  private static instance: Client | null = null;
-  private static CLIENT_URL = "kenkurosaki/Very-Fast-Chatbot";
+  private static instances: Map<string, Client> = new Map();
+  private static readonly CLIENT_CONFIGS: { [key: string]: ClientConfig } = {
+    chatbot: {
+      url: process.env.HUGGING_CHATBOT_URL as string,
+      endpoint: "/predict"
+    },
+    imageAnalysis: {
+      url: process.env.HUGGING_IMAGE_CLASSIFICATION_URL as string,
+      endpoint: "/predict"
+    }
+  };
 
   private constructor() { }
 
-  public static async getInstance(): Promise<Client> {
-    if (!GradioClientSingleton.instance) {
-      const hfToken: any = process.env.HUGGING_FACE_API_KEY;
-
-      if (!hfToken) {
-        throw new Error("HUGGING_FACE_API_KEY is not defined");
-      }
-
-      GradioClientSingleton.instance = await Client.connect(
-        GradioClientSingleton.CLIENT_URL,
-        { hf_token: hfToken }
-      );
+  private static async createClient(clientType: string): Promise<Client> {
+    const config = this.CLIENT_CONFIGS[clientType];
+    if (!config) {
+      throw new Error(`Unknown client type: ${clientType}`);
     }
-    return GradioClientSingleton.instance;
+
+    const hfToken: any = process.env.HUGGING_FACE_API_KEY;
+    if (!hfToken) {
+      throw new Error("HUGGING_FACE_API_KEY is not defined");
+    }
+
+    return await Client.connect(config.url, { hf_token: hfToken });
+  }
+
+  public static async getInstance(clientType: string): Promise<Client> {
+    if (!this.instances.has(clientType)) {
+      const client = await this.createClient(clientType);
+      this.instances.set(clientType, client);
+    }
+    return this.instances.get(clientType)!;
+  }
+
+  public static async predict(clientType: string, data: any): Promise<any> {
+    try {
+      const client = await this.getInstance(clientType);
+      const config = this.CLIENT_CONFIGS[clientType];
+      return await client.predict(config.endpoint, data);
+    } catch (error) {
+      throw error;
+    }
   }
 }
 
 export const fetchPrediction = async (query: string) => {
   try {
-    const client = await GradioClientSingleton.getInstance();
-    const result = await client.predict("/predict", { Query: query });
-    return result;
+    return await GradioClientSingleton.predict('chatbot', { Query: query });
   } catch (error) {
     throw error;
   }
 };
 
-export async function analyzeImageWithHuggingFace(imageData: Blob): Promise<IHuggingFaceResponse[]> {
-  const response = await fetch(process.env.HUGGING_FACE_URL!, {
-    headers: {
-      Authorization: `Bearer ${process.env.HUGGING_FACE_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-    body: imageData,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Hugging Face API error: ${response.status} ${response.statusText}`);
+export async function analyzeImageWithHuggingFace(imageData: Blob): Promise<IHuggingFaceResponse> {
+  try {
+    const response = await GradioClientSingleton.predict('imageAnalysis', { param_0: imageData }) as IFetchPredictionResponse;
+    const generatedText = response.data[0].match(/generated_text='([^']*)'/)![1];
+    return {
+      generated_text: generatedText
+    };
+  } catch (error) {
+    throw error;
   }
-
-  return response.json();
 }
