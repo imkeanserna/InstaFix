@@ -1,7 +1,6 @@
 import Image from "next/image";
 import SignInButton from "@/components/ui/signInButton";
 import { ChatBotAi } from "@/components/chatbot/chat";
-import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 
 export const runtime = "edge";
 
@@ -114,7 +113,6 @@ export default function Home() {
           </p>
         </a>
       </div>
-      <ChatBotAi />
     </main>
   );
 }
