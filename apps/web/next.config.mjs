@@ -8,6 +8,11 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  env: {
+    NEXT_BACKEND_URL: process.env.NEXT_BACKEND_URL,
+    // Add other environment variables here as needed
+  },
+};
 
 export default nextConfig;

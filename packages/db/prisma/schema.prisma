@@ -59,3 +59,35 @@ model Subcategory {
   category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   PostTag    PostTag[]
 }
+
+model ChatSession {
+  id        String    @id @default(uuid())
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+}
+
+model Message {
+  id            String      @id @default(uuid())
+  chatSessionId String
+  role          Role
+  content       String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  status        Status      @default(SENT)
+  errorCode     String?
+  ChatSession   ChatSession @relation(fields: [chatSessionId], references: [id])
+}
+
+enum Role {
+  USER
+  BOT
+}
+
+enum Status {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}

@@ -136,6 +136,36 @@
     left: 0;
     --translateZ: -90px;
   }
+
+  .rotate-one {
+    animation: rotate-one 2s linear infinite;
+    transform-style: preserve-3d;
+  }
+
+  .rotate-two {
+    animation: rotate-two 2s linear infinite;
+    transform-style: preserve-3d;
+  }
+
+  .rotate-three {
+    animation: rotate-three 2s linear infinite;
+    transform-style: preserve-3d;
+  }
+
+  .dot-typing {
+    position: relative;
+    left: -9999px;
+    width: 8px;
+    height: 8px;
+    border-radius: 5px;
+    background-color: gray;
+    /* Changed to gray */
+    color: gray;
+    /* Changed to gray */
+    box-shadow: 9984px 0 0 0 gray, 9996px 0 0 0 gray, 10008px 0 0 0 gray;
+    /* Changed to gray */
+    animation: dot-typing 0.9s infinite linear;
+  }
 }
 
 @layer base {
@@ -205,5 +235,82 @@
 
   100% {
     transform: translate(100%, 100%);
+  }
+}
+
+@keyframes rotate-one {
+  0% {
+    transform: rotateX(35deg) rotateY(-45deg) rotateZ(0deg);
+  }
+
+  100% {
+    transform: rotateX(35deg) rotateY(-45deg) rotateZ(360deg);
+  }
+}
+
+@keyframes rotate-two {
+  0% {
+    transform: rotateX(50deg) rotateY(10deg) rotateZ(0deg);
+  }
+
+  100% {
+    transform: rotateX(50deg) rotateY(10deg) rotateZ(360deg);
+  }
+}
+
+@keyframes rotate-three {
+  0% {
+    transform: rotateX(35deg) rotateY(55deg) rotateZ(0deg);
+  }
+
+  100% {
+    transform: rotateX(35deg) rotateY(55deg) rotateZ(360deg);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dot-typing {
+  0% {
+    box-shadow: 9984px 0 0 0 gray, 9996px 0 0 0 gray, 10008px 0 0 0 gray;
+    /* Changed to gray */
+  }
+
+  16.667% {
+    box-shadow: 9984px -10px 0 0 gray, 9996px 0 0 0 gray, 10008px 0 0 0 gray;
+    /* Changed to gray */
+  }
+
+  33.333% {
+    box-shadow: 9984px 0 0 0 gray, 9996px 0 0 0 gray, 10008px 0 0 0 gray;
+    /* Changed to gray */
+  }
+
+  50% {
+    box-shadow: 9984px 0 0 0 gray, 9996px -10px 0 0 gray, 10008px 0 0 0 gray;
+    /* Changed to gray */
+  }
+
+  66.667% {
+    box-shadow: 9984px 0 0 0 gray, 9996px 0 0 0 gray, 10008px 0 0 0 gray;
+    /* Changed to gray */
+  }
+
+  83.333% {
+    box-shadow: 9984px 0 0 0 gray, 9996px 0 0 0 gray, 10008px -10px 0 0 gray;
+    /* Changed to gray */
+  }
+
+  100% {
+    box-shadow: 9984px 0 0 0 gray, 9996px 0 0 0 gray, 10008px 0 0 0 gray;
+    /* Changed to gray */
   }
 }

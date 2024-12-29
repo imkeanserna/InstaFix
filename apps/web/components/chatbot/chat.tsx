@@ -8,114 +8,112 @@ import { ScrollArea } from "@repo/ui/components/ui/scroll-area"
 import { ChevronsDown, Send } from 'lucide-react'
 import { BlueLoader } from '@repo/ui/components/ui/blueLoader'
 import { DynamicInput } from '@repo/ui/components/ui/dynamic-input'
-import { Message, MessageBubble } from './messageBubble';
+import { MessageBubble } from './messageBubble';
 import { useChat } from '@/hooks/useChatAi';
-
-// function useChat() {
-//   const [messages, setMessages] = useState<Message[]>([
-//     { id: 1, role: 'user', content: 'Hello!' },
-//     { id: 2, role: 'bot', content: 'Hi there! How can I assist you today?' },
-//     { id: 3, role: 'user', content: 'Can you tell me about your features?' },
-//     { id: 4, role: 'bot', content: 'Of course! I can chat, provide information, and assist with tasks.' },
-//     { id: 5, role: 'user', content: 'Can you tell me about your features?' },
-//     { id: 6, role: 'bot', content: 'Of course! I can chat, provide information, and assist with tasks.' },
-//     { id: 7, role: 'user', content: 'Can you tell me about your features?' },
-//     { id: 8, role: 'bot', content: 'Of course! I can chat, provide information, and assist with tasks.' },
-//   ]);
-//
-//   const [input, setInput] = useState('');
-//   const [isBotTyping, setIsBotTyping] = useState(false);
-//
-//   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-//     setInput(e.target.value);
-//   };
-//
-//   const handleSubmit = (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!input.trim()) return;
-//
-//     const newMessage: Message = { id: Date.now(), role: 'user', content: input };
-//     setMessages([...messages, newMessage]);
-//
-//     setIsBotTyping(true);
-//
-//     setTimeout(() => {
-//       setMessages((prevMessages) => [
-//         ...prevMessages,
-//         { id: Date.now() + 1, role: 'bot', content: 'Thanks for your message!' },
-//       ]);
-//       setIsBotTyping(false);
-//     }, 4000);
-//
-//     setInput('');
-//   };
-//
-//   return {
-//     messages,
-//     input,
-//     isBotTyping,
-//     handleInputChange,
-//     handleSubmit,
-//   };
-// }
+import { Message } from '@prisma/client/edge';
+import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more";
 
 export function ChatBotAi() {
-  const [externalError, setExternalError] = useState<string>('');
   const {
     messages,
     input,
     isBotTyping,
+    isLoadingMore,
     error,
     handleInputChange,
     handleSubmit,
+    handleScroll,
     clearChat
-  } = useChat({
-    onMessageSent: () => { },
-    onError: (error) => console.error('Chat error:', error),
-    externalErrorSetter: setExternalError
-  });
+  } = useChat();
   const [isOpen, setIsOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false);
   const toggleChat = () => setIsOpen(!isOpen)
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const prevMessagesLengthRef = useRef(messages.length);
+  const lastKnownScrollPosition = useRef<number | null>(null);
+  const isLoadingRef = useRef(false);
+  const hadNewMessagesRef = useRef(false);
 
+  // Handle initial open scroll to bottom
   useEffect(() => {
-    if (scrollRef.current) {
-      const scrollContainer = scrollRef.current.querySelector('[class*="h-full w-full rounded-[inherit]"]');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    if (isOpen && messages.length > 0) {
+      const viewportElement = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement | null;
+      if (viewportElement) {
+        setTimeout(() => {
+          viewportElement.scrollTop = viewportElement.scrollHeight;
+        }, 100);
       }
     }
-  }, [messages, isBotTyping]);
+  }, [isOpen]);
+
+  // Track loading state changes
+  useEffect(() => {
+    if (!isLoadingMore && isLoadingRef.current) {
+      const scrollContainer = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement | null;
+      if (scrollContainer && lastKnownScrollPosition.current !== null && hadNewMessagesRef.current) {
+        requestAnimationFrame(() => {
+          if (scrollContainer) {
+            const newScrollHeight = scrollContainer.scrollHeight;
+            const heightDifference = newScrollHeight - scrollContainer.clientHeight;
+            const newScrollPosition = Math.min(heightDifference, lastKnownScrollPosition.current as number);
+            scrollContainer.scrollTop = newScrollPosition;
+          }
+        });
+      }
+      hadNewMessagesRef.current = false;
+    }
+    isLoadingRef.current = isLoadingMore;
+  }, [isLoadingMore]);
+
+  // Handle new messages at bottom
+  useEffect(() => {
+    if (messages.length > prevMessagesLengthRef.current) {
+      hadNewMessagesRef.current = true;
+      if (!isLoadingMore) {
+        const scrollContainer = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement | null;
+        if (scrollContainer) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }
+      }
+    }
+    prevMessagesLengthRef.current = messages.length;
+  }, [messages, isLoadingMore]);
+
+  const handleScrollEvent = (event: React.UIEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLDivElement;
+
+    if (target.scrollTop === 0) {
+      lastKnownScrollPosition.current = target.scrollHeight - target.clientHeight;
+      handleScroll();
+    }
+  };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 right-4 z-10">
       <AnimatePresence mode="wait">
         {isOpen ? (
           <motion.div
             key="chat"
-            initial={{ opacity: 0, y: 500, scale: 0.8 }}
+            initial={{ y: 500, scale: 0.8 }}
             animate={{
-              opacity: 1,
               y: 0,
               scale: 1,
               transition: {
                 type: "spring",
                 damping: 20,
                 stiffness: 100,
-                duration: 0.5
-              }
+                duration: 0.5,
+              },
             }}
             exit={{
-              opacity: 0,
-              y: 500,
+              y: 700,
               scale: 0.8,
               transition: {
                 type: "spring",
                 damping: 20,
                 stiffness: 100,
-                duration: 0.3
-              }
+                duration: 0.7,
+              },
             }}
           >
             <Card className="w-[400px] h-[80vh] flex flex-col rounded-3xl border border-gray-200">
@@ -148,17 +146,19 @@ export function ChatBotAi() {
                 </Button>
               </CardHeader>
               <CardContent className="flex-grow overflow-hidden ps-4 pe-0 py-2">
-                <ScrollArea ref={scrollRef} className="h-full pr-4">
+                <ScrollArea ref={scrollRef} className="h-full pr-4" onScrollCapture={handleScrollEvent}>
                   <motion.div layout className="space-y-4">
                     <AnimatePresence mode="popLayout">
-                      {messages.map((message) => (
+                      {isLoadingMore && (
+                        <div className="flex justify-center py-2">
+                          <LoadingSpinnerMore />
+                        </div>
+                      )}
+                      {messages.map((message: Message) => (
                         <MessageBubble key={message.id} message={message} />
                       ))}
                       {isBotTyping && (
-                        <MessageBubble
-                          message={{ id: 0, role: 'bot', content: '' }}
-                          isTyping={true}
-                        />
+                        <MessageBubble message={null} isTyping={true} />
                       )}
                     </AnimatePresence>
                   </motion.div>
@@ -188,7 +188,14 @@ export function ChatBotAi() {
             key="button"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
+            exit={{
+              x: 400,
+              scale: 0.8,
+              transition: {
+                duration: 0.3,
+                ease: "easeInOut",
+              },
+            }}
             transition={{ duration: 0.2 }}
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}
@@ -252,6 +259,5 @@ export function ChatBotAi() {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
-

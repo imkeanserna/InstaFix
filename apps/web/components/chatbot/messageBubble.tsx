@@ -2,15 +2,10 @@
 
 import { DotTypingLoading } from '@repo/ui/components/ui/dot-typing-loading';
 import { motion } from 'framer-motion';
+import { Message, Role } from '@prisma/client/edge';
 
-export type Message = {
-  id: number;
-  role: 'user' | 'bot';
-  content: string;
-};
-
-export const MessageBubble = ({ message, isTyping = false }: { message: Message; isTyping?: boolean }) => {
-  const isUser = message.role === 'user';
+export const MessageBubble = ({ message, isTyping = false }: { message: Message | null; isTyping?: boolean }) => {
+  const isUser = message?.role === Role.USER;
 
   return (
     <motion.div
@@ -32,7 +27,7 @@ export const MessageBubble = ({ message, isTyping = false }: { message: Message;
         {isTyping ? (
           <DotTypingLoading />
         ) : (
-          <p className="text-sm">{message.content}</p>
+          <p className="text-sm">{message?.content}</p>
         )}
       </motion.div>
     </motion.div>

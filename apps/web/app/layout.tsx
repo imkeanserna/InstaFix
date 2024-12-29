@@ -5,6 +5,8 @@ import { AuthProvider } from "@/context/AuthProvider";
 import { Toaster } from "@repo/ui/components/ui/sonner";
 import { RecoilContextProvider } from "@/context/RecoilContextProvider";
 import "@repo/ui/globals.css";
+import { ChatProvider } from "@/context/ChatProvider";
+import { ChatBotAi } from "@/components/chatbot/chat";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,7 +26,10 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <RecoilContextProvider>
-              {children}
+              <ChatProvider>
+                {children}
+                <ChatBotAi />
+              </ChatProvider>
             </RecoilContextProvider>
           </AuthProvider>
           <Toaster richColors />

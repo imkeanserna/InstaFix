@@ -161,7 +161,7 @@ export function DiaglogCamera() {
       <div
         id="slide-overlay"
         ref={overlayRef}
-        className={`fixed inset-0 bg-black/50 transition-all duration-500 ease-in-out ${isOpen ? 'translate-y-0' : 'translate-y-full'
+        className={`fixed inset-0 bg-black/50 z-50 transition-all duration-500 ease-in-out ${isOpen ? 'translate-y-0' : 'translate-y-full'
           }`}
         tabIndex={isOpen ? 0 : -1}
         aria-hidden={!isOpen}

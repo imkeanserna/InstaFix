@@ -1,17 +1,21 @@
 import { IChatGPTResponse, IFetchPredictionResponse } from '@repo/types';
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import { fetchAIResponse, generateInstaFixQuery } from '../_action/ai/queryInstafixChat';
 import { isValidQuestion, parseJsonResponse } from '@/lib/parseJsonResponse';
 import { errorResponse } from '@/lib/errorResponse';
+import { prisma } from '@/server';
+import { Message } from "@prisma/client/edge"
+import { addMessage, getMessages } from '../_action/ai/messageQueries';
 
 interface IRequestBody {
   question: string;
+  userId?: string | undefined;
 }
 
-export async function POST(request: NextRequest): Promise<Response> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json() as Partial<IRequestBody>;
-    const { question } = body;
+    const { question, userId } = body;
 
     if (!question) {
       return errorResponse('Question is required', undefined, 400);
@@ -25,7 +29,54 @@ export async function POST(request: NextRequest): Promise<Response> {
       );
     }
 
-    const fullQuery = generateInstaFixQuery(question);
+    let sessionId = request.cookies.get('sessionId')?.value;
+    if (!sessionId) {
+      const newSession = await prisma.chatSession.create({
+        data: {
+          userId: userId || 'guest',
+        },
+      });
+      sessionId = newSession.id;
+
+      const response = NextResponse.json({
+        success: true,
+        message: 'Session created successfully',
+      });
+
+      response.cookies.set({
+        name: 'sessionId',
+        value: "Example-session-only",
+        httpOnly: false, // Change to false if you need to access it from JavaScript
+        secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 24 * 60 * 60
+      });
+      return response;
+    }
+
+    const session = await prisma.chatSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        messages: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 10 // Limit to last 10 messages for context
+        }
+      }
+    });
+
+    if (!session) {
+      return errorResponse('Session not found', undefined, 404);
+    }
+
+    const chatHistory = session.messages
+      .reverse()
+      .map((msg: Message) => `${msg.role}: ${msg.content}`)
+      .join('\n');
+
+    const fullQuery = generateInstaFixQuery(question, chatHistory);
     const result: IFetchPredictionResponse = await fetchAIResponse(fullQuery);
 
     if (!result?.data?.[0]) {
@@ -33,9 +84,38 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     const parsedData: IChatGPTResponse = parseJsonResponse(result.data[0]);
-    return Response.json({
+
+    const { userMessage, botMessage } = await addMessage({ sessionId, question, responseMessage: parsedData.message });
+
+    return NextResponse.json({
       success: true,
-      data: parsedData
+      data: botMessage
+    });
+  } catch (error) {
+    console.error('Error processing query:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return errorResponse('Failed to process query', errorMessage);
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const sessionId = request.nextUrl.searchParams.get('sessionId');
+    const limit = parseInt(request.nextUrl.searchParams.get('limit') || '10', 10);
+    const offset = parseInt(request.nextUrl.searchParams.get('offset') || '0', 10);
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { success: false, message: 'Session ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const messages = await getMessages({ sessionId, limit, offset });
+
+    return NextResponse.json({
+      success: true,
+      data: messages
     });
   } catch (error) {
     console.error('Error processing query:', error);

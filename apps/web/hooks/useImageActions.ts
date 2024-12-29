@@ -59,7 +59,7 @@ export const useImageProcessing = (options: UseImageProcessingOptions = {}) => {
         throw new Error("No image data available");
       }
 
-      const response = await fetch(`http://localhost:3000/api/object-detection`, {
+      const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/object-detection`, {
         method: 'POST',
         headers: { 'Content-Type': 'image/jpeg' },
         body: blob

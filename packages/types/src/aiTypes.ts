@@ -8,10 +8,17 @@ export interface IFetchPredictionResponse {
 
 export interface IChatGPTResponse {
   tag: string[];
-  ratings: number;
-  location: string;
+  ratings: number | null;
+  location: string | null;
   price: number;
   message: string;
+  shouldQuery: boolean;
+  queryType: QueryType | null;
+}
+
+export enum QueryType {
+  PROVIDE_SOLUTION = 'PROVIDE_SOLUTION',
+  FIND_PROFESSIONALS = 'FIND_PROFESSIONALS',
 }
 
 export interface IHuggingFaceResponse {
