@@ -2,19 +2,15 @@
 
 import { createContext, useEffect, useState } from 'react';
 import { getSessionId } from '@/lib/sessionUtils';
-import { fetchMessages } from '@/lib/aiMessageUtilts';
+import { addMessage, fetchMessage, fetchMessages } from '@/lib/aiMessageUtilts';
 import { Message, Role, Status } from '@prisma/client/edge';
 import { v4 as uuidv4 } from 'uuid';
+import { MessagePostWithPost, MessagesWithPosts } from '@repo/types';
 
-interface ChatResponse {
-  success: boolean;
-  data: Message;
-  error?: string;
-}
-
-interface ChatContextType {
+interface IChatContextType {
   sessionId: string | null;
   messages: Message[];
+  messagePostsMap: Record<string, MessagePostWithPost[]>;
   input: string;
   isBotTyping: boolean;
   isLoadingMore: boolean;
@@ -26,7 +22,7 @@ interface ChatContextType {
   clearError: () => void;
 }
 
-export const ChatContext = createContext<ChatContextType | undefined>(undefined);
+export const ChatContext = createContext<IChatContextType | undefined>(undefined);
 
 interface ChatProviderProps {
   children: React.ReactNode;
@@ -49,6 +45,7 @@ export function ChatProvider({
   const [error, setError] = useState('');
   const [offset, setOffset] = useState(0);
   const limit = 10;
+  const [messagePostsMap, setMessagePostsMap] = useState<Record<string, MessagePostWithPost[]>>({});
 
   const handleError = (errorMessage: string) => {
     setError(errorMessage);
@@ -87,24 +84,23 @@ export function ChatProvider({
     setMessages(prevMessages => [...prevMessages, userMessage]);
 
     try {
-      const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/chat-ai`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          question: content
-        })
-      });
+      const response: { message: Message; shouldQuery: boolean } | null = await addMessage({ content });
 
-      const result: ChatResponse = await response.json();
-
-      if (!result.success || !result.data) {
-        throw new Error(result.error || 'Failed to get response from chat AI');
+      if (response?.message == null) {
+        throw new Error('Failed to fetch messages');
       }
 
-      setMessages(prevMessages => [...prevMessages, result.data]);
+      setMessages(prevMessages => [...prevMessages, response.message]);
       onMessageSent?.();
+      if (response?.shouldQuery) {
+        const message: MessagesWithPosts | null = await fetchMessage(response.message.chatSessionId, response.message.id);
+        if (message) {
+          setMessagePostsMap(prev => ({
+            ...prev,
+            [response.message.id]: message.messagePosts
+          }));
+        }
+      }
     } catch (error: any) {
       const errorMessage = error.message || 'An unknown error occurred';
       const errorChatMessage: Message = {
@@ -157,9 +153,17 @@ export function ChatProvider({
       setIsLoadingMore(true);
       const newOffset = offset + limit;
       try {
-        const olderMessages = await fetchMessages(sessionId || '', limit, newOffset);
+        const olderMessages: MessagesWithPosts[] = await fetchMessages(sessionId || '', limit, newOffset);
         if (olderMessages && olderMessages.length > 0) {
           setMessages(prevMessages => [...olderMessages, ...prevMessages]);
+          olderMessages.forEach((oldMessage: MessagesWithPosts) => {
+            if (oldMessage.messagePosts && oldMessage.messagePosts.length > 0) {
+              setMessagePostsMap(prev => ({
+                ...prev,
+                [oldMessage.id]: oldMessage.messagePosts
+              }));
+            }
+          });
           setOffset(newOffset);
         }
       } catch (error) {
@@ -176,9 +180,16 @@ export function ChatProvider({
       if (currentSessionId) {
         setSessionId(currentSessionId);
         try {
-          const messages: Message[] = await fetchMessages(currentSessionId, limit, offset);
-          if (messages?.length > 0) {
+          const messages: MessagesWithPosts[] = await fetchMessages(currentSessionId, limit, offset);
+          if (messages && messages?.length > 0) {
             setMessages(messages);
+            const newMessagePostsMap: Record<string, MessagePostWithPost[]> = {};
+            messages.forEach((message: MessagesWithPosts) => {
+              if (message.messagePosts && message.messagePosts.length > 0) {
+                newMessagePostsMap[message.id] = message.messagePosts;
+              }
+            });
+            setMessagePostsMap(newMessagePostsMap);
           } else {
             const initialMessage: Message = {
               id: uuidv4(),
@@ -201,9 +212,10 @@ export function ChatProvider({
     loadInitialMessages();
   }, []);
 
-  const contextValue: ChatContextType = {
+  const contextValue: IChatContextType = {
     sessionId,
     messages,
+    messagePostsMap,
     input,
     isBotTyping,
     isLoadingMore,

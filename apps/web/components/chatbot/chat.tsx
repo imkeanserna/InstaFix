@@ -16,6 +16,7 @@ import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more"
 export function ChatBotAi() {
   const {
     messages,
+    messagePostsMap,
     input,
     isBotTyping,
     isLoadingMore,
@@ -145,7 +146,7 @@ export function ChatBotAi() {
                   <ChevronsDown className="h-6 w-6 transition-transform duration-300 hover:translate-y-1" />
                 </Button>
               </CardHeader>
-              <CardContent className="flex-grow overflow-hidden ps-4 pe-0 py-2">
+              <CardContent className="flex-grow overflow-hidden ps-0 pe-0 py-2">
                 <ScrollArea ref={scrollRef} className="h-full pr-4" onScrollCapture={handleScrollEvent}>
                   <motion.div layout className="space-y-4">
                     <AnimatePresence mode="popLayout">
@@ -155,7 +156,7 @@ export function ChatBotAi() {
                         </div>
                       )}
                       {messages.map((message: Message) => (
-                        <MessageBubble key={message.id} message={message} />
+                        <MessageBubble key={message.id} message={message} messagePostsMap={messagePostsMap} />
                       ))}
                       {isBotTyping && (
                         <MessageBubble message={null} isTyping={true} />

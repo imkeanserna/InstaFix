@@ -1,11 +1,11 @@
-import { IChatGPTResponse, IFetchPredictionResponse } from '@repo/types';
+import { IChatResponse, IFetchPredictionResponse } from '@repo/types';
 import { NextResponse, type NextRequest } from 'next/server'
 import { fetchAIResponse, generateInstaFixQuery } from '../_action/ai/queryInstafixChat';
 import { isValidQuestion, parseJsonResponse } from '@/lib/parseJsonResponse';
 import { errorResponse } from '@/lib/errorResponse';
 import { prisma } from '@/server';
 import { Message } from "@prisma/client/edge"
-import { addMessage, getMessages } from '../_action/ai/messageQueries';
+import { addMessage, getMessage, getMessages } from '../_action/ai/messageQueries';
 
 interface IRequestBody {
   question: string;
@@ -83,13 +83,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       throw new Error('Invalid AI response');
     }
 
-    const parsedData: IChatGPTResponse = parseJsonResponse(result.data[0]);
+    const parsedData: IChatResponse = parseJsonResponse(result.data[0]);
 
-    const { userMessage, botMessage } = await addMessage({ sessionId, question, responseMessage: parsedData.message });
+    console.log("PARSEEEEEEEEEEEEE DATA")
+    console.log(parsedData);
+
+    const { userMessage, botMessage } = await addMessage({ sessionId, question, parsedData });
 
     return NextResponse.json({
       success: true,
-      data: botMessage
+      data: {
+        message: botMessage,
+        shouldQuery: parsedData.shouldQuery
+      }
     });
   } catch (error) {
     console.error('Error processing query:', error);
@@ -101,6 +107,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 export async function GET(request: NextRequest) {
   try {
     const sessionId = request.nextUrl.searchParams.get('sessionId');
+    const messageId = request.nextUrl.searchParams.get('messageId');
     const limit = parseInt(request.nextUrl.searchParams.get('limit') || '10', 10);
     const offset = parseInt(request.nextUrl.searchParams.get('offset') || '0', 10);
 
@@ -109,6 +116,20 @@ export async function GET(request: NextRequest) {
         { success: false, message: 'Session ID is required' },
         { status: 400 }
       );
+    }
+
+    if (messageId) {
+      const message = await getMessage({ messageId, sessionId });
+      if (!message) {
+        return NextResponse.json(
+          { success: false, message: 'Message not found' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({
+        success: true,
+        data: message
+      });
     }
 
     const messages = await getMessages({ sessionId, limit, offset });

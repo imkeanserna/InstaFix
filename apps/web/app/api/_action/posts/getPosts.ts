@@ -1,10 +1,18 @@
 import { prisma } from '@/server/index';
-import { Post } from '@prisma/client/edge'
+import { Category, Freelancer, Post, PostTag } from '@prisma/client/edge'
 
 export const runtime = 'edge'
 
+export type PostWithRelations = Post & {
+  freelancer: Freelancer;
+  tags: (PostTag & {
+    subcategory: {
+      category: Category;
+    };
+  })[];
+};
+
 export async function getPostsByProfession(professions: string[]): Promise<{ posts: Post[] }> {
-  console.log(professions);
   try {
     const posts: Post[] = await prisma.post.findMany({
       where: {

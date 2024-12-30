@@ -74,7 +74,7 @@ export function generateInstaFixQuery(question: string, chatHistory: string): st
 
     For professional search:
     {
-      "tag": ["plumber"],
+      "tag": ["Plumber"],
       "ratings": 4,
       "location": "downtown",
       "price": 50,
@@ -85,7 +85,7 @@ export function generateInstaFixQuery(question: string, chatHistory: string): st
 
     For general advice:
     {
-      "tag": ["plumber"],
+      "tag": ["Plumber"],
       "ratings": null,
       "location": null,
       "price": 0,
