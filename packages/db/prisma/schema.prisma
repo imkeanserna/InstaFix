@@ -16,11 +16,13 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  name     String?
-  password String?
-  image    String?
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Freelancer {
@@ -30,12 +32,15 @@ model Freelancer {
 }
 
 model Post {
-  id           String     @id @default(cuid())
+  id           String        @id @default(cuid())
   title        String
   description  String
   freelancerId String
   tags         PostTag[]
-  freelancer   Freelancer @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+  freelancer   Freelancer    @relation(fields: [freelancerId], references: [id], onDelete: Cascade)
+  messagePosts MessagePost[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model PostTag {
@@ -69,15 +74,27 @@ model ChatSession {
 }
 
 model Message {
-  id            String      @id @default(uuid())
+  id            String        @id @default(uuid())
   chatSessionId String
   role          Role
   content       String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  status        Status      @default(SENT)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  status        Status        @default(SENT)
   errorCode     String?
-  ChatSession   ChatSession @relation(fields: [chatSessionId], references: [id])
+  ChatSession   ChatSession   @relation(fields: [chatSessionId], references: [id])
+  messagePosts  MessagePost[]
+}
+
+model MessagePost {
+  id        String   @id @default(uuid())
+  messageId String
+  postId    String
+  createdAt DateTime @default(now())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, postId])
 }
 
 enum Role {

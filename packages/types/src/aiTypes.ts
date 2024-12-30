@@ -6,8 +6,8 @@ export interface IFetchPredictionResponse {
   fn_index: number;
 }
 
-export interface IChatGPTResponse {
-  tag: string[];
+export interface IChatResponse {
+  tag: string[] | null;
   ratings: number | null;
   location: string | null;
   price: number;
