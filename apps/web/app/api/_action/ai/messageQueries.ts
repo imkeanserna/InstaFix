@@ -1,7 +1,8 @@
 import { prisma } from '@/server';
-import { Role, Message, Post } from "@prisma/client/edge"
+import { Role, Message, Post, ChatSession } from "@prisma/client/edge"
 import { IChatResponse, QueryType } from '@repo/types';
 import { MessagesWithPosts } from '@repo/types'
+import { subDays } from 'date-fns';
 
 export const runtime = 'edge'
 
@@ -178,5 +179,44 @@ export const handleMessagePosts = async ({ message, tags }: MessagePosts): Promi
       })),
       skipDuplicates: true
     });
+  }
+};
+
+export const cleanupOldMessages = async ({ userId }: { userId: string }): Promise<number> => {
+  const oneDayAgo = subDays(new Date(), 1);
+
+  try {
+    if (!userId) {
+      throw new Error('User Id is required');
+    }
+
+    const deletedSessions = await prisma.chatSession.deleteMany({
+      where: {
+        userId: userId,
+        createdAt: {
+          lt: oneDayAgo
+        }
+      }
+    });
+    return deletedSessions.count;
+  } catch (error) {
+    throw new Error(`Failed to cleanup old messages: ${error}`);
+  }
+};
+
+export const removeChatSession = async ({ sessionId }: { sessionId: string }): Promise<ChatSession> => {
+  try {
+    if (!sessionId) {
+      throw new Error('User Id is required');
+    }
+
+    const deletedSession = await prisma.chatSession.delete({
+      where: {
+        id: sessionId
+      }
+    });
+    return deletedSession;
+  } catch (error) {
+    throw new Error(`Failed to cleanup old messages: ${error}`);
   }
 };

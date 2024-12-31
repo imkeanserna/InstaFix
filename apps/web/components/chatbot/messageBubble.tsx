@@ -43,9 +43,20 @@ export const MessageBubble = ({
 
         {/* Message Content */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
+          initial={{
+            opacity: 0,
+            y: 20,
+            scale: 0.95
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+            scale: 1
+          }}
+          transition={{
+            duration: 0.4,
+            ease: [0.4, 0, 0.2, 1]
+          }}
           className={`
             relative rounded-2xl
             ${isTyping ? 'inline-block' : 'flex-1 max-w-[85%]'}
@@ -88,21 +99,37 @@ export const MessageBubble = ({
       {posts.length > 0 && (
         <AnimatePresence>
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{
+              duration: 0.4,
+              ease: [0.4, 0, 0.2, 1],
+              delay: 0.2
+            }}
             className={`space-y-3 max-w-[85%] ${isUser ? 'ml-auto mr-12' : 'ml-12'}`}
           >
-            {limitedPosts.map((messagePost) => (
-              <PostCard key={messagePost.id} post={messagePost.post} />
+            {limitedPosts.map((messagePost, index) => (
+              <motion.div
+                key={messagePost.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.3,
+                  delay: index * 0.1 + 0.3
+                }}
+              >
+                <PostCard post={messagePost.post} />
+              </motion.div>
             ))}
 
             {hasMorePosts && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
+                transition={{
+                  delay: 0.4 + (limitedPosts.length * 0.1)
+                }}
                 className="mt-2"
               >
                 <Button

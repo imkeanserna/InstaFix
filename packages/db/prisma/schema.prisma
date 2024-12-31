@@ -82,7 +82,7 @@ model Message {
   updatedAt     DateTime      @updatedAt
   status        Status        @default(SENT)
   errorCode     String?
-  ChatSession   ChatSession   @relation(fields: [chatSessionId], references: [id])
+  ChatSession   ChatSession   @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
   messagePosts  MessagePost[]
 }
 

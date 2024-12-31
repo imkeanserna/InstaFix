@@ -5,7 +5,8 @@ import { isValidQuestion, parseJsonResponse } from '@/lib/parseJsonResponse';
 import { errorResponse } from '@/lib/errorResponse';
 import { prisma } from '@/server';
 import { Message } from "@prisma/client/edge"
-import { addMessage, getMessage, getMessages } from '../_action/ai/messageQueries';
+import { addMessage, cleanupOldMessages, getMessage, getMessages } from '../_action/ai/messageQueries';
+import { fetchChatGroq } from '../_action/ai/fetchPrediction';
 
 interface IRequestBody {
   question: string;
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       response.cookies.set({
         name: 'sessionId',
-        value: "Example-session-only",
+        value: newSession.id,
         httpOnly: false, // Change to false if you need to access it from JavaScript
         secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
         sameSite: 'lax',
@@ -77,16 +78,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .join('\n');
 
     const fullQuery = generateInstaFixQuery(question, chatHistory);
-    const result: IFetchPredictionResponse = await fetchAIResponse(fullQuery);
+    // If the HuggingFace model good, we will use this
+    // const result: IFetchPredictionResponse = await fetchAIResponse(fullQuery);
+
+    // We use Groq for best use cases as of now
+    const result = await fetchChatGroq(fullQuery);
 
     if (!result?.data?.[0]) {
       throw new Error('Invalid AI response');
     }
 
     const parsedData: IChatResponse = parseJsonResponse(result.data[0]);
-
-    console.log("PARSEEEEEEEEEEEEE DATA")
-    console.log(parsedData);
 
     const { userMessage, botMessage } = await addMessage({ sessionId, question, parsedData });
 
@@ -139,8 +141,27 @@ export async function GET(request: NextRequest) {
       data: messages
     });
   } catch (error) {
-    console.error('Error processing query:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return errorResponse('Failed to process query', errorMessage);
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = request.nextUrl.searchParams.get('userId');
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: 'User Id is required' },
+        { status: 400 }
+      );
+    }
+    const deletedCount = await cleanupOldMessages({ userId });
+    return NextResponse.json({
+      success: true,
+      deletedCount
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return errorResponse('Failed to remove old messages', errorMessage);
   }
 }

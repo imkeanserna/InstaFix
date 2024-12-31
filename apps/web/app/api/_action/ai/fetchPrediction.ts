@@ -1,5 +1,6 @@
 import { Client } from "@gradio/client";
 import { IFetchPredictionResponse, IHuggingFaceResponse } from "@repo/types";
+import Groq from "groq-sdk";
 
 interface ClientConfig {
   url: string;
@@ -54,9 +55,66 @@ class GradioClientSingleton {
   }
 }
 
+class GroqClientSingleton {
+  private static instance: GroqClientSingleton | null = null;
+  private groqClient: Groq;
+
+  private constructor() {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      throw new Error('GROQ_API_KEY is not defined in environment variables');
+    }
+    this.groqClient = new Groq({ apiKey });
+  }
+
+  public static getInstance(): GroqClientSingleton {
+    if (!GroqClientSingleton.instance) {
+      GroqClientSingleton.instance = new GroqClientSingleton();
+    }
+    return GroqClientSingleton.instance;
+  }
+
+  public async chat(query: string) {
+    try {
+      const response = await this.groqClient.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content: "You are an assistant for InstaFix, a platform that connects users with trusted freelance professionals in various categories like plumbing, mechanics, computer repair, and health.",
+          },
+          {
+            role: "user",
+            content: query,
+          },
+        ],
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.5,
+        max_tokens: 1024,
+        top_p: 1,
+        stop: null,
+        stream: false
+      });
+      return {
+        data: [response.choices[0].message.content]
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+}
+
 export const fetchPrediction = async (query: string) => {
   try {
     return await GradioClientSingleton.predict('chatbot', { Query: query });
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchChatGroq = async (query: string) => {
+  try {
+    const groqClient = GroqClientSingleton.getInstance();
+    return await groqClient.chat(query);
   } catch (error) {
     throw error;
   }
