@@ -28,7 +28,7 @@ export const MessageBubble = ({
     <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto py-4">
       <div className={`flex items-start gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
         {/* Avatar */}
-        <div className="flex-shrink-0 relative group">
+        <div className="flex-shrink-0 relative group ms-2">
           {!isUser && (
             <div className="ps-1">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-400 to-violet-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-200" />

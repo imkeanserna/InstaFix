@@ -107,7 +107,7 @@ export function ChatBotAi() {
               },
             }}
             exit={{
-              y: 700,
+              y: 900,
               scale: 0.8,
               transition: {
                 type: "spring",
@@ -117,7 +117,7 @@ export function ChatBotAi() {
               },
             }}
           >
-            <Card className="w-[400px] h-[80vh] flex flex-col rounded-3xl border border-gray-200">
+            <Card className="w-[500px] h-[90vh] flex flex-col rounded-3xl border border-gray-200">
               <CardHeader className="flex flex-row items-center p-4 rounded-t-3xl border-b border-gray-700 shadow-xl bg-gradient-to-b from-gray-900 to-gray-800">
                 <div className="flex flex-row justify-start items-center gap-4">
                   <div className="relative">
@@ -204,13 +204,13 @@ export function ChatBotAi() {
           >
             <motion.div
               animate={{
-                width: isHovered ? 360 : 60,
+                width: isHovered ? 450 : 80,
               }}
               transition={{
                 duration: 0.2,
                 ease: "easeInOut",
               }}
-              className="bg-gradient-to-b from-gray-900 to-gray-800 hover:relative border border-gray-300 shadow-[0px_4px_15px_rgba(138,43,226,0.5)] rounded-full h-[60px] flex items-center justify-center cursor-pointer"
+              className="bg-gradient-to-b from-gray-900 to-gray-800 hover:relative border border-gray-300 shadow-[0px_4px_15px_rgba(138,43,226,0.5)] rounded-full h-[80px] flex items-center justify-center cursor-pointer"
               onClick={toggleChat}
             >
               <div className="flex items-center text-primary-foreground">
@@ -223,7 +223,7 @@ export function ChatBotAi() {
                   }}
                 >
                   <div className="absolute inset-0 bg-violet-500 rounded-full blur-md opacity-50"></div>
-                  <BlueLoader size={40} />
+                  <BlueLoader size={60} />
                 </div>
                 <motion.span
                   initial={{ opacity: 0, width: 0 }}

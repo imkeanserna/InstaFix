@@ -5,8 +5,7 @@ export const runtime = "edge";
 
 const Page = () => {
   return (
-    <div className="text-white">
-      <h1>Find</h1>
+    <div className="dark:bg-background">
       <ImageUpload />
       <DiaglogCamera />
     </div>

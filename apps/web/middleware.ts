@@ -31,6 +31,10 @@ export default auth((req) => {
 });
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === '/become-a-freelancer') {
+    return NextResponse.redirect(new URL('/become-a-freelancer/overview', request.url))
+  }
+
   const response = NextResponse.next();
 
   try {
