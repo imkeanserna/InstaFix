@@ -1,6 +1,5 @@
 import { prisma } from '@/server/index';
 import { Category, Freelancer, Post, PostTag } from '@prisma/client/edge'
-import { NextApiRequest } from 'next';
 import { NextRequest } from 'next/server';
 
 export const runtime = 'edge'
@@ -45,16 +44,27 @@ export async function getPostsByProfession(professions: string[]): Promise<{ pos
   }
 }
 
-export async function updatePost(request: NextApiRequest) {
+export async function updatePost(request: NextRequest, postId: string) {
   try {
-    const updates = request.body;
-    const { id } = request.query;
+    const body = request.body as Partial<Post>;
+    const post = await prisma.post.findFirst({
+      where: {
+        id: postId,
+        userId: body.userId,
+      }
+    });
 
-    if (!id) throw new Error('Missing post id');
+    if (!post) {
+      throw new Error('Post not found or unauthorized');
+    }
 
     const updatedPost = await prisma.post.update({
-      where: { id: String(id) },
-      data: updates,
+      where: {
+        id: postId
+      },
+      data: {
+        ...body
+      }
     });
     return updatedPost;
   } catch (error) {
@@ -65,9 +75,11 @@ export async function updatePost(request: NextApiRequest) {
 
 export async function draftPost(userId: string) {
   try {
+    if (!userId) throw new Error('Missing user id');
+
     const draftPost = await prisma.post.create({
       data: {
-        freelancerId: userId,
+        userId: userId,
       }
     });
     return draftPost;

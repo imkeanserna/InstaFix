@@ -1,6 +1,8 @@
+import Footer from "@/components/posts/footer";
 import { Button } from "@repo/ui/components/ui/button";
 import type { Metadata } from "next";
-import Link from "next/link";
+
+export const runtime = "edge";
 
 export const metadata: Metadata = {
   title: "Create your service",
@@ -12,6 +14,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <div className="h-screen flex flex-col justify-between">
       {/* App Bar */}
@@ -24,12 +27,7 @@ export default function RootLayout({
       <div className="flex-1 p-4">
         {children}
       </div>
-
-      {/* Footer */}
-      <div className="flex justify-between p-4">
-        <Link href="/become-a-freelancer">Back</Link>
-        <Button>Get Started</Button>
-      </div>
+      <Footer />
     </div>
   );
 }
