@@ -1,5 +1,5 @@
 import Footer from "@/components/posts/footer";
-import { Button } from "@repo/ui/components/ui/button";
+import Header from "@/components/posts/header";
 import type { Metadata } from "next";
 
 export const runtime = "edge";
@@ -17,12 +17,7 @@ export default function RootLayout({
 
   return (
     <div className="h-screen flex flex-col justify-between">
-      {/* App Bar */}
-      <div className="flex justify-between p-4">
-        <h1>Become a Freelancer</h1>
-        <Button>Exit</Button>
-      </div>
-
+      <Header />
       {/* Content */}
       <div className="flex-1 p-4">
         {children}

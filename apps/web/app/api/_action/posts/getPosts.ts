@@ -1,6 +1,6 @@
 import { prisma } from '@/server/index';
-import { Category, Freelancer, Post, PostTag } from '@prisma/client/edge'
-import { NextRequest } from 'next/server';
+import { Category, EngagementType, Freelancer, MediaType, Post, PostTag, PricingType, RequestConfirmationType, ServiceLocationType, ServicesIncluded, TargetAudience } from '@prisma/client/edge'
+import { PostUpdateHandlers } from './updateHandlers';
 
 export const runtime = 'edge'
 
@@ -33,7 +33,7 @@ export async function getPostsByProfession(professions: string[]): Promise<{ pos
             subcategory: true,
           },
         },
-        freelancer: true,
+        user: true,
       },
     });
 
@@ -44,33 +44,109 @@ export async function getPostsByProfession(professions: string[]): Promise<{ pos
   }
 }
 
-export async function updatePost(request: NextRequest, postId: string) {
+export async function getPostById(userId: string, postId: string) {
+  if (!userId || !postId) {
+    return null;
+  }
+
   try {
-    const body = request.body as Partial<Post>;
     const post = await prisma.post.findFirst({
       where: {
         id: postId,
-        userId: body.userId,
-      }
-    });
-
-    if (!post) {
-      throw new Error('Post not found or unauthorized');
-    }
-
-    const updatedPost = await prisma.post.update({
-      where: {
-        id: postId
+        userId: userId
       },
-      data: {
-        ...body
-      }
+      include: {
+        tags: {
+          include: {
+            subcategory: true,
+          },
+        },
+        user: true,
+      },
     });
-    return updatedPost;
+    return post;
   } catch (error) {
-    console.error('Error fetching posts:', error);
-    throw error;
+    return null;
   }
+}
+
+export type PostBasicInfo = {
+  title?: string;
+  description?: string;
+  skills?: string[];
+  experience?: string;
+  targetAudience?: TargetAudience;
+  customDetails?: string;
+  packageDetails?: string;
+  servicesIncluded?: ServicesIncluded[];
+  requestConfirmation?: RequestConfirmationType;
+}
+
+export type PostPricing = {
+  pricingType?: PricingType;
+  hourlyRate?: number;
+  fixedPrice?: number;
+}
+
+export type PostLocation = {
+  locationId?: string;
+  serviceLocation?: ServiceLocationType;
+}
+
+export type PostServiceEngagement = {
+  id?: string;
+  engagementType: EngagementType;
+  customDetails?: string;
+}
+
+export type PostWithTag = {
+  subcategoryId: string; // References Subcategory
+}
+
+export type PostMedia = {
+  url: string;
+  type: MediaType;
+}
+
+// Define the specific data type for each update type
+export type UpdatePostData = {
+  tags: { tags: PostWithTag[] };
+  serviceEngagement: { serviceEngagement: PostServiceEngagement[] };
+  basicInfo: PostBasicInfo;
+  media: { media: PostMedia[] };
+  location: PostLocation;
+  pricing: PostPricing;
+}
+
+type HandlerType = {
+  [K in keyof UpdatePostData]: (
+    postId: string,
+    data: UpdatePostData[K]
+  ) => Promise<any>
+};
+
+const UPDATE_HANDLERS: HandlerType = {
+  tags: PostUpdateHandlers.updateTags,
+  serviceEngagement: PostUpdateHandlers.updateServiceEngagement,
+  basicInfo: PostUpdateHandlers.updateBasicInfo,
+  pricing: PostUpdateHandlers.updatePricing,
+  media: PostUpdateHandlers.updateMedia,
+  location: PostUpdateHandlers.updateLocation,
+} as const;
+
+export async function updatePost<T extends keyof typeof UPDATE_HANDLERS>(
+  request: {
+    type: T;
+    data: UpdatePostData[T];
+    userId: string;
+    postId: string;
+  }
+) {
+  const { type, data, userId, postId } = request;
+
+  await validatePostOwnership(postId, userId);
+
+  return UPDATE_HANDLERS[type](postId, data);
 }
 
 export async function draftPost(userId: string) {
@@ -87,4 +163,19 @@ export async function draftPost(userId: string) {
     console.error('Error fetching posts:', error);
     throw error;
   }
+}
+
+export async function validatePostOwnership(postId: string, userId: string) {
+  const post = await prisma.post.findFirst({
+    where: {
+      id: postId,
+      userId
+    }
+  });
+
+  if (!post) {
+    throw new Error('Post not found or unauthorized');
+  }
+
+  return post;
 }

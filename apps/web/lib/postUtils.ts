@@ -15,9 +15,6 @@ type PostResponse = {
 export async function draftPost() {
   const user = await currentUser();
   try {
-
-    console.log("CHECKKKKKKKKKKKKKK POINT 0")
-    console.log(user)
     const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/create-post`, {
       method: 'POST',
       headers: {
@@ -33,8 +30,6 @@ export async function draftPost() {
     }
 
     const result: PostResponse = await response.json();
-    console.log("RESULLLLLLLLLLLLLLLLLLLLLLLLLLLLLTTTTTTT")
-    console.log(result);
     if (!result.success) {
       throw new Error("Failed to create post");
     }
