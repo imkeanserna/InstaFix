@@ -23,6 +23,7 @@
     "@repo/db": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@repo/store": "workspace:*",
     "@tanstack/query-sync-storage-persister": "^5.62.12",
     "@tanstack/react-query": "^5.62.11",
     "@tanstack/react-query-persist-client": "^5.62.12",
@@ -36,7 +37,6 @@
     "next-auth": "5.0.0-beta.16",
     "react": "^18",
     "react-dom": "^18",
-    "recoil": "^0.7.7",
     "uuid": "^11.0.3"
   },
   "devDependencies": {

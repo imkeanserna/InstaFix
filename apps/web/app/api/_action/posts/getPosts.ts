@@ -100,7 +100,7 @@ export type PostServiceEngagement = {
 }
 
 export type PostWithTag = {
-  subcategoryId: string; // References Subcategory
+  subcategoryId: string;
 }
 
 export type PostMedia = {
@@ -108,7 +108,6 @@ export type PostMedia = {
   type: MediaType;
 }
 
-// Define the specific data type for each update type
 export type UpdatePostData = {
   tags: { tags: PostWithTag[] };
   serviceEngagement: { serviceEngagement: PostServiceEngagement[] };
@@ -125,7 +124,7 @@ type HandlerType = {
   ) => Promise<any>
 };
 
-const UPDATE_HANDLERS: HandlerType = {
+export const UPDATE_HANDLERS: HandlerType = {
   tags: PostUpdateHandlers.updateTags,
   serviceEngagement: PostUpdateHandlers.updateServiceEngagement,
   basicInfo: PostUpdateHandlers.updateBasicInfo,

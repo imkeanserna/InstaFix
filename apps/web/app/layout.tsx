@@ -8,6 +8,7 @@ import "@repo/ui/globals.css";
 import { ChatProvider } from "@/context/ChatProvider";
 import { ChatBotAi } from "@/components/chatbot/chat";
 import { ReactQueryProvider } from "@/context/ReactQueryProvider";
+import { FormDataProvider } from "@/context/FormDataProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,7 +30,9 @@ export default function RootLayout({
             <RecoilContextProvider>
               <ChatProvider>
                 <ReactQueryProvider>
-                  {children}
+                  <FormDataProvider>
+                    {children}
+                  </FormDataProvider>
                   <ChatBotAi />
                 </ReactQueryProvider>
               </ChatProvider>

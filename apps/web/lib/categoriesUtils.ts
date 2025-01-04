@@ -1,4 +1,4 @@
-import { Category } from "@prisma/client/edge";
+import { Category, Subcategory } from "@prisma/client/edge";
 
 export const runtime = "edge";
 
@@ -10,7 +10,13 @@ type GetCategoriesResponse = {
   error?: string;
 }
 
-export async function getCategories() {
+interface CategoryResponse {
+  id: string;
+  name: string;
+  subcategories: Subcategory[] | null;
+}
+
+export async function getCategories(): Promise<CategoryResponse[]> {
   try {
     const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/categories`, {
       method: 'GET',
@@ -18,16 +24,14 @@ export async function getCategories() {
         'Content-Type': 'application/json'
       },
     });
-
     if (!response.ok) {
       throw new Error('Failed to fetch categories');
     }
-
     const result: GetCategoriesResponse = await response.json();
     if (!result.success) {
       throw new Error("Failed to create post");
     }
-    return result.data.categories;
+    return result.data.categories as CategoryResponse[];
   } catch (error) {
     return [];
   }
