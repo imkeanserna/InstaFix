@@ -89,7 +89,9 @@ export type PostPricing = {
 }
 
 export type PostLocation = {
-  locationId?: string;
+  address: string;
+  lat: number;
+  lng: number;
   serviceLocation?: ServiceLocationType;
 }
 
@@ -177,4 +179,80 @@ export async function validatePostOwnership(postId: string, userId: string) {
   }
 
   return post;
+}
+
+export async function getNearbyPosts({
+  latitude,
+  longitude,
+  radiusInKm = 10,
+  limit = 20
+}: {
+  latitude: number;
+  longitude: number;
+  radiusInKm?: number;
+  limit?: number;
+}) {
+  // Convert kilometers to degrees (approximate)
+  const degreeRadius = radiusInKm / 111;
+
+  try {
+    const nearbyPosts = await prisma.post.findMany({
+      where: {
+        location: {
+          latitude: {
+            gte: latitude - degreeRadius,
+            lte: latitude + degreeRadius,
+          },
+          longitude: {
+            gte: longitude - degreeRadius,
+            lte: longitude + degreeRadius,
+          },
+        },
+      },
+      include: {
+        location: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+      take: limit,
+    });
+
+    // Calculate actual distances and sort
+    const postsWithDistance = nearbyPosts.map(post => ({
+      ...post,
+      distance: calculateDistance(
+        latitude,
+        longitude,
+        post.location!.latitude,
+        post.location!.longitude
+      ),
+    }));
+
+    return postsWithDistance.sort((a, b) => a.distance - b.distance);
+  } catch (error) {
+    console.error('Error getting nearby posts:', error);
+    throw error;
+  }
+}
+
+function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
 }
