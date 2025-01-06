@@ -16,9 +16,15 @@ export const useRouteValidation = (currentStep: string) => {
       case 'privacy-type':
         return Boolean(data.serviceEngagement?.length > 0);
       case 'location':
-        return Boolean(data?.location?.address && data.location.address.length >= 5 && data.location.serviceLocation !== undefined);
+        const { address, serviceLocation } = data?.location || {};
+        return Boolean(address && address.length >= 5 && serviceLocation !== undefined);
       case 'service-description':
-        return Boolean(data?.description && data.description.length >= 100);
+        const { skills, experience, targetAudience } = data?.basicInfo || {};
+        return Boolean(
+          skills?.length > 0 &&
+          experience?.length > 10 &&
+          targetAudience !== undefined
+        );
       case 'special-features':
         return Array.isArray(data?.features) && data.features.length > 0;
       case 'photos':

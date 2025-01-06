@@ -64,7 +64,7 @@ export default function Footer() {
           serviceEngagement: formData.serviceEngagement || []
         })
       },
-      'title': {
+      'service-description': {
         type: 'basicInfo',
         getData: (formData) => formData.basicInfo!
       },

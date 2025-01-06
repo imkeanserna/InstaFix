@@ -1,14 +1,15 @@
+import { ServiceDescription } from "@/components/posts/service-description";
 
 export const runtime = "edge";
 
 export default function Page() {
   return (
-    <div className="flex justify-between">
+    <div className="">
       <div>
         <p>Welcome to about your service description</p>
       </div>
       <div>
-        <p>sadasd</p>
+        <ServiceDescription />
       </div>
     </div>
   );
