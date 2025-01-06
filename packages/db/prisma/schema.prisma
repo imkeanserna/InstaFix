@@ -105,14 +105,20 @@ model Subcategory {
 }
 
 model Location {
-  id        String   @id @default(cuid())
-  address   String
-  city      String
-  state     String
-  country   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  posts     Post[]
+  id                String   @id @default(cuid())
+  fullAddress       String
+  normalizedAddress String
+  latitude          Float
+  longitude         Float
+  streetAddress     String?
+  neighborhood      String?
+  city              String?
+  state             String?
+  country           String?
+  postalCode        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  posts             Post[]
 }
 
 model ChatSession {

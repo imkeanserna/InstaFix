@@ -1,14 +1,15 @@
+import ServiceEngagement from "@/components/posts/service-engagement";
 
 export const runtime = "edge";
 
 export default function Page() {
   return (
-    <div className="flex justify-between">
+    <div className="">
       <div>
         <p>Welcome to about your privacy-type</p>
       </div>
       <div>
-        <p>sadasd</p>
+        <ServiceEngagement />
       </div>
     </div>
   );

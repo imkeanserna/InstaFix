@@ -1,6 +1,7 @@
 import { prisma } from '@/server/index';
-import { Category, EngagementType, Freelancer, MediaType, Post, PostTag, PricingType, RequestConfirmationType, ServiceLocationType, ServicesIncluded, TargetAudience } from '@prisma/client/edge'
+import { Category, Freelancer, Post, PostTag } from '@prisma/client/edge'
 import { PostUpdateHandlers } from './updateHandlers';
+import { UpdatePostData } from "@repo/types";
 
 export const runtime = 'edge'
 
@@ -68,55 +69,6 @@ export async function getPostById(userId: string, postId: string) {
   } catch (error) {
     return null;
   }
-}
-
-export type PostBasicInfo = {
-  title?: string;
-  description?: string;
-  skills?: string[];
-  experience?: string;
-  targetAudience?: TargetAudience;
-  customDetails?: string;
-  packageDetails?: string;
-  servicesIncluded?: ServicesIncluded[];
-  requestConfirmation?: RequestConfirmationType;
-}
-
-export type PostPricing = {
-  pricingType?: PricingType;
-  hourlyRate?: number;
-  fixedPrice?: number;
-}
-
-export type PostLocation = {
-  address: string;
-  lat: number;
-  lng: number;
-  serviceLocation?: ServiceLocationType;
-}
-
-export type PostServiceEngagement = {
-  id?: string;
-  engagementType: EngagementType;
-  customDetails?: string;
-}
-
-export type PostWithTag = {
-  subcategoryId: string;
-}
-
-export type PostMedia = {
-  url: string;
-  type: MediaType;
-}
-
-export type UpdatePostData = {
-  tags: { tags: PostWithTag[] };
-  serviceEngagement: { serviceEngagement: PostServiceEngagement[] };
-  basicInfo: PostBasicInfo;
-  media: { media: PostMedia[] };
-  location: PostLocation;
-  pricing: PostPricing;
 }
 
 type HandlerType = {

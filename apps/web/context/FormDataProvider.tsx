@@ -1,6 +1,6 @@
 "use client";
 
-import { PostBasicInfo, PostLocation, PostMedia, PostPricing, PostServiceEngagement, PostWithTag } from "@/app/api/_action/posts/getPosts";
+import { PostBasicInfo, PostLocation, PostMedia, PostPricing, PostServiceEngagement, PostWithTag } from "@repo/types";
 import { createContext, useContext, useState } from "react";
 
 export type FormDataType = {

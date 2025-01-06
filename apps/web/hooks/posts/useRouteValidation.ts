@@ -14,9 +14,9 @@ export const useRouteValidation = (currentStep: string) => {
       case 'categories':
         return Boolean(data.tags?.subcategoryId);
       case 'privacy-type':
-        return Boolean(data?.privacyType);
+        return Boolean(data.serviceEngagement?.length > 0);
       case 'location':
-        return Boolean(data?.location);
+        return Boolean(data?.location?.address && data.location.address.length >= 5 && data.location.serviceLocation !== undefined);
       case 'service-description':
         return Boolean(data?.description && data.description.length >= 100);
       case 'special-features':

@@ -8,7 +8,9 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { usePostUpdate, useRouteValidation } from '@/hooks/posts/useRouteValidation';
 import { FormDataType, useFormData } from '@/context/FormDataProvider';
-import { UPDATE_HANDLERS, UpdatePostData } from '@/app/api/_action/posts/getPosts';
+import { UPDATE_HANDLERS } from '@/app/api/_action/posts/getPosts';
+import { UpdatePostData } from '@repo/types';
+import { useState } from 'react';
 
 const steps = [
   'become-a-freelancer',
@@ -38,9 +40,10 @@ export default function Footer() {
   const currentStep = pathname.split('/').pop() || '';
   const { isValid } = useRouteValidation(currentStep);
   const isButtonEnabled = currentStep === 'about-your-service' ? true : isValid;
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const handleNext = async () => {
-    if ((!isButtonEnabled || !postId)) return;
+    if (!isButtonEnabled || !postId || isNavigating) return;
 
     const currentStepIndex = steps.indexOf(currentStep);
     const nextStep = currentStepIndex < steps.length - 1 ? steps[currentStepIndex + 1] : null;
@@ -53,6 +56,12 @@ export default function Footer() {
         type: 'tags',
         getData: (formData) => ({
           tags: [{ subcategoryId: formData.tags?.subcategoryId! }]
+        })
+      },
+      'privacy-type': {
+        type: 'serviceEngagement',
+        getData: (formData) => ({
+          serviceEngagement: formData.serviceEngagement || []
         })
       },
       'title': {
@@ -73,28 +82,31 @@ export default function Footer() {
           media: formData.media || []
         })
       },
-      'service-engagement': {
-        type: 'serviceEngagement',
-        getData: (formData) => ({
-          serviceEngagement: formData.serviceEngagement || []
-        })
-      }
     };
 
-    const updateConfig = updateMapping[currentStep];
-    if (updateConfig) {
-      const success = await updatePostData(
-        updateConfig.type,
-        updateConfig.getData(formData),
-        postId
-      );
+    try {
+      setIsNavigating(true);
+      const updateConfig = updateMapping[currentStep];
 
-      if (success && nextStep) {
-        router.push(`/become-a-freelancer/${postId}/${nextStep}`);
+      if (updateConfig) {
+        const success = await updatePostData(
+          updateConfig.type,
+          updateConfig.getData(formData),
+          postId
+        );
+
+        if (success && nextStep) {
+          // Immediate navigation after successful update
+          await router.push(`/become-a-freelancer/${postId}/${nextStep}`);
+        }
+      } else if (nextStep) {
+        // If no update is needed, navigate immediately
+        await router.push(`/become-a-freelancer/${postId}/${nextStep}`);
       }
-    } else if (nextStep) {
-      // If no update is needed for this step, just navigate
-      router.push(`/become-a-freelancer/${postId}/${nextStep}`);
+    } catch (error) {
+      console.error('Navigation error:', error);
+    } finally {
+      setIsNavigating(false);
     }
   };
 
@@ -134,12 +146,12 @@ export default function Footer() {
         )}
         <Button
           onClick={handleNext}
-          disabled={!isButtonEnabled || isUpdating}
+          disabled={!isButtonEnabled || isUpdating || isNavigating}
         >
-          {isUpdating ? (
+          {(isUpdating || isNavigating) ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
+              {isNavigating ? 'Saving...' : 'Saving...'}
             </>
           ) : (
             <>

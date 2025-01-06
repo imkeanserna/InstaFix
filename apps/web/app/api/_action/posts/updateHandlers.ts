@@ -1,5 +1,6 @@
 import { prisma } from '@/server/index';
-import { UpdatePostData } from './getPosts';
+import { UpdatePostData } from '@repo/types';
+import { findOrCreateLocation } from './location';
 
 export const runtime = 'edge'
 
@@ -87,16 +88,32 @@ export class PostUpdateHandlers {
   }
 
   static async updateLocation(postId: string, data: UpdatePostData['location']) {
-    return prisma.post.update({
-      where: { id: postId },
-      data: {
-        locationId: data.locationId,
-        serviceLocation: data.serviceLocation
-      },
-      include: {
-        location: true
+    try {
+      let locationId = null;
+
+      if (data.address) {
+        const location = await findOrCreateLocation(data);
+        locationId = location.id;
       }
-    });
+
+      const post = await prisma.post.update({
+        where: {
+          id: postId
+        },
+        data: {
+          serviceLocation: data.serviceLocation,
+          locationId: locationId
+        },
+        include: {
+          location: true,
+        }
+      });
+
+      return post;
+    } catch (error) {
+      console.error('Error creating post with location:', error);
+      throw error;
+    }
   }
 
   static async updatePricing(postId: string, data: UpdatePostData['pricing']) {

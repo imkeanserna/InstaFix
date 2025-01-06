@@ -1,14 +1,15 @@
+import ServiceNavigation from "@/components/posts/service-navigation";
 
 export const runtime = "edge";
 
 export default function Page() {
   return (
-    <div className="flex justify-between">
+    <div className="">
       <div>
         <p>Welcome to about your location</p>
       </div>
       <div>
-        <p>sadasd</p>
+        <ServiceNavigation />
       </div>
     </div>
   );
