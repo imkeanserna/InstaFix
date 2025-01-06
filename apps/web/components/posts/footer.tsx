@@ -72,6 +72,10 @@ export default function Footer() {
         type: 'location',
         getData: (formData) => formData.location!
       },
+      'special-features': {
+        type: 'basicInfo',
+        getData: (formData) => formData.basicInfo!
+      },
       'price': {
         type: 'pricing',
         getData: (formData) => formData.pricing!

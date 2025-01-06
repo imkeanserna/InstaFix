@@ -1,14 +1,15 @@
+import ServiceOffer from "@/components/posts/service-offer";
 
 export const runtime = "edge";
 
 export default function Page() {
   return (
-    <div className="flex justify-between">
+    <div className="">
       <div>
         <p>Welcome to about your special feature</p>
       </div>
       <div>
-        <p>sadasd</p>
+        <ServiceOffer />
       </div>
     </div>
   );

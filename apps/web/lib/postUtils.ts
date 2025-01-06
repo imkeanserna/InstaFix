@@ -56,8 +56,6 @@ type UpdatePostResponse = {
 export async function updatePost({ type, data, postId }: UpdatePost) {
   const user = await currentUser();
 
-  console.log("PASSSSSSSSSSSSS PARAEMTERSD")
-  console.log(type, data, user?.id)
   try {
     const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/create-post/${postId}`, {
       method: 'PATCH',
@@ -71,16 +69,11 @@ export async function updatePost({ type, data, postId }: UpdatePost) {
       })
     });
 
-    console.log("RPOSESSSSSSSSSSSSSSSSPONSE")
-    console.log(response)
     if (!response.ok) {
       throw new Error('Failed to fetch messages');
     }
 
     const result: UpdatePostResponse = await response.json();
-
-    console.log("RESSSSSSSSSSSSSSSSSSSSSSULT")
-    console.log(result)
 
     if (!result.success || !result.data) {
       throw new Error(result.error || 'Failed to get response from chat AI');

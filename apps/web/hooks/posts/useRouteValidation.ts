@@ -26,7 +26,8 @@ export const useRouteValidation = (currentStep: string) => {
           targetAudience !== undefined
         );
       case 'special-features':
-        return Array.isArray(data?.features) && data.features.length > 0;
+        const { servicesIncluded } = data?.basicInfo || [];
+        return Boolean(servicesIncluded?.length > 0);
       case 'photos':
         return Array.isArray(data?.photos) && data.photos.length >= 1;
       case 'title':
