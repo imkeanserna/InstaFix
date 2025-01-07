@@ -32,9 +32,11 @@ export const useRouteValidation = (currentStep: string) => {
         const { media } = data || [];
         return Boolean(media?.length > 0);
       case 'title':
-        return Boolean(data?.title && data.title.length >= 10);
+        const { title } = data.basicInfo || {};
+        return Boolean(title && title.length >= 5 && title?.length <= 32);
       case 'description':
-        return Boolean(data?.description && data.description.length >= 50);
+        const { description } = data.basicInfo || {};
+        return Boolean(description && description.length >= 50 && description?.length <= 500);
       case 'price':
         return Boolean(data?.price && data.price > 0);
       case 'payment-methods':

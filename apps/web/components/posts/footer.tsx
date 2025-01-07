@@ -82,6 +82,14 @@ export default function Footer() {
           media: formData.media || []
         })
       },
+      'title': {
+        type: 'basicInfo',
+        getData: (formData) => formData.basicInfo!
+      },
+      'description': {
+        type: 'basicInfo',
+        getData: (formData) => formData.basicInfo!
+      },
       'price': {
         type: 'pricing',
         getData: (formData) => formData.pricing!
