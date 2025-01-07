@@ -1,6 +1,8 @@
 import { prisma } from '@/server/index';
-import { UpdatePostData } from '@repo/types';
+import { PostMedia, UpdatePostData } from '@repo/types';
 import { findOrCreateLocation } from './location';
+import { deleteFilesFromR2, getCurrentMediaUrls, uploadMultipleFiles } from '../media/mediaUpload';
+import { Media } from '@prisma/client/edge';
 
 export const runtime = 'edge'
 
@@ -53,19 +55,39 @@ export class PostUpdateHandlers {
     postId: string,
     data: UpdatePostData['media']
   ) {
-    return prisma.post.update({
-      where: { id: postId },
-      data: {
-        media: {
-          deleteMany: {},
-          create: data.media.map(media => ({
-            url: media.url,
-            type: media.type
-          }))
-        }
-      },
-      include: {
-        media: true
+    if (!data.media?.length) {
+      throw new Error('No media files provided');
+    }
+    return await prisma.$transaction(async (tx) => {
+      try {
+        // Get current media URLs before updating
+        const currentMediaUrls: Media['url'][] = await getCurrentMediaUrls(postId);
+
+        const uploadedMedia: PostMedia[] = await uploadMultipleFiles(data.media);
+
+        const updatedPost = await tx.post.update({
+          where: { id: postId },
+          data: {
+            media: {
+              deleteMany: {},
+              create: uploadedMedia.map(media => ({
+                url: media.url,
+                type: media.type
+              }))
+            }
+          },
+          include: {
+            media: true
+          }
+        });
+
+        // Delete old files from R2 after successful database update
+        await deleteFilesFromR2(currentMediaUrls);
+
+        return updatedPost;
+      } catch (error) {
+        console.error('Error updating post media:', error);
+        throw error;
       }
     });
   }

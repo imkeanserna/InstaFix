@@ -76,15 +76,15 @@ export default function Footer() {
         type: 'basicInfo',
         getData: (formData) => formData.basicInfo!
       },
-      'price': {
-        type: 'pricing',
-        getData: (formData) => formData.pricing!
-      },
       'photos': {
         type: 'media',
         getData: (formData) => ({
           media: formData.media || []
         })
+      },
+      'price': {
+        type: 'pricing',
+        getData: (formData) => formData.pricing!
       },
     };
 

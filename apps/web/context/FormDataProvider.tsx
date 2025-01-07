@@ -9,7 +9,7 @@ export type FormDataType = {
   pricing: PostPricing;
   location: PostLocation;
   serviceEngagement: PostServiceEngagement[];
-  media: PostMedia[];
+  media: File[];
 };
 
 type FormContextType = {

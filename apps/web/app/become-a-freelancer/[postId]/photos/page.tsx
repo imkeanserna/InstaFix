@@ -1,14 +1,17 @@
+import { AddServicePhoto } from "@/components/posts/addServicePhoto";
 
 export const runtime = "edge";
 
 export default function Page() {
   return (
-    <div className="flex justify-between">
+    <div className="">
       <div>
         <p>Welcome to about your photos</p>
       </div>
       <div>
-        <p>sadasd</p>
+        <AddServicePhoto
+          allowedFileTypes={['image/jpeg', 'image/png', 'image/jpg']}
+        />
       </div>
     </div>
   );
