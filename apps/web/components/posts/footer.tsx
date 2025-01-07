@@ -39,7 +39,7 @@ export default function Footer() {
   const postId = pathname?.split('/')[2];
   const currentStep = pathname.split('/').pop() || '';
   const { isValid } = useRouteValidation(currentStep);
-  const isButtonEnabled = currentStep === 'about-your-service' ? true : isValid;
+  const isButtonEnabled = ["about-your-service", "finish-setup"].includes(currentStep) || isValid;
   const [isNavigating, setIsNavigating] = useState(false);
 
   const handleNext = async () => {
@@ -87,6 +87,10 @@ export default function Footer() {
         getData: (formData) => formData.basicInfo!
       },
       'description': {
+        type: 'basicInfo',
+        getData: (formData) => formData.basicInfo!
+      },
+      'instant-book': {
         type: 'basicInfo',
         getData: (formData) => formData.basicInfo!
       },

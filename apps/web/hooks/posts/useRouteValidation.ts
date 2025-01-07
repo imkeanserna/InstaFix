@@ -37,6 +37,9 @@ export const useRouteValidation = (currentStep: string) => {
       case 'description':
         const { description } = data.basicInfo || {};
         return Boolean(description && description.length >= 50 && description?.length <= 500);
+      case 'instant-book':
+        const { requestConfirmation } = data?.basicInfo || [];
+        return Boolean(requestConfirmation !== undefined);
       case 'price':
         return Boolean(data?.price && data.price > 0);
       case 'payment-methods':

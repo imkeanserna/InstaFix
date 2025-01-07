@@ -1,4 +1,4 @@
-import ServiceEngagement from "@/components/posts/service-engagement";
+import { ServiceEngagement } from "@/components/posts/service-engagement";
 
 export const runtime = "edge";
 
@@ -9,7 +9,10 @@ export default function Page() {
         <p>Welcome to about your privacy-type</p>
       </div>
       <div>
-        <ServiceEngagement />
+        <ServiceEngagement
+          title="Select Service Engagement Type"
+          subtitle="Choose how you want to engage with your clients"
+        />
       </div>
     </div>
   );

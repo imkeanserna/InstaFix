@@ -2,11 +2,12 @@
 
 import { useFormData } from "@/context/FormDataProvider";
 import { useRouteValidation } from "@/hooks/posts/useRouteValidation";
-import { EngagementType } from "@prisma/client/edge";
-import { ToggleGroup, ToggleGroupItem } from "@repo/ui/components/ui/toggle-group";
+import { EngagementType, RequestConfirmationType } from "@prisma/client/edge";
+import { Calendar, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ToggleGroupSelection } from "@repo/ui/components/ui/toggle-group-selection";
 
-export default function ServiceEngagement() {
+export function ServiceEngagement({ title, subtitle }: { title: string, subtitle: string }) {
   const engagementTypes = [
     {
       value: EngagementType.ONE_TIME_PROJECT,
@@ -29,6 +30,7 @@ export default function ServiceEngagement() {
       description: "Tailor services to fit client-specific needs",
     },
   ];
+
   const [selectedType, setSelectedType] = useState<EngagementType | null>(null);
   const { formData, updateFormData } = useFormData();
   const { setStepValidity } = useRouteValidation('privacy-type');
@@ -44,24 +46,61 @@ export default function ServiceEngagement() {
   };
 
   return (
-    <div>
-      <ToggleGroup
-        type="single"
-        value={selectedType || ''}
-        onValueChange={handleTypeSelect}
-        className="flex flex-col gap-2"
-      >
-        {engagementTypes.map(({ value, label, description }) => (
-          <ToggleGroupItem
-            key={value}
-            value={value}
-            className="w-full py-6 rounded-lg border-2 border-gray-300 transition-all hover:border-yellow-500 data-[state=on]:border-yellow-500 data-[state=on]:bg-yellow-100"
-          >
-            <p className="text-sm font-medium">{label}</p>
-            <p className="text-xs text-gray-500">{description}</p>
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-lg font-medium">{title}</h2>
+        <p className="text-sm text-gray-500">{subtitle}</p>
+      </div>
+      <ToggleGroupSelection
+        options={engagementTypes}
+        selectedValue={selectedType}
+        onSelect={handleTypeSelect}
+      />
     </div>
+  );
+}
+
+export default function RequestConfirmation({ title, subtitle }: { title: string, subtitle: string }) {
+  const requestConfirmationTypes = [
+    {
+      value: RequestConfirmationType.INSTANT_BOOK,
+      label: "Use Instant Book",
+      description: "Client can book automatically",
+      icon: <Clock className="w-6 h-6 text-yellow-500" />
+    },
+    {
+      value: RequestConfirmationType.APPROVE_DECLINE,
+      label: "Approve/Decline requests",
+      description: "Client must ask for approval or decline",
+      icon: <Calendar className="w-6 h-6 text-yellow-500" />
+    }
+  ];
+
+  const [selectedRequest, setSelectedRequest] = useState<RequestConfirmationType | null>(null);
+  const { formData, updateFormData } = useFormData();
+  const { setStepValidity } = useRouteValidation('instant-book');
+
+  useEffect(() => {
+    setStepValidity(formData);
+  }, [formData, setStepValidity]);
+
+  const handleRequestSelect = (value: RequestConfirmationType) => {
+    const newValue = value === selectedRequest ? null : value;
+    setSelectedRequest(newValue);
+    if (newValue) {
+      updateFormData({
+        basicInfo: {
+          requestConfirmation: newValue
+        }
+      });
+    }
+  };
+
+  return (
+    <ToggleGroupSelection
+      options={requestConfirmationTypes}
+      selectedValue={selectedRequest}
+      onSelect={handleRequestSelect}
+    />
   );
 }
