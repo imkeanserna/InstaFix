@@ -9,10 +9,7 @@ export default function Page() {
         <p>Welcome to about your instant book</p>
       </div>
       <div>
-        <RequestConfirmation
-          title="How would you like to handle bookings?"
-          subtitle="Choose how you want to manage incoming booking requests"
-        />
+        <RequestConfirmation />
       </div>
     </div>
   );

@@ -1,14 +1,15 @@
+import { PricingSetup } from "@/components/posts/pricing-setup";
 
 export const runtime = "edge";
 
 export default function Page() {
   return (
-    <div className="flex justify-between">
+    <div className="">
       <div>
         <p>Welcome to about your price</p>
       </div>
       <div>
-        <p>sadasd</p>
+        <PricingSetup />
       </div>
     </div>
   );

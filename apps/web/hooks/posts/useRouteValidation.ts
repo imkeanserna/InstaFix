@@ -41,7 +41,8 @@ export const useRouteValidation = (currentStep: string) => {
         const { requestConfirmation } = data?.basicInfo || [];
         return Boolean(requestConfirmation !== undefined);
       case 'price':
-        return Boolean(data?.price && data.price > 0);
+        const { pricingType, hourlyRate, fixedPrice } = data?.pricing || {};
+        return Boolean(pricingType !== undefined && (hourlyRate || fixedPrice));
       case 'payment-methods':
         return Array.isArray(data?.paymentMethods) && data.paymentMethods.length > 0;
       default:

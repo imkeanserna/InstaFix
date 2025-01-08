@@ -60,7 +60,7 @@ export function ServiceEngagement({ title, subtitle }: { title: string, subtitle
   );
 }
 
-export default function RequestConfirmation({ title, subtitle }: { title: string, subtitle: string }) {
+export default function RequestConfirmation() {
   const requestConfirmationTypes = [
     {
       value: RequestConfirmationType.INSTANT_BOOK,
