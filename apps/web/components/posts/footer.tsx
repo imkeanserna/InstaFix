@@ -39,7 +39,8 @@ export default function Footer() {
   const postId = pathname?.split('/')[2];
   const currentStep = pathname.split('/').pop() || '';
   const { isValid } = useRouteValidation(currentStep);
-  const isButtonEnabled = ["about-your-service", "finish-setup"].includes(currentStep) || isValid;
+  const isButtonEnabled = ["about-your-service", "finish-setup", "payment-methods"].includes(currentStep) || isValid;
+  const isPaymentStep = ["payment-methods"].includes(currentStep);
   const [isNavigating, setIsNavigating] = useState(false);
 
   const handleNext = async () => {
@@ -163,6 +164,7 @@ export default function Footer() {
         <Button
           onClick={handleNext}
           disabled={!isButtonEnabled || isUpdating || isNavigating}
+          variant={isPaymentStep ? "outline" : "default"}
         >
           {(isUpdating || isNavigating) ? (
             <>
@@ -171,8 +173,16 @@ export default function Footer() {
             </>
           ) : (
             <>
-              Next
-              <ChevronRight className="w-4 h-4 ml-2" />
+              {isPaymentStep ?
+                <>
+                  Skip
+                </>
+                :
+                <>
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </>
+              }
             </>
           )}
         </Button>

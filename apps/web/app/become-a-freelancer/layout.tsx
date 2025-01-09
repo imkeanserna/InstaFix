@@ -19,7 +19,7 @@ export default function RootLayout({
     <div className="h-screen flex flex-col justify-between">
       <Header />
       {/* Content */}
-      <div className="flex-1 p-4">
+      <div className="flex-1">
         {children}
       </div>
       <Footer />

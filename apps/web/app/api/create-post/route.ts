@@ -15,13 +15,8 @@ export async function POST(request: NextRequest) {
 
     if (!userId) return errorResponse('User Id is required', undefined, 400);
 
-    console.log("CHECKKKKKKKKKKKKKK POINT 0")
-    console.log(userId)
-
     const post = await draftPost(userId);
 
-    console.log("CHECCCCCCCCCCCCCCCCKPOIT 1")
-    console.log(post)
     return NextResponse.json({
       success: true,
       data: {
