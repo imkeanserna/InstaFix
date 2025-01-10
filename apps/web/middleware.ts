@@ -31,8 +31,23 @@ export default auth((req) => {
 });
 
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname === '/become-a-freelancer') {
-    return NextResponse.redirect(new URL('/become-a-freelancer/overview', request.url))
+  if (request.nextUrl.pathname.startsWith('/become-a-freelancer')) {
+    try {
+      const user = await currentUser();
+
+      // If no user is logged in, redirect to login
+      if (!user) {
+        return NextResponse.redirect(new URL('/auth/login', request.url));
+      }
+
+      // Handle the specific /become-a-freelancer redirect
+      if (request.nextUrl.pathname === '/become-a-freelancer') {
+        return NextResponse.redirect(new URL('/become-a-freelancer/overview', request.url));
+      }
+    } catch (error) {
+      console.error('[Auth Error]', error);
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
   }
 
   const response = NextResponse.next();
@@ -110,5 +125,8 @@ const authRoutes = ["/auth/login", "/auth/sign-up"];
 const profileRoute = "/profile";
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/become-a-freelancer/:path*"
+  ],
 };

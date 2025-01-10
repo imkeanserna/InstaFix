@@ -63,6 +63,7 @@ export async function getPostById(userId: string, postId: string) {
           },
         },
         user: true,
+        media: true
       },
     });
     return post;

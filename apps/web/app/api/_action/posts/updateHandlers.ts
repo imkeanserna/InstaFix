@@ -55,7 +55,7 @@ export class PostUpdateHandlers {
     postId: string,
     data: UpdatePostData['media']
   ) {
-    if (!data.media?.length) {
+    if (!data.files?.length && !data.coverPhotoIndex) {
       throw new Error('No media files provided');
     }
     return await prisma.$transaction(async (tx) => {
@@ -63,7 +63,7 @@ export class PostUpdateHandlers {
         // Get current media URLs before updating
         const currentMediaUrls: Media['url'][] = await getCurrentMediaUrls(postId);
 
-        const uploadedMedia: PostMedia[] = await uploadMultipleFiles(data.media);
+        const uploadedMedia: PostMedia[] = await uploadMultipleFiles(data.files);
 
         const updatedPost = await tx.post.update({
           where: { id: postId },
@@ -74,7 +74,8 @@ export class PostUpdateHandlers {
                 url: media.url,
                 type: media.type
               }))
-            }
+            },
+            coverPhoto: uploadedMedia[data.coverPhotoIndex].url
           },
           include: {
             media: true

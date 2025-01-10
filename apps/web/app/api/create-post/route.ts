@@ -1,21 +1,18 @@
 import { errorResponse } from "@/lib/errorResponse";
 import { NextRequest, NextResponse } from "next/server";
 import { draftPost } from "../_action/posts/getPosts";
+import { currentUser } from "@/lib";
+import { User } from "next-auth";
 
 export const runtime = "edge";
 
-interface IRequestBody {
-  userId?: string;
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as Partial<IRequestBody>;
-    const { userId } = body;
+    const user: User | undefined = await currentUser();
 
-    if (!userId) return errorResponse('User Id is required', undefined, 400);
+    if (!user || !user?.id) return errorResponse('User Id is required', undefined, 400);
 
-    const post = await draftPost(userId);
+    const post = await draftPost(user.id);
 
     return NextResponse.json({
       success: true,

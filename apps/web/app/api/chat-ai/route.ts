@@ -7,6 +7,7 @@ import { prisma } from '@/server';
 import { Message } from "@prisma/client/edge"
 import { addMessage, cleanupOldMessages, getMessage, getMessages } from '../_action/ai/messageQueries';
 import { fetchChatGroq } from '../_action/ai/fetchPrediction';
+import { currentUser } from '@/lib';
 
 interface IRequestBody {
   question: string;
@@ -15,8 +16,9 @@ interface IRequestBody {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    const user = await currentUser();
     const body = await request.json() as Partial<IRequestBody>;
-    const { question, userId } = body;
+    const { question } = body;
 
     if (!question) {
       return errorResponse('Question is required', undefined, 400);
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!sessionId) {
       const newSession = await prisma.chatSession.create({
         data: {
-          userId: userId || 'guest',
+          userId: user?.id || 'guest',
         },
       });
       sessionId = newSession.id;
@@ -148,14 +150,14 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const userId = request.nextUrl.searchParams.get('userId');
-    if (!userId) {
+    const user = await currentUser();
+    if (!user || !user.id) {
       return NextResponse.json(
         { success: false, message: 'User Id is required' },
         { status: 400 }
       );
     }
-    const deletedCount = await cleanupOldMessages({ userId });
+    const deletedCount = await cleanupOldMessages({ userId: user.id });
     return NextResponse.json({
       success: true,
       deletedCount
