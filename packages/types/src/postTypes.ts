@@ -44,7 +44,10 @@ export type UpdatePostData = {
   tags: { tags: PostWithTag[] };
   serviceEngagement: { serviceEngagement: PostServiceEngagement[] };
   basicInfo: PostBasicInfo;
-  media: { media: File[] };
+  media: {
+    files: File[],
+    coverPhotoIndex: number
+  };
   location: PostLocation;
   pricing: PostPricing;
 }

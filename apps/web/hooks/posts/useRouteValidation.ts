@@ -29,8 +29,8 @@ export const useRouteValidation = (currentStep: string) => {
         const { servicesIncluded } = data?.basicInfo || [];
         return Boolean(servicesIncluded?.length > 0);
       case 'photos':
-        const { media } = data || [];
-        return Boolean(media?.length > 0);
+        const { files, coverPhotoIndex } = data.media || [];
+        return Boolean(files?.length > 0 && coverPhotoIndex !== undefined);
       case 'title':
         const { title } = data.basicInfo || {};
         return Boolean(title && title.length >= 5 && title?.length <= 32);

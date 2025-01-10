@@ -12,16 +12,12 @@ type PostResponse = {
 }
 
 export async function draftPost() {
-  const user = await currentUser();
   try {
     const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/create-post`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        userId: user?.id
-      })
+      }
     });
 
     if (!response.ok) {
@@ -53,16 +49,14 @@ type UpdatePostResponse = {
 }
 
 export async function updatePost({ type, data, postId }: UpdatePost) {
-  const user = await currentUser();
-
   try {
-    if (type === 'media' && data.media) {
+    if (type === 'media' && data.files.length > 0 && data.coverPhotoIndex !== undefined) {
       const formData = new FormData();
 
       formData.append('type', type);
-      formData.append('userId', user?.id || '');
+      formData.append('coverPhotoIndex', data.coverPhotoIndex);
 
-      data.media.forEach((file: File) => {
+      data.files.forEach((file: File) => {
         formData.append('files', file);
       });
 
@@ -88,8 +82,7 @@ export async function updatePost({ type, data, postId }: UpdatePost) {
         },
         body: JSON.stringify({
           type: type,
-          data: data,
-          userId: user?.id
+          data: data
         })
       });
 
@@ -104,6 +97,29 @@ export async function updatePost({ type, data, postId }: UpdatePost) {
       }
       return result.data;
     }
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function getPreviewPost(postId: string) {
+  try {
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/create-post/${postId}`, {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to creating post');
+    }
+
+    const result: PostResponse = await response.json();
+    if (!result.success) {
+      throw new Error("Failed to create post");
+    }
+    return result.data;
   } catch (error) {
     return null;
   }

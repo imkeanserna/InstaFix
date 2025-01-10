@@ -41,6 +41,7 @@ export default function Footer() {
   const { isValid } = useRouteValidation(currentStep);
   const isButtonEnabled = ["about-your-service", "finish-setup", "payment-methods"].includes(currentStep) || isValid;
   const isPaymentStep = ["payment-methods"].includes(currentStep);
+  const isPublishFinished = currentStep === 'publish-celebration';
   const [isNavigating, setIsNavigating] = useState(false);
 
   const handleNext = async () => {
@@ -80,7 +81,8 @@ export default function Footer() {
       'photos': {
         type: 'media',
         getData: (formData) => ({
-          media: formData.media || []
+          files: formData.media?.files || [],
+          coverPhotoIndex: formData.media?.coverPhotoIndex || 0
         })
       },
       'title': {
@@ -155,37 +157,42 @@ export default function Footer() {
               : `/become-a-freelancer/${postId}/${prevStep}`
             }
           >
-            <Button variant="ghost">
-              <ChevronLeft className="w-4 h-4 mr-2" />
+            <Button variant="ghost"
+              className='group duration-200 underline rounded-xl px-6 py-6 transform active:scale-95'
+            >
+              <ChevronLeft className="w-4 h-4 mr-2 transform transition-transform group-hover:-translate-x-1 active:-translate-x-0.5" />
               Back
             </Button>
           </Link>
         )}
-        <Button
-          onClick={handleNext}
-          disabled={!isButtonEnabled || isUpdating || isNavigating}
-          variant={isPaymentStep ? "outline" : "default"}
-        >
-          {(isUpdating || isNavigating) ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              {isNavigating ? 'Saving...' : 'Saving...'}
-            </>
-          ) : (
-            <>
-              {isPaymentStep ?
-                <>
-                  Skip
-                </>
-                :
-                <>
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </>
-              }
-            </>
-          )}
-        </Button>
+        {!isPublishFinished &&
+          <Button
+            onClick={handleNext}
+            disabled={!isButtonEnabled || isUpdating || isNavigating}
+            variant={isPaymentStep ? "outline" : "default"}
+            className='group duration-200 rounded-xl px-6 py-6 transform active:scale-95'
+          >
+            {(isUpdating || isNavigating) ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {isNavigating ? 'Saving...' : 'Saving...'}
+              </>
+            ) : (
+              <>
+                {isPaymentStep ?
+                  <>
+                    Skip
+                  </>
+                  :
+                  <>
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-2 transform transition-transform group-hover:translate-x-1 active:translate-x-0.5" />
+                  </>
+                }
+              </>
+            )}
+          </Button>
+        }
       </div>
     </div>
   );

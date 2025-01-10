@@ -78,7 +78,10 @@ export function AddServicePhoto({
         formData.append('files', file);
       });
       updateFormData({
-        media: [...files, ...validFiles]
+        media: {
+          files: [...files, ...validFiles],
+          coverPhotoIndex: coverPhotoIndex
+        }
       });
     }
 
