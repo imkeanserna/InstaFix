@@ -96,7 +96,10 @@ export function AddServicePhoto({
     setFiles(newFiles);
 
     updateFormData({
-      media: newFiles
+      media: {
+        files: newFiles,
+        coverPhotoIndex: coverPhotoIndex
+      }
     });
 
     if (coverPhotoIndex === indexToRemove) {

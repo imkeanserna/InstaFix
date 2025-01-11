@@ -11,7 +11,7 @@ export default function Header() {
   const isPublishFinished = (clientPathname)?.includes('publish-celebration');
 
   return (
-    <div className='fixed top-0 left-0 right-0'>
+    <div className='fixed top-0 left-0 right-0 bg-white'>
       {isAboutServicePage ?
         <div className=" flex justify-between p-4">
           <h1>Become a Freelancer</h1>

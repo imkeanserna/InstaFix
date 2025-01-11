@@ -3,31 +3,35 @@
 import { useFormData } from "@/context/FormDataProvider";
 import { useRouteValidation } from "@/hooks/posts/useRouteValidation";
 import { EngagementType, RequestConfirmationType } from "@prisma/client/edge";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, MessagesSquare, RefreshCcw, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ToggleGroupSelection } from "@repo/ui/components/ui/toggle-group-selection";
 
-export function ServiceEngagement({ title, subtitle }: { title: string, subtitle: string }) {
+export function ServiceEngagement() {
   const engagementTypes = [
     {
       value: EngagementType.ONE_TIME_PROJECT,
       label: "One Time Project",
-      description: "Deliver a specific task or project",
+      description: "Deliver a specific task or project with a clear scope and timeline. Perfect for well-defined objectives.",
+      icon: <Clock className="w-6 h-6 text-yellow-500" />
     },
     {
       value: EngagementType.ONGOING_COLLABORATION,
       label: "Ongoing Collaboration",
-      description: "Work on regular or recurring tasks",
+      description: "Work together regularly on recurring tasks or continuous projects. Ideal for long-term partnerships.",
+      icon: <RefreshCcw className="w-6 h-6 text-yellow-500" />
     },
     {
       value: EngagementType.CONSULTATION,
       label: "Consultation",
-      description: "Provide expert advice or guidance",
+      description: "Get expert advice and guidance for your specific needs. Perfect for strategic planning and problem-solving.",
+      icon: <MessagesSquare className="w-6 h-6 text-yellow-500" />
     },
     {
       value: EngagementType.CUSTOM_ARRANGEMENT,
       label: "Custom Arrangement",
-      description: "Tailor services to fit client-specific needs",
+      description: "Create a tailored service package that perfectly matches your unique requirements and preferences.",
+      icon: <Settings className="w-6 h-6 text-yellow-500" />
     },
   ];
 
@@ -46,17 +50,13 @@ export function ServiceEngagement({ title, subtitle }: { title: string, subtitle
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-medium">{title}</h2>
-        <p className="text-sm text-gray-500">{subtitle}</p>
-      </div>
-      <ToggleGroupSelection
-        options={engagementTypes}
-        selectedValue={selectedType}
-        onSelect={handleTypeSelect}
-      />
-    </div>
+    <ToggleGroupSelection
+      options={engagementTypes}
+      selectedValue={selectedType}
+      onSelect={handleTypeSelect}
+      toggleGroupClassName="grid-cols-1 md:grid-cols-2 gap-4"
+      itemClassName="hover:scale-[1.02] transition-transform duration-200"
+    />
   );
 }
 

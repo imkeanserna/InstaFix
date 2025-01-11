@@ -61,6 +61,7 @@ export default function LocationNavigation({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [mapLibLoaded, setMapLibLoaded] = useState(false);
   const [isMapLoading, setIsMapLoading] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const getUserLocation = (): Promise<LatLng> => {
     return new Promise((resolve, reject) => {
@@ -161,100 +162,120 @@ export default function LocationNavigation({
   const initializeMap = useCallback(async () => {
     if (!window.maplibregl || !mapContainerRef.current || isInitializedRef.current) return;
 
+    const container = mapContainerRef.current;
+    if (!(container instanceof HTMLElement)) {
+      setError('Map container not found');
+      return;
+    }
+
     destroyMap();
 
-    // Default Location if user does not have a location
-    let center: LatLng = { lat: 40.7128, lng: -74.0060 };
-    let address = "New York City, New York, USA";
-
     try {
-      center = await getUserLocation();
+      // Default Location if user does not have a location
+      let center: LatLng = { lat: 40.7128, lng: -74.0060 };
+      let address = "New York City, New York, USA";
+
       try {
-        address = await getAddressFromCoords(center);
+        center = await getUserLocation();
+        try {
+          address = await getAddressFromCoords(center);
+          setSearchQuery(address);
+          setSelectedLocation({
+            address: address,
+            lat: center.lat,
+            lng: center.lng
+          });
+        } catch (addressError) {
+          const coordString = `${center.lat.toFixed(6)}, ${center.lng.toFixed(6)}`;
+          setSearchQuery(coordString);
+          setSelectedLocation({
+            address: coordString,
+            lat: center.lat,
+            lng: center.lng
+          });
+        }
+      } catch (locationError) {
         setSearchQuery(address);
         setSelectedLocation({
           address: address,
           lat: center.lat,
           lng: center.lng
         });
-      } catch (addressError) {
-        setSearchQuery(`${center.lat.toFixed(6)}, ${center.lng.toFixed(6)}`);
-        setSelectedLocation({
-          address: `${center.lat.toFixed(6)}, ${center.lng.toFixed(6)}`,
-          lat: center.lat,
-          lng: center.lng
-        });
       }
-    } catch (locationError) {
-      setSearchQuery(address);
-      setSelectedLocation({
-        address: address,
-        lat: center.lat,
-        lng: center.lng
-      });
-    }
 
-    const mapStyle = maptilerKey
-      ? `https://api.maptiler.com/maps/streets/style.json?key=${maptilerKey}`
-      : {
-        version: 8,
-        sources: {
-          'osm': {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '&copy; OpenStreetMap Contributors',
+      const mapStyle = maptilerKey
+        ? `https://api.maptiler.com/maps/streets/style.json?key=${maptilerKey}`
+        : {
+          version: 8,
+          sources: {
+            'osm': {
+              type: 'raster',
+              tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+              tileSize: 256,
+              attribution: '&copy; OpenStreetMap Contributors',
+            },
           },
-        },
-        layers: [{
-          id: 'osm',
-          type: 'raster',
-          source: 'osm',
-          minzoom: 0,
-          maxzoom: 19
-        }]
-      };
+          layers: [{
+            id: 'osm',
+            type: 'raster',
+            source: 'osm',
+            minzoom: 0,
+            maxzoom: 19
+          }]
+        };
 
-    const map = new window.maplibregl.Map({
-      container: mapContainerRef.current,
-      style: mapStyle as any,
-      center: [center.lng, center.lat],
-      zoom: 13
-    });
+      const map = new window.maplibregl.Map({
+        container,
+        style: mapStyle as maplibregl.StyleSpecification,
+        center: [center.lng, center.lat],
+        zoom: 13
+      });
 
-    map.on('error', (e) => {
-      console.error('Map error:', e);
-      setError('An error occurred with the map');
-    });
+      // Wait for the map to load before adding controls and markers
+      map.on('load', () => {
+        // Add controls after map is loaded
+        map.addControl(new window.maplibregl.FullscreenControl({
+          container
+        }), 'top-right');
 
-    map.on('load', () => {
-      console.log('Map loaded successfully');
+        map.addControl(new window.maplibregl.NavigationControl(), 'top-right');
+
+        // Add marker after map is loaded
+        const marker = new window.maplibregl.Marker({
+          draggable: true,
+          color: '#FF0000'
+        })
+          .setLngLat([center.lng, center.lat])
+          .addTo(map);
+
+        marker.on('dragend', () => {
+          const lngLat = marker.getLngLat();
+          updateLocationFromLatLng({ lat: lngLat.lat, lng: lngLat.lng });
+        });
+
+        markerRef.current = marker;
+        setIsMapLoading(false);
+      });
+
+      map.on('click', (e: maplibregl.MapMouseEvent) => {
+        if (markerRef.current) {
+          updateLocationFromLatLng({ lat: e.lngLat.lat, lng: e.lngLat.lng });
+          markerRef.current.setLngLat([e.lngLat.lng, e.lngLat.lat]);
+        }
+      });
+
+      map.on('error', (e) => {
+        setError('An error occurred with the map');
+      });
+
+      mapRef.current = map;
+      isInitializedRef.current = true;
+
+    } catch (err) {
+      setError('Failed to initialize map');
       setIsMapLoading(false);
-    });
-
-    map.addControl(new window.maplibregl.NavigationControl(), 'top-right');
-
-    const marker = new window.maplibregl.Marker({
-      draggable: true,
-      color: '#FF0000'
-    })
-      .setLngLat([center.lng, center.lat])
-      .addTo(map);
-
-    marker.on('dragend', () => {
-      const lngLat = marker.getLngLat();
-      updateLocationFromLatLng({ lat: lngLat.lat, lng: lngLat.lng });
-    });
-
-    map.on('click', (e: maplibregl.MapMouseEvent) => {
-      updateLocationFromLatLng({ lat: e.lngLat.lat, lng: e.lngLat.lng });
-      marker.setLngLat([e.lngLat.lng, e.lngLat.lat]);
-    });
-
-    mapRef.current = map;
-    markerRef.current = marker;
-    isInitializedRef.current = true;
-  }, [destroyMap, setSelectedLocation, maptilerKey]);
+    }
+  }, [destroyMap, getUserLocation, getAddressFromCoords, setSelectedLocation, maptilerKey]);
 
   useEffect(() => {
     loadMapLibreResources();
@@ -266,6 +287,18 @@ export default function LocationNavigation({
       initializeMap();
     }
   }, [mapLibLoaded, initializeMap]);
+
+  // Cleanup for fullscreen mode change
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   const debouncedSearch = useCallback(
     (() => {
@@ -384,13 +417,10 @@ export default function LocationNavigation({
   };
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle>Select Location</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="relative">
+    <div className="w-full">
+      <div className={`${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+        <div className={`space-y-4 ${isFullscreen ? 'h-full relative' : ''}`}>
+          <div className={`relative ${isFullscreen ? 'absolute top-0 left-0 right-0 z-10 px-4' : ''}`}>
             <div className="flex items-center space-x-2">
               <div className="relative flex-1">
                 <Input
@@ -398,19 +428,18 @@ export default function LocationNavigation({
                   placeholder="Search for a location..."
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10"
+                  className="p-8 pl-10 bg-white/90 backdrop-blur-sm rounded-lg"
                 />
                 <Search
-                  className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
                 />
                 {isLoading && (
-                  <div className="absolute right-3 top-2.5">
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                     <div className="animate-spin h-5 w-5 border-2 border-gray-500 border-t-transparent rounded-full"></div>
                   </div>
                 )}
               </div>
             </div>
-
             {searchResults.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
                 {searchResults.map((result, index) => (
@@ -430,11 +459,15 @@ export default function LocationNavigation({
             )}
           </div>
 
+          {/* Error Message */}
           {error && (
-            <div className="text-red-500">{error}</div>
+            <div className={`text-red-500 ${isFullscreen ? 'absolute top-16 left-4 right-4 z-10' : ''}`}>
+              {error}
+            </div>
           )}
 
-          <div className="relative z-0">
+          {/* Map Container */}
+          <div className={`relative z-0 ${isFullscreen ? 'h-full' : ''}`}>
             {isMapLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg z-10">
                 <div className="flex flex-col items-center space-y-2">
@@ -445,22 +478,20 @@ export default function LocationNavigation({
             )}
             <div
               ref={mapContainerRef}
-              className="w-full h-96 rounded-lg shadow-md"
-              style={{ minHeight: '400px' }}
+              className={`w-full rounded-lg shadow-md ${isFullscreen ? 'h-full' : 'h-[600px]'}`}
             />
           </div>
 
+          {/* Selected Location Info */}
           {selectedLocation && (
-            <div className="p-4 bg-gray-50 rounded-md">
+            <div className={`p-4 bg-white/90 backdrop-blur-sm rounded-md ${isFullscreen ? 'absolute bottom-4 left-4 right-4 z-10' : ''
+              }`}>
               <h3 className="font-medium">Selected Location:</h3>
               <p className="text-gray-600">{selectedLocation.address}</p>
-              <p className="text-sm text-gray-500">
-                Lat: {selectedLocation.lat.toFixed(6)}, Lng: {selectedLocation.lng.toFixed(6)}
-              </p>
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

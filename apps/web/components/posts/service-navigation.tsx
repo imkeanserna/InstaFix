@@ -14,6 +14,8 @@ import LocationNavigation, { Location } from "../ui/locationNavigation";
 import { useFormData } from "@/context/FormDataProvider";
 import { useRouteValidation } from "@/hooks/posts/useRouteValidation";
 import { useEffect, useState } from "react";
+import { Check, Globe, Users, ArrowLeftRight, Navigation, MapPin } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
 
 export default function ServiceNavigation() {
   const { formData, updateFormData } = useFormData();
@@ -57,17 +59,50 @@ export default function ServiceNavigation() {
   };
 
   return (
-    <div>
-      <p>Welcome to service navigation</p>
-      <ServiceType
-        selectedType={selectedType}
-        setSelectedType={handleServiceTypeSelect}
-      />
-      <LocationNavigation
-        selectedLocation={selectedLocation}
-        setSelectedLocation={handleLocationSelect}
-        maptilerKey={process.env.MAPTILER_API_KEY}
-      />
+    <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 py-28">
+      <div className="max-w-5xl mx-auto space-y-8">
+        <div className="text-center space-y-3">
+          <h1 className="text-3xl font-bold text-gray-900">Welcome to Service Navigation</h1>
+          <p className="text-sm text-gray-600">Please select your service type and preferred location</p>
+        </div>
+
+        <div className="flex flex-col space-y-8">
+          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
+            <CardHeader className="border-b bg-gray-50">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Navigation className="w-4 h-4 text-blue-600" />
+                </div>
+                <CardTitle>Select Service Type</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ServiceType
+                selectedType={selectedType}
+                setSelectedType={handleServiceTypeSelect}
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
+            <CardHeader className="border-b bg-gray-50">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-blue-600" />
+                </div>
+                <CardTitle>Select Location</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-2">
+              <LocationNavigation
+                selectedLocation={selectedLocation}
+                setSelectedLocation={handleLocationSelect}
+                maptilerKey={process.env.MAPTILER_API_KEY}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
@@ -77,35 +112,63 @@ interface ServiceTypeProps {
   setSelectedType: (value: ServiceLocationType) => void;
 }
 
-export function ServiceType({ selectedType, setSelectedType }: ServiceTypeProps) {
-  const engagementTypes = [
-    {
-      value: ServiceLocationType.ONLINE,
-      label: "Online",
-      description: "Remote service",
-    },
-    {
-      value: ServiceLocationType.IN_PERSON,
-      label: "In-person",
-      description: "Local service",
-    },
-    {
-      value: ServiceLocationType.HYBRID,
-      label: "Hybrid",
-      description: "Remote and local service",
-    }
-  ];
+const engagementTypes = [
+  {
+    value: ServiceLocationType.ONLINE,
+    label: "Online",
+    description: "Remote service delivery",
+    icon: Globe,
+  },
+  {
+    value: ServiceLocationType.IN_PERSON,
+    label: "In-person",
+    description: "Face-to-face service delivery",
+    icon: Users,
+  },
+  {
+    value: ServiceLocationType.HYBRID,
+    label: "Hybrid",
+    description: "Combination of remote and in-person",
+    icon: ArrowLeftRight,
+  },
+]
 
+export function ServiceType({ selectedType, setSelectedType }: ServiceTypeProps) {
   return (
-    <Select value={selectedType || ''} onValueChange={setSelectedType}>
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Select a service type" />
-      </SelectTrigger>
-      <SelectContent>
-        {engagementTypes.map(({ value, label, description }) => (
-          <SelectItem key={value} value={value}>{`${label} (${description})`}</SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <Card className="w-full">
+      <CardHeader className="p-2">
+        <CardDescription>
+          Choose how you want to deliver your service
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-2">
+        <Select value={selectedType || ""} onValueChange={setSelectedType}>
+          <SelectTrigger className="w-full py-8 text-start">
+            <SelectValue placeholder="Select service type" />
+          </SelectTrigger>
+          <SelectContent>
+            {engagementTypes.map(({ value, label, description, icon: Icon }) => (
+              <SelectItem
+                key={value}
+                value={value}
+                className="flex flex-col items-start py-3 cursor-pointer "
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg border bg-muted">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="font-medium">{label}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {description}
+                    </div>
+                  </div>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </CardContent>
+    </Card>
   )
 }

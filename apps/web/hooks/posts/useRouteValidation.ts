@@ -22,7 +22,6 @@ export const useRouteValidation = (currentStep: string) => {
         const { skills, experience, targetAudience } = data?.basicInfo || {};
         return Boolean(
           skills?.length > 0 &&
-          experience?.length > 10 &&
           targetAudience !== undefined
         );
       case 'special-features':

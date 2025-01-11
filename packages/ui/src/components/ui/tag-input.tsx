@@ -55,7 +55,7 @@ export function TagInput({
       {label && <p className="mb-2">{label}</p>}
 
       <div className="relative">
-        <div className="min-h-12 w-full p-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 flex flex-wrap gap-2 items-center">
+        <div className="min-h-12 w-full bg-white p-2 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 flex flex-wrap gap-2 items-center">
           {tags.map((tag, index) => (
             <div
               key={index}
