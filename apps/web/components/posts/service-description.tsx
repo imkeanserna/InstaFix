@@ -7,6 +7,7 @@ import { DynamicInput } from "@repo/ui/components/ui/dynamic-input";
 import { TagInput } from "@repo/ui/components/ui/tag-input";
 import { TargetAudience } from "@prisma/client/edge";
 import { Briefcase, Building2, Heart, Rocket, Star, Tags, Users } from 'lucide-react';
+import { motion } from "framer-motion";
 
 export function ServiceDescription() {
   const { formData, updateFormData } = useFormData();
@@ -59,75 +60,185 @@ export function ServiceDescription() {
     }
   };
 
+  // For animation and it uses framer-motion
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+      scale: 0.98
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        damping: 20,
+        stiffness: 100
+      }
+    }
+  };
+
+  const iconVariants = {
+    hidden: { scale: 0.5, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        damping: 15,
+        stiffness: 200
+      }
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="grid gap-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+    <motion.div
+      className="max-w-4xl mx-auto p-6 space-y-8"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.div className="grid gap-8" variants={containerVariants}>
+        <motion.div
+          className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+          variants={cardVariants}
+          whileHover={{ scale: 1.01 }}
+        >
           <div className="flex items-center gap-3 mb-4">
-            <Tags className="h-5 w-5 text-purple-500" />
+            <motion.div variants={iconVariants}>
+              <Tags className="h-5 w-5 text-purple-500" />
+            </motion.div>
             <h3 className="font-semibold text-lg">Your skills</h3>
           </div>
-          <TagInput
-            label="What skills best describe your service?"
-            placeholder="Add skills..."
-            helperText="Press space or enter to add a skills"
-            className="w-full"
-            onChange={handleTagsChange}
-          />
-          <div className="mt-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <TagInput
+              label="What skills best describe your service?"
+              placeholder="Add skills..."
+              helperText="Press space or enter to add a skills"
+              className="w-full"
+              onChange={handleTagsChange}
+            />
+          </motion.div>
+          <motion.div
+            className="mt-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
             <div className="flex flex-wrap gap-2">
-              {suggestedSkills.map((skill) => (
-                <SuggestedSkill
+              {suggestedSkills.map((skill, index) => (
+                <motion.div
                   key={skill}
-                  skill={skill}
-                />
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.8 + index * 0.1 }}
+                >
+                  <SuggestedSkill skill={skill} />
+                </motion.div>
               ))}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+        <motion.div
+          className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+          variants={cardVariants}
+          whileHover={{ scale: 1.01 }}
+        >
           <div className="flex items-center gap-3 mb-4">
-            <Star className="h-5 w-5 text-yellow-500" />
-            <h3 className="font-semibold text-lg">Experience & Expertise <span className="text-sm text-gray-500">(Optional)</span></h3>
+            <motion.div variants={iconVariants}>
+              <Star className="h-5 w-5 text-yellow-500" />
+            </motion.div>
+            <h3 className="font-semibold text-lg">
+              Experience & Expertise <span className="text-sm text-gray-500">(Optional)</span>
+            </h3>
           </div>
-          <DynamicInput
-            value={experience}
-            onChange={(e) => setExperience(e.target.value)}
-            placeholder="Describe your experience in this field..."
-            className="w-full p-4 rounded-lg border border-gray-100 min-h-28"
-            onSubmit={() => { }}
-          />
-        </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <DynamicInput
+              value={experience}
+              onChange={(e) => setExperience(e.target.value)}
+              placeholder="Describe your experience in this field..."
+              className="w-full p-4 rounded-lg border border-gray-100 min-h-28"
+              onSubmit={() => { }}
+            />
+          </motion.div>
+        </motion.div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+        <motion.div
+          className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300"
+          variants={cardVariants}
+          whileHover={{ scale: 1.01 }}
+        >
           <div className="flex items-center gap-3 mb-4">
-            <Users className="h-5 w-5 text-blue-500" />
+            <motion.div variants={iconVariants}>
+              <Users className="h-5 w-5 text-blue-500" />
+            </motion.div>
             <h3 className="font-semibold text-lg">Target Audience</h3>
           </div>
-          <SelectTargetAudience
-            selectedTargetAudience={selectedTargetAudience}
-            setSelectedTargetAudience={handleTargetAudienceChange}
-          />
-        </div>
-      </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <SelectTargetAudience
+              selectedTargetAudience={selectedTargetAudience}
+              setSelectedTargetAudience={handleTargetAudienceChange}
+            />
+          </motion.div>
+        </motion.div>
+      </motion.div>
 
-      <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+      <motion.div
+        className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1, duration: 0.5 }}
+      >
         <div className="text-sm text-gray-500">
           {skills.length > 0 && experience.length > 0 && selectedTargetAudience ? (
-            <span className="flex items-center gap-2 text-green-500">
+            <motion.span
+              className="flex items-center gap-2 text-green-500"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
               <Briefcase className="h-4 w-4" />
               Ready to proceed
-            </span>
+            </motion.span>
           ) : (
-            <span className="flex items-center gap-2">
+            <motion.span
+              className="flex items-center gap-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
               <Briefcase className="h-4 w-4" />
               Please complete all sections
-            </span>
+            </motion.span>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

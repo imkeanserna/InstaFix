@@ -148,8 +148,8 @@ export default function Footer() {
       : null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t bg-white">
-      <div className="flex justify-between p-4 max-w-7xl mx-auto">
+    <div className="fixed bottom-0 left-0 right-0 border-t bg-white py-4 px-16 z-10">
+      <div className="flex justify-between mx-auto">
         {prevStep && (
           <Link
             href={prevStep === 'become-a-freelancer'
@@ -186,9 +186,9 @@ export default function Footer() {
                   :
                   <>
                     Next
-                    <ChevronRight className="w-4 h-4 ml-2 transform transition-transform group-hover:translate-x-1 active:translate-x-0.5" />
                   </>
                 }
+                <ChevronRight className="w-4 h-4 ml-2 transform transition-transform group-hover:translate-x-1 active:translate-x-0.5" />
               </>
             )}
           </Button>
@@ -200,8 +200,11 @@ export default function Footer() {
 
 export function DraftButton() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleDraftPost = async () => {
     try {
+      setIsLoading(true);
       const post = await draftPost();
       if (!post || !post.id) {
         console.error('Error creating post:', post);
@@ -210,9 +213,28 @@ export function DraftButton() {
       router.push(`${post.id}/about-your-service`);
     } catch (error) {
       console.error('Error in handleDraftPost:', error);
+    } finally {
+      setIsLoading(false);
     }
   }
   return (
-    <Button onClick={handleDraftPost}>Get Started</Button>
+    <Button
+      onClick={handleDraftPost}
+      disabled={isLoading}
+      variant={"default"}
+      className='group duration-200 rounded-lg bg-yellow-400 hover:bg-yellow-500 p-8 sm:px-6 sm:py-6 transform active:scale-95 text-black w-full sm:w-auto'
+    >
+      {(isLoading) ? (
+        <>
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          {isLoading && 'Creating post...'}
+        </>
+      ) : (
+        <>
+          Get Started
+          <ChevronRight className="w-4 h-4 ml-2 transform transition-transform group-hover:translate-x-1 active:translate-x-0.5" />
+        </>
+      )}
+    </Button>
   )
 }

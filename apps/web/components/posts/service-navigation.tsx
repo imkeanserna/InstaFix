@@ -14,6 +14,7 @@ import { useRouteValidation } from "@/hooks/posts/useRouteValidation";
 import { useEffect, useState } from "react";
 import { Globe, Users, ArrowLeftRight, Navigation, MapPin } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
+import { motion } from "framer-motion";
 
 export default function ServiceNavigation() {
   const { formData, updateFormData } = useFormData();
@@ -56,56 +57,129 @@ export default function ServiceNavigation() {
     }
   };
 
+  // For animation and it uses framer-motion
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-white to-yellow-50 py-20 md:py-24">
+    <motion.div
+      className="min-h-screen w-full bg-gradient-to-b from-white to-yellow-50 py-20 md:py-24"
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+    >
       <div className="max-w-5xl mx-auto space-y-8">
-        <div className="text-center space-y-2 md:space-y-3">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+        <motion.div
+          className="text-center space-y-2 md:space-y-3"
+          variants={fadeInUp}
+        >
+          <motion.h1
+            className="text-2xl md:text-3xl font-bold text-gray-900"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
             Discover the Right Service for You
-          </h1>
-          <p className="text-[10px] md:text-sm text-gray-600">
+          </motion.h1>
+          <motion.p
+            className="text-[10px] md:text-sm text-gray-600"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
             Choose your service type and set your preferred location to get started.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        <div className="flex flex-col space-y-8">
-          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl">
-            <CardHeader className="border-b bg-gray-50">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Navigation className="w-4 h-4 text-blue-600" />
+        <motion.div
+          className="flex flex-col space-y-8"
+          variants={staggerContainer}
+        >
+          <motion.div
+            variants={cardVariants}
+          >
+            <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl">
+              <CardHeader className="border-b bg-gray-50">
+                <div className="flex items-center space-x-3">
+                  <motion.div
+                    className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center"
+                    transition={{ duration: 0.5 }}
+                  >
+                    <Navigation className="w-4 h-4 text-blue-600" />
+                  </motion.div>
+                  <CardTitle className="text-sm md:text-xl">Select Service Type</CardTitle>
                 </div>
-                <CardTitle className="text-sm md:text-xl">Select Service Type</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ServiceType
-                selectedType={selectedType}
-                setSelectedType={handleServiceTypeSelect}
-              />
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ServiceType
+                  selectedType={selectedType}
+                  setSelectedType={handleServiceTypeSelect}
+                />
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl">
-            <CardHeader className="border-b bg-gray-50">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-blue-600" />
+          <motion.div
+            variants={cardVariants}
+          >
+            <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl">
+              <CardHeader className="border-b bg-gray-50">
+                <div className="flex items-center space-x-3">
+                  <motion.div
+                    className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <MapPin className="w-4 h-4 text-blue-600" />
+                  </motion.div>
+                  <CardTitle className="text-sm md:text-xl">Select Location</CardTitle>
                 </div>
-                <CardTitle className="text-sm md:text-xl">Select Location</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="p-2">
-              <LocationNavigation
-                selectedLocation={selectedLocation}
-                setSelectedLocation={handleLocationSelect}
-                maptilerKey={process.env.MAPTILER_API_KEY}
-              />
-            </CardContent>
-          </Card>
-        </div>
+              </CardHeader>
+              <CardContent className="p-2">
+                <LocationNavigation
+                  selectedLocation={selectedLocation}
+                  setSelectedLocation={handleLocationSelect}
+                  maptilerKey={process.env.MAPTILER_API_KEY}
+                />
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

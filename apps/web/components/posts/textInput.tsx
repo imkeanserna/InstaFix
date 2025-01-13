@@ -2,6 +2,7 @@
 
 import { DynamicInput } from "@repo/ui/components/ui/dynamic-input";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface TextInputProps {
   fieldName: string;
@@ -70,25 +71,58 @@ export function TextPostInput({
   }[variant];
 
   return (
-    <div className={`space-y-6 ${sizeStyles.wrapper}`}>
-      <div className="space-y-2">
-        <h2 className={`${sizeStyles.heading} font-semibold tracking-tight`}>
+    <motion.div
+      className={`space-y-6 ${sizeStyles.wrapper}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <motion.div
+        className="space-y-2"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <motion.h2
+          className={`${sizeStyles.heading} font-semibold tracking-tight`}
+          layout
+        >
           {heading}
-        </h2>
-        {subheading && (
-          <p className={`${sizeStyles.subheading} text-gray-500`}>
-            {subheading}
-          </p>
-        )}
-      </div>
+        </motion.h2>
+        <AnimatePresence>
+          {subheading && (
+            <motion.p
+              className={`${sizeStyles.subheading} text-gray-500`}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              {subheading}
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
-      {/* Input Section */}
-      <div className="space-y-3">
-        <div
-          className={`relative transition-all duration-200 rounded-xl border-2 
-            ${error ? 'border-red-500 bg-red-50' : isFocused
-              ? 'border-blue-500 bg-blue-50/50'
-              : 'border-gray-200 hover:border-gray-300 bg-gray-50/50'}`}
+      <motion.div
+        className="space-y-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        <motion.div
+          className={`relative transition-all duration-200 rounded-xl border-2`}
+          animate={{
+            borderColor: error ? "#EF4444" : isFocused ? "#3B82F6" : "#E5E7EB",
+            backgroundColor: error ? "rgba(254, 242, 242, 0.5)" :
+              isFocused ? "rgba(219, 234, 254, 0.3)" :
+                "rgba(249, 250, 251, 0.5)"
+          }}
+          whileHover={!error && !isFocused ? {
+            borderColor: "#D1D5DB",
+            scale: 1.001,
+            transition: { duration: 0.2 }
+          } : {}}
+          layout
         >
           <DynamicInput
             value={value}
@@ -100,17 +134,37 @@ export function TextPostInput({
               ${variant === 'title' ? 'capitalize' : ''} 
               leading-loose ${sizeStyles.input}`}
           />
-        </div>
+        </motion.div>
 
-        {/* Character Counter */}
-        <div className={`px-2 py-1 rounded-md text-xs inline-block
-            ${value.length >= maxLength ? 'bg-red-100 text-red-700' :
-            value.length >= maxLength * 0.8 ? 'bg-yellow-100 text-yellow-700' :
-              'bg-gray-100 text-gray-600'}`}
+        <motion.div
+          className="flex justify-end"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
         >
-          {value.length}/{maxLength}
-        </div>
-      </div>
-    </div>
+          <motion.div
+            className={`px-2 py-1 rounded-md text-xs`}
+            animate={{
+              backgroundColor: value.length >= maxLength ? "rgb(254, 226, 226)" :
+                value.length >= maxLength * 0.8 ? "rgb(254, 243, 199)" :
+                  "rgb(243, 244, 246)",
+              color: value.length >= maxLength ? "rgb(185, 28, 28)" :
+                value.length >= maxLength * 0.8 ? "rgb(161, 98, 7)" :
+                  "rgb(75, 85, 99)"
+            }}
+            whileHover={{ scale: 1.05 }}
+            layout
+          >
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              key={`${value.length}/${maxLength}`}
+            >
+              {value.length}/{maxLength}
+            </motion.span>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }

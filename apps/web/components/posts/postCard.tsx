@@ -19,7 +19,7 @@ export const PostCard = ({ post }: { post: PostWithRelations }) => {
             <div className="w-28 h-28 flex-shrink-0">
               <img
                 src={"https://ideogram.ai/assets/progressive-image/balanced/response/6gTAhKo9SfqEIahkNWmciA"}
-                alt={post.title}
+                alt={post.title || "Post"}
                 className="w-full h-full object-cover"
               />
             </div>

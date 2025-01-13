@@ -11,9 +11,9 @@ export default function Header() {
   const isPublishFinished = (clientPathname)?.includes('publish-celebration');
 
   return (
-    <div className='fixed top-0 left-0 right-0 bg-white'>
+    <div className='fixed top-0 left-0 right-0 bg-white border-b py-4 px-16 z-10'>
       {isAboutServicePage ?
-        <div className=" flex justify-between p-4">
+        <div className=" flex justify-between items-center">
           <h1>Become a Freelancer</h1>
           <Button
             variant="outline"
@@ -24,7 +24,7 @@ export default function Header() {
           >Exit</Button>
         </div>
         :
-        <div className=" flex justify-between p-4">
+        <div className=" flex justify-between">
           <h1>Become a Freelancer</h1>
           {!isPublishFinished &&
             <Button
