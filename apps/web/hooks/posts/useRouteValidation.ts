@@ -32,7 +32,7 @@ export const useRouteValidation = (currentStep: string) => {
         return Boolean(files?.length > 0 && coverPhotoIndex !== undefined);
       case 'title':
         const { title } = data.basicInfo || {};
-        return Boolean(title && title.length >= 5 && title?.length <= 32);
+        return Boolean(title && title.length >= 5 && title?.length <= 100);
       case 'description':
         const { description } = data.basicInfo || {};
         return Boolean(description && description.length >= 50 && description?.length <= 500);

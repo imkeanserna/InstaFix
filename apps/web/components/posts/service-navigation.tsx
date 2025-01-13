@@ -4,9 +4,7 @@ import { ServiceLocationType } from "@prisma/client";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/components/ui/select";
@@ -14,7 +12,7 @@ import LocationNavigation, { Location } from "../ui/locationNavigation";
 import { useFormData } from "@/context/FormDataProvider";
 import { useRouteValidation } from "@/hooks/posts/useRouteValidation";
 import { useEffect, useState } from "react";
-import { Check, Globe, Users, ArrowLeftRight, Navigation, MapPin } from "lucide-react"
+import { Globe, Users, ArrowLeftRight, Navigation, MapPin } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
 
 export default function ServiceNavigation() {
@@ -59,21 +57,25 @@ export default function ServiceNavigation() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 py-28">
+    <div className="min-h-screen w-full bg-gradient-to-b from-white to-yellow-50 py-20 md:py-24">
       <div className="max-w-5xl mx-auto space-y-8">
-        <div className="text-center space-y-3">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome to Service Navigation</h1>
-          <p className="text-sm text-gray-600">Please select your service type and preferred location</p>
+        <div className="text-center space-y-2 md:space-y-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            Discover the Right Service for You
+          </h1>
+          <p className="text-[10px] md:text-sm text-gray-600">
+            Choose your service type and set your preferred location to get started.
+          </p>
         </div>
 
         <div className="flex flex-col space-y-8">
-          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
+          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl">
             <CardHeader className="border-b bg-gray-50">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                   <Navigation className="w-4 h-4 text-blue-600" />
                 </div>
-                <CardTitle>Select Service Type</CardTitle>
+                <CardTitle className="text-sm md:text-xl">Select Service Type</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -84,13 +86,13 @@ export default function ServiceNavigation() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
+          <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg rounded-xl">
             <CardHeader className="border-b bg-gray-50">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                   <MapPin className="w-4 h-4 text-blue-600" />
                 </div>
-                <CardTitle>Select Location</CardTitle>
+                <CardTitle className="text-sm md:text-xl">Select Location</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-2">

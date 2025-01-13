@@ -80,9 +80,9 @@ export default function Categories() {
   );
 
   return (
-    <Card className="p-8 bg-white shadow-lg rounded-2xl">
+    <Card className="bg-white shadow-lg rounded-2xl p-4 sm:p-8">
       {selectedCategory && (
-        <div className="mb-8">
+        <div className="mb-6">
           <Button
             variant="ghost"
             onClick={() => {
@@ -98,38 +98,40 @@ export default function Categories() {
         </div>
       )}
 
-      <div className="space-y-8">
+      <div className="space-y-6">
+        {/* Category Header */}
         {!selectedCategory && (
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
             Select a Category
           </h2>
         )}
 
+        {/* Categories Grid */}
         <ToggleGroup
           type="single"
-          value={selectedCategory || ''}
+          value={selectedCategory || ""}
           onValueChange={handleCategorySelect}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           {categories
-            ?.filter(cat => !selectedCategory || cat.id === selectedCategory)
+            ?.filter((cat) => !selectedCategory || cat.id === selectedCategory)
             .map(({ id, name }: { id: string; name: string }) => {
               const IconComponent = getCategoryIcon(name);
               return (
                 <ToggleGroupItem
                   key={id}
                   value={id}
-                  className="group relative h-full rounded-xl border-2 border-gray-200 bg-gradient-to-br from-yellow-50 via-white to-gray-50 shadow-sm transition-all hover:shadow-lg hover:from-yellow-100 hover:via-yellow-50 hover:to-white data-[state=on]:border-yellow-500 data-[state=on]:shadow-md data-[state=on]:from-yellow-100 data-[state=on]:via-yellow-50 data-[state=on]:to-white"
+                  className="group relative h-full w-full rounded-xl border-2 border-gray-200 bg-gradient-to-br from-yellow-50 via-white to-gray-50 shadow-sm transition-all hover:shadow-lg hover:from-yellow-100 hover:via-yellow-50 hover:to-white data-[state=on]:border-yellow-500 data-[state=on]:shadow-md data-[state=on]:from-yellow-100 data-[state=on]:via-yellow-50 data-[state=on]:to-white"
                 >
-                  <div className="flex h-full p-6">
+                  <div className="flex h-full p-4 sm:p-6">
                     <div className="flex-shrink-0">
-                      <IconComponent className="w-12 h-12 text-gray-700 transition-colors group-hover:text-yellow-500" />
+                      <IconComponent className="w-10 h-10 sm:w-12 sm:h-12 text-gray-700 transition-colors group-hover:text-yellow-500" />
                     </div>
                     <div className="flex-1 min-w-0 ml-3">
-                      <p className="text-lg font-medium text-gray-900 transition-colors group-hover:text-yellow-600">
+                      <p className="text-sm sm:text-base font-medium text-gray-900 transition-colors group-hover:text-yellow-600">
                         {name}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1 break-words group-hover:text-gray-700">
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1 break-words group-hover:text-gray-700">
                         {getCategoryDescription(name)}
                       </p>
                     </div>
@@ -142,35 +144,38 @@ export default function Categories() {
             })}
         </ToggleGroup>
 
+        {/* Subcategories Section */}
         {selectedCategoryData?.subcategories && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                 Select a Subcategory
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 mt-2 sm:mt-0">
                 {selectedCategoryData.subcategories.length} options available
               </p>
             </div>
 
             <ToggleGroup
               type="single"
-              value={selectedSubcategory || ''}
+              value={selectedSubcategory || ""}
               onValueChange={handleSubcategorySelect}
-              className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
             >
-              {selectedCategoryData.subcategories.map((subcategory: Subcategory) => (
-                <ToggleGroupItem
-                  key={subcategory.id}
-                  value={subcategory.id}
-                  className="group flex h-24 items-center justify-between p-6 rounded-xl border-2 border-gray-200 bg-gradient-to-br from-yellow-50 via-white to-gray-50 shadow-sm transition-all hover:shadow-lg hover:from-yellow-100 hover:via-yellow-50 hover:to-white data-[state=on]:border-yellow-500 data-[state=on]:shadow-md data-[state=on]:from-yellow-100 data-[state=on]:via-yellow-50 data-[state=on]:to-white"
-                >
-                  <p className="text-sm font-medium text-gray-900 group-hover:text-yellow-600">
-                    {subcategory.name}
-                  </p>
-                  <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-yellow-500" />
-                </ToggleGroupItem>
-              ))}
+              {selectedCategoryData.subcategories.map(
+                (subcategory: Subcategory) => (
+                  <ToggleGroupItem
+                    key={subcategory.id}
+                    value={subcategory.id}
+                    className="group flex h-20 sm:h-24 items-center justify-between p-4 sm:p-6 rounded-xl border-2 border-gray-200 bg-gradient-to-br from-yellow-50 via-white to-gray-50 shadow-sm transition-all hover:shadow-lg hover:from-yellow-100 hover:via-yellow-50 hover:to-white data-[state=on]:border-yellow-500 data-[state=on]:shadow-md data-[state=on]:from-yellow-100 data-[state=on]:via-yellow-50 data-[state=on]:to-white"
+                  >
+                    <p className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-yellow-600">
+                      {subcategory.name}
+                    </p>
+                    <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-yellow-500" />
+                  </ToggleGroupItem>
+                )
+              )}
             </ToggleGroup>
           </div>
         )}

@@ -46,25 +46,28 @@ export function ToggleGroupSelection({
             key={value}
             value={value}
             className={cn(
-              "group relative h-full w-full rounded-xl border-2 border-gray-200 p-0 transition-all hover:border-yellow-500 hover:shadow-md data-[state=on]:border-yellow-500 data-[state=on]:bg-yellow-50/50",
+              "group relative w-full h-full rounded-2xl border-2 p-6 transition-all duration-300",
+              "hover:border-yellow-500 hover:shadow-xl",
+              "data-[state=on]:border-yellow-500 data-[state=on]:bg-yellow-50/50",
+              "transform hover:-translate-y-1",
               itemClassName
             )}
           >
-            <div className="flex items-center p-6">
+            <div className="flex items-center space-x-4 sm:space-x-6 p-4 sm:p-6">
               {icon && (
-                <div className="flex-shrink-0 mr-4">
+                <div className="flex-shrink-0">
                   {icon}
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-base font-medium text-gray-900 group-hover:text-gray-900">
+                <p className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-gray-900">
                   {label}
                 </p>
-                <p className="mt-1 text-sm text-gray-500 group-hover:text-gray-600">
+                <p className="mt-1 text-xs sm:text-sm text-gray-500 group-hover:text-gray-600">
                   {description}
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 ml-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-yellow-500" />
+              <ChevronRight className="w-4 h-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-yellow-500" />
             </div>
           </ToggleGroupItem>
         ))}

@@ -92,19 +92,19 @@ export default function ServiceOffer() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto pt-8 sm:pt-12">
       <ToggleGroup
         type="multiple"
         value={selectedSpecialOffers}
         onValueChange={handleValueChange}
-        className="grid gap-4 md:grid-cols-2"
+        className="grid gap-4 grid-cols-1 sm:grid-cols-2 p-2 sm:p-0"
       >
         {specialOffers.map(({ value, label, description, icon: Icon, color, bgColor }) => (
           <ToggleGroupItem
             key={value}
             value={value}
             className="group relative p-4 h-full rounded-xl border-2 data-[state=on]:shadow-lg transition-all duration-200
-              hover:border-gray-300 data-[state=on]:border-gray-900"
+              hover:border-gray-300 data-[state=on]:border-yellow-500"
           >
             <div className="flex items-center space-x-4">
               <div className={`p-2 rounded-lg ${bgColor} ${color} transition-colors duration-200
@@ -116,8 +116,8 @@ export default function ServiceOffer() {
                 <p className="text-sm text-gray-500 mt-1">{description}</p>
               </div>
               <div className={`w-3 h-3 rounded-full border-2 transition-colors
-                group-data-[state=on]:bg-gray-900 group-data-[state=on]:border-gray-900
-                group-hover:border-gray-400`}
+                group-data-[state=on]:bg-yellow-500 group-data-[state=on]:border-yellow-500
+                group-hover:border-yellow-500`}
               />
             </div>
 

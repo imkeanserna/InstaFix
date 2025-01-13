@@ -1,13 +1,12 @@
 "use client";
+
 import React, { useEffect } from 'react';
 import { useFormData } from "@/context/FormDataProvider";
 import { useRouteValidation } from "@/hooks/posts/useRouteValidation";
 import { DynamicInput } from "@repo/ui/components/ui/dynamic-input";
 import { TagInput } from "@repo/ui/components/ui/tag-input";
 import { TargetAudience } from "@prisma/client/edge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui/components/ui/select';
 import { Briefcase, Building2, Heart, Rocket, Star, Tags, Users } from 'lucide-react';
-
 
 export function ServiceDescription() {
   const { formData, updateFormData } = useFormData();
@@ -62,7 +61,7 @@ export function ServiceDescription() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="grid gap-8 mt-8">
+      <div className="grid gap-8">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-4">
             <Tags className="h-5 w-5 text-purple-500" />
@@ -96,7 +95,7 @@ export function ServiceDescription() {
             value={experience}
             onChange={(e) => setExperience(e.target.value)}
             placeholder="Describe your experience in this field..."
-            className="w-full"
+            className="w-full p-4 rounded-lg border border-gray-100 min-h-28"
             onSubmit={() => { }}
           />
         </div>

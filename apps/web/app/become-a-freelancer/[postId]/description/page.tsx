@@ -4,7 +4,7 @@ export const runtime = "edge";
 
 export default function Page() {
   return (
-    <div className="">
+    <div className="h-full flex justify-center items-center py-36 md:py-52">
       <Description />
     </div>
   );

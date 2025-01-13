@@ -14,11 +14,12 @@ export function Title() {
       heading="Now, let's give your service a title"
       subheading="Short titles work best. Have fun with it you can always change it later."
       minLength={5}
-      maxLength={32}
-      placeholder="Tell us about your service"
+      maxLength={100}
+      placeholder="Title of your service..."
       formData={formData}
       updateFormData={updateFormData}
       setStepValidity={setStepValidity}
+      variant="title"
     />
   );
 }
@@ -30,7 +31,7 @@ export function Description() {
   return (
     <TextPostInput
       fieldName="description"
-      heading="Describe your service"
+      heading="Let's create the service description"
       subheading="Help customers understand what you offer by providing a detailed description."
       minLength={50}
       maxLength={500}
@@ -38,6 +39,7 @@ export function Description() {
       formData={formData}
       updateFormData={updateFormData}
       setStepValidity={setStepValidity}
+      variant="description"
     />
   );
 }

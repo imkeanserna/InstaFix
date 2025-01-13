@@ -92,14 +92,14 @@ export function FinalSetup() {
   ];
 
   return (
-    <div className="relative flex flex-col justify-center items-center h-screen gap-8">
-      <div className="text-center mb-8 space-y-2">
+    <div className="relative flex flex-col justify-center items-center h-full gap-8 p-0 md:px-4 py-24 md:py-32">
+      <div className="text-center mb-0 md:mb-8 space-y-1 md:space-y-2">
         <h1 className="text-3xl font-bold text-green-600">Congratulations! 🎉</h1>
         <p className="text-gray-500 text-sm">
           {`You've successfully created your service. Your expertise is now ready to reach clients worldwide.`}
         </p>
       </div>
-      <div className="flex justify-center items-center gap-16 mx-auto space-y-8 pb-12">
+      <div className="flex flex-col lg:flex-row justify-center items-start gap-8 md:gap-16 mx-auto pb-12 w-full max-w-6xl p-4 md:p-0">
         {showConfetti && (
           <Confetti
             width={windowDimensions.width}
@@ -172,7 +172,7 @@ interface ImageCardProps {
 
 export function ImageCard({ imageUrl, title, buttonText, onButtonClick }: ImageCardProps) {
   return (
-    <Card className="w-full max-w-sm overflow-hidden p-4 rounded-3xl shadow-2xl">
+    <Card className="w-full sm:max-w-sm overflow-hidden p-4 rounded-3xl shadow-2xl">
       <CardContent className="p-0 relative">
         <div className="relative w-full h-0 pb-[100%] overflow-hidden rounded-xl">
           <Image
@@ -208,7 +208,7 @@ export function ImageCard({ imageUrl, title, buttonText, onButtonClick }: ImageC
 
 export function SkeletonImageCard() {
   return (
-    <Card className="w-full max-w-sm overflow-hidden p-4 rounded-3xl">
+    <Card className="w-full sm:max-w-sm overflow-hidden p-4 rounded-3xl">
       <CardContent className="p-0 relative">
         <div className="relative w-full h-0 pb-[100%] overflow-hidden rounded-xl">
           <div className="absolute inset-0 bg-gray-200 animate-pulse" />
@@ -243,19 +243,19 @@ const NextStepCard = forwardRef<HTMLDivElement, NextStepCardProps>(
     return (
       <div
         ref={ref}
-        className="group p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 rounded-lg transition-colors duration-200 gap-4"
+        className="group p-4 flex items-center justify-between cursor-pointer rounded-lg transition-colors duration-200 gap-4"
         onClick={onClick}
       >
         <div className="flex items-center gap-4">
           <div className="p-2 rounded-lg">
-            <Icon className="w-8 h-8" />
+            <Icon className="w-6 h-6" />
           </div>
           <div>
             <h3 className="font-medium">{title}</h3>
             <p className="text-sm text-gray-500">{description}</p>
           </div>
         </div>
-        <div className="text-gray-400 group-hover:text-gray-600 transform transition-transform group-hover:translate-x-2">
+        <div className="text-gray-400 group-hover:text-yellow-500 transform transition-transform group-hover:translate-x-2">
           <ChevronRight className="w-5 h-5" />
         </div>
       </div>

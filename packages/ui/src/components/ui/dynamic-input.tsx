@@ -46,7 +46,7 @@ export const DynamicInput: React.FC<DynamicInputProps> = ({
       onChange={onChange}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
-      className={`resize-none ${className} p-3 placeholder:text-sm text-sm`}
+      className={`resize-none ${className}`}
       rows={1}
     />
   );

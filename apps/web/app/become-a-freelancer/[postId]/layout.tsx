@@ -23,7 +23,7 @@ export default async function RootLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+    <div className="min-h-screen bg-gradient-to-b from-white to-yellow-50 p-4 sm:p-6 md:p-8">
       {children}
     </div>
   );

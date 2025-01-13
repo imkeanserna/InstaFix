@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 export function PaymentMethodsSetup() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8">
+    <div className="h-full bg-gradient-to-b from-white to-yellow-50 py-24">
       <div className="max-w-3xl mx-auto relative">
         {/* Decorative background elements */}
         <div className="absolute inset-0 -z-10">
@@ -20,7 +20,7 @@ export function PaymentMethodsSetup() {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
             Payment Methods
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-sm text-gray-600">
             Securely manage your payment information
           </p>
         </div>
@@ -36,7 +36,7 @@ export function PaymentMethodsSetup() {
                 <h2 className="font-semibold text-xl">
                   Payment System Update in Progress
                 </h2>
-                <p className="mt-1 opacity-90">
+                <p className="mt-1 opacity-90 text-sm">
                   {`We're enhancing our payment infrastructure`}
                 </p>
               </div>
@@ -56,7 +56,7 @@ export function PaymentMethodsSetup() {
                 Payment Methods Temporarily Unavailable
               </h3>
               <p className="text-gray-600 mb-6">
-                We're working on bringing you an enhanced payment experience with improved security and more payment options.
+                {`We're working on bringing you an enhanced payment experience with improved security and more payment options.`}
               </p>
 
               <div className="bg-gradient-to-r from-gray-50 to-white/80 rounded-lg p-4 flex items-center justify-center gap-2 text-sm text-gray-600 shadow-sm border border-white/50">
@@ -80,9 +80,9 @@ export function PaymentMethodsSetup() {
                   height={20}
                   className="h-5 opacity-50 hover:opacity-100 transition-opacity"
                   sizes="(max-width: 640px) 100vw, 
-           (max-width: 768px) 50vw,
-           (max-width: 1024px) 33vw,
-           25vw"
+                   (max-width: 768px) 50vw,
+                   (max-width: 1024px) 33vw,
+                   25vw"
                 />
                 <Image
                   src="/payment/mastercard.png"
@@ -91,9 +91,9 @@ export function PaymentMethodsSetup() {
                   height={20}
                   className="h-5 opacity-50 hover:opacity-100 transition-opacity"
                   sizes="(max-width: 640px) 100vw, 
-           (max-width: 768px) 50vw,
-           (max-width: 1024px) 33vw,
-           25vw"
+                   (max-width: 768px) 50vw,
+                   (max-width: 1024px) 33vw,
+                   25vw"
                 />
                 <Image
                   src="/payment/amex.png"
@@ -102,9 +102,9 @@ export function PaymentMethodsSetup() {
                   height={20}
                   className="h-5 rounded-lg opacity-50 hover:opacity-100 transition-opacity"
                   sizes="(max-width: 640px) 100vw, 
-           (max-width: 768px) 50vw,
-           (max-width: 1024px) 33vw,
-           25vw"
+                   (max-width: 768px) 50vw,
+                   (max-width: 1024px) 33vw,
+                   25vw"
                 />
               </div>
             </div>
