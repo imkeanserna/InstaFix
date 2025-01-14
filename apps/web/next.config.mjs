@@ -15,7 +15,7 @@ const nextConfig = {
     // Add other environment variables here as needed
   },
   images: {
-    domains: ['pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev', 'plus.unsplash.com']
+    domains: ['pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev']
   }
 };
 

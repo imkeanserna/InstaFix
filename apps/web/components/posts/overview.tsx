@@ -8,17 +8,17 @@ export default function Overview() {
     {
       title: "Share Your Expertise",
       description: "Tell us about your skills and services. Highlight your strengths and let clients know what you do best.",
-      imageSrc: "https://plus.unsplash.com/premium_photo-1736437251499-9b5d6f0a9a53?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyfHx8fHx8"
+      imageSrc: "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/about-your-service-pic1.png"
     },
     {
       title: "Showcase Your Work",
       description: "Upload 5 or more samples of your past work, add a compelling title, and write a description that sets you apart.",
-      imageSrc: "https://plus.unsplash.com/premium_photo-1736437251499-9b5d6f0a9a53?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyfHx8fHx8"
+      imageSrc: "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/about-your-service-pic3.png"
     },
     {
       title: "Finalize Your Profile and Start Earning",
       description: "Set your pricing, complete a quick verification process, and make your profile live to attract clients and secure your first project.",
-      imageSrc: "https://plus.unsplash.com/premium_photo-1736437251499-9b5d6f0a9a53?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyfHx8fHx8"
+      imageSrc: "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/about-your-service-pic2.png"
     },
   ];
 
@@ -51,7 +51,7 @@ export default function Overview() {
   };
 
   return (
-    <div className="min-h-screen w-full py-36 px-4 md:py-16 lg:py-44 lg:px-16 xl:px-32 2xl:px-64">
+    <div className="min-h-screen w-full py-36 px-4 md:py-16 lg:py-44 lg:px-16 xl:px-32 2xl:px-80">
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-8 lg:gap-16 xl:gap-24">
         <motion.h1
           className="text-3xl sm:text-5xl lg:text-6xl font-bold max-w-xl lg:w-[550px] text-center lg:text-left"
@@ -109,16 +109,17 @@ export default function Overview() {
                 </div>
 
                 <motion.div
-                  className="relative h-[100px] sm:h-[130px] w-[100px] sm:w-[100px] sm:ms-4"
+                  className="relative h-[100px] sm:h-[130px] w-[100px] sm:w-[130px] sm:ms-4"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: key * 0.3 + 0.5 }}
                 >
+                  <div className="absolute inset-0 h-full w-full z-10"></div>
                   <Image
                     src={imageSrc}
                     alt="Service Preview"
                     fill
-                    className="object-cover rounded-xl"
+                    className="object-contain"
                     priority
                   />
                 </motion.div>

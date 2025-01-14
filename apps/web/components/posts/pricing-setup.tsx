@@ -21,7 +21,7 @@ const currencySymbols: Record<Currency, string> = {
 
 export function PrincingComponentPage() {
   return (
-    <div className="h-full bg-gradient-to-b from-white to-yellow-50 py-24 md:py-12">
+    <div className="h-full bg-gradient-to-b from-white to-yellow-50 py-24 md:py-20">
       <div className="max-w-3xl mx-auto space-y-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

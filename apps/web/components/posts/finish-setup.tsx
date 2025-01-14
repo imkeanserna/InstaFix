@@ -3,19 +3,12 @@
 import React from 'react';
 import Image from 'next/image';
 import { Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from "framer-motion";
 
-export function AboutYourService() {
+export function FinishSetup() {
   const fadeUpVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
+    visible: { opacity: 1, y: 0 }
   };
 
   const containerVariants = {
@@ -23,16 +16,27 @@ export function AboutYourService() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const bounceVariants: Variants = {
+    animate: {
+      y: [-5, 5, -5],
+      transition: {
+        duration: 3,
+        repeat: Infinity,
+        repeatType: "reverse",
+        ease: "easeInOut"
       }
     }
   };
 
   return (
-    <div className="h-full w-full py-24 sm:py-16 md:py-28">
+    <div className="h-full w-full py-24 sm:py-16 md:py-48">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-4">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-16">
           {/* Left Content Section */}
           <motion.div
             className="flex-1 w-full space-y-8"
@@ -51,7 +55,7 @@ export function AboutYourService() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.5, duration: 0.3 }}
                 >
-                  Step 1 of 3
+                  Step 2 of 3
                 </motion.span>
                 <motion.div
                   initial={{ opacity: 0, rotate: -30 }}
@@ -67,24 +71,14 @@ export function AboutYourService() {
                   variants={fadeUpVariants}
                   className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent"
                 >
-                  Tell us about your service
+                  Finish up and publish
                 </motion.h1>
-
                 <motion.p
                   variants={fadeUpVariants}
-                  className="text-lg text-gray-700 leading-relaxed"
+                  className="text-sm text-gray-700 leading-relaxed"
                 >
-                  {`We're excited to learn more about the services you offer. Please provide the necessary details so that we can showcase your service to the right audience.`}
+                  {`Once you've published your listing, it's time to get your clients. We're excited to show you how easy it is to get started with our platform.`}
                 </motion.p>
-
-                <motion.div
-                  variants={fadeUpVariants}
-                  className="flex items-center space-x-2 text-gray-600"
-                >
-                  <p className="text-sm">
-                    Make sure to fill in all the required information accurately. This helps potential customers understand your offering and makes your listing more attractive.
-                  </p>
-                </motion.div>
               </div>
             </div>
           </motion.div>
@@ -102,15 +96,19 @@ export function AboutYourService() {
               animate={{ opacity: 0.2, scale: 1 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             />
-            <div className="relative">
+            <motion.div
+              className="relative"
+              variants={bounceVariants}
+              animate="animate"
+            >
               <motion.div
-                className="relative w-full h-[300px] sm:h-[600px]"
+                className="relative w-full h-[250px] sm:h-[450px]"
                 initial={{ opacity: 0, scale: 1.1 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5, duration: 0.7 }}
               >
                 <Image
-                  src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/overview-create-post.png"
+                  src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/create-post-finish.png"
                   alt="Service Preview"
                   fill
                   className="object-cover rounded-xl h-full w-full"
@@ -123,7 +121,7 @@ export function AboutYourService() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7, duration: 0.5 }}
               />
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
