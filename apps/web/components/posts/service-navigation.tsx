@@ -1,6 +1,6 @@
 "use client";
 
-import { ServiceLocationType } from "@prisma/client";
+import { ServiceLocationType } from "@prisma/client/edge";
 import {
   Select,
   SelectContent,
@@ -21,21 +21,37 @@ export default function ServiceNavigation() {
   const { setStepValidity } = useRouteValidation('location');
   const [selectedType, setSelectedType] = useState<ServiceLocationType | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [pendingLocation, setPendingLocation] = useState<Location | null>(null);
 
   useEffect(() => {
     setStepValidity(formData);
   }, [formData, setStepValidity]);
 
+  // Effect to handle pending location updates when type is selected
+  useEffect(() => {
+    if (selectedType && pendingLocation) {
+      updateFormData({
+        location: {
+          address: pendingLocation.address,
+          lat: pendingLocation.lat,
+          lng: pendingLocation.lng,
+          serviceLocation: selectedType,
+        }
+      });
+      setPendingLocation(null);
+    }
+  }, [selectedType, pendingLocation, updateFormData]);
+
   const handleServiceTypeSelect = (value: ServiceLocationType) => {
     const newValue = value === selectedType ? null : value;
-
     setSelectedType(newValue);
+
     if (selectedLocation !== null && newValue !== null) {
       updateFormData({
         location: {
-          address: selectedLocation?.address,
-          lat: selectedLocation?.lat,
-          lng: selectedLocation?.lng,
+          address: selectedLocation.address,
+          lat: selectedLocation.lat,
+          lng: selectedLocation.lng,
           serviceLocation: newValue,
         }
       });
@@ -45,15 +61,21 @@ export default function ServiceNavigation() {
   const handleLocationSelect = (value: Location | null) => {
     const newValue = value?.address === selectedLocation?.address ? null : value;
     setSelectedLocation(newValue);
-    if (selectedType !== null && newValue !== null) {
-      updateFormData({
-        location: {
-          address: newValue?.address,
-          lat: newValue?.lat,
-          lng: newValue?.lng,
-          serviceLocation: selectedType,
-        }
-      });
+
+    if (newValue) {
+      if (selectedType) {
+        updateFormData({
+          location: {
+            address: newValue.address,
+            lat: newValue.lat,
+            lng: newValue.lng,
+            serviceLocation: selectedType,
+          }
+        });
+      } else {
+        // Store the location for when type is selected
+        setPendingLocation(newValue);
+      }
     }
   };
 
