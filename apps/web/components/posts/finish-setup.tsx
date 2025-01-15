@@ -91,7 +91,7 @@ export function FinishSetup() {
             transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
           >
             <motion.div
-              className="absolute -inset-4 bg-gradient-to-r from-yellow-500 to-yellow-500 rounded-2xl opacity-20 blur-2xl rounded-full"
+              className="absolute -inset-4 bg-gradient-to-r from-yellow-500 to-yellow-500 opacity-20 blur-2xl rounded-full"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 0.2, scale: 1 }}
               transition={{ delay: 0.6, duration: 0.8 }}

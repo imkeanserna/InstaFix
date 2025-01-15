@@ -1,4 +1,5 @@
 import { prisma } from '@/server/index';
+import { Prisma } from '@prisma/client/edge';
 import { Category, Freelancer, Post, PostTag } from '@prisma/client/edge'
 import { PostUpdateHandlers } from './updateHandlers';
 import { UpdatePostData } from "@repo/types";
@@ -13,6 +14,212 @@ export type PostWithRelations = Post & {
     };
   })[];
 };
+
+type GetSortedPostArgs = {
+  page?: number;
+  limit?: number;
+  categoryName?: string | null;
+  subcategoryName?: string | null;
+  location?: {
+    latitude: number;
+    longitude: number;
+    radiusInKm: number;
+  } | null;
+};
+
+export async function getSortedPost({
+  page = 1,
+  limit = 10,
+  categoryName,
+  subcategoryName,
+  location
+}: GetSortedPostArgs) {
+  try {
+    const skip = (page - 1) * limit;
+
+    let where: Prisma.PostWhereInput = {};
+
+    if (location?.latitude && location?.longitude) {
+      // If location is provided, show all service types within radius
+      where = {
+        ...where,
+        location: {
+          latitude: {
+            gte: location.latitude - (location.radiusInKm / 111),
+            lte: location.latitude + (location.radiusInKm / 111),
+          },
+          longitude: {
+            gte: location.longitude - (location.radiusInKm / (111 * Math.cos(location.latitude * (Math.PI / 180)))),
+            lte: location.longitude + (location.radiusInKm / (111 * Math.cos(location.latitude * (Math.PI / 180)))),
+          },
+        },
+      };
+    } else {
+      // If no location provided, show only ONLINE and HYBRID services
+      where = {
+        ...where,
+        OR: [
+          { serviceLocation: 'ONLINE' },
+          { serviceLocation: 'HYBRID' }
+        ]
+      };
+    }
+
+    // Add category filters
+    if (categoryName) {
+      where = {
+        ...where,
+        tags: {
+          some: {
+            subcategory: {
+              category: {
+                name: categoryName
+              },
+              ...(subcategoryName && { name: subcategoryName })
+            }
+          }
+        }
+      };
+    }
+
+    const orderBy: Prisma.PostOrderByWithRelationInput[] = [
+      {
+        averageRating: {
+          sort: 'desc',
+          nulls: 'last',
+        },
+      },
+      {
+        reviews: {
+          _count: 'desc',
+        },
+      },
+      {
+        updatedAt: 'desc',
+      },
+      {
+        createdAt: 'desc',
+      },
+    ];
+
+    const posts = await prisma.post.findMany({
+      skip,
+      take: limit,
+      include: {
+        location: true,
+        reviews: {
+          select: {
+            rating: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            image: true,
+          }
+        }
+      },
+      orderBy,
+      where
+    });
+
+    const total = await prisma.post.count({
+      where
+    });
+
+    if (location?.latitude && location?.longitude) {
+      const postsWithDistance = posts.map((post) => ({
+        ...post,
+        distance: post.location
+          ? calculateDistance(
+            location.latitude,
+            location.longitude,
+            post.location.latitude,
+            post.location.longitude
+          )
+          : Infinity
+      }));
+
+      // Get maximum values for normalization
+      const maxDistance = Math.max(...postsWithDistance.map(post => post.distance));
+      const maxReviews = Math.max(...postsWithDistance.map(post => post.reviews.length));
+      const latestUpdate = Math.max(...postsWithDistance.map(post => new Date(post.updatedAt).getTime()));
+      const latestCreation = Math.max(...postsWithDistance.map(post => new Date(post.createdAt).getTime()));
+
+      // Custom sorting function that combines all criteria
+      const processedPosts = postsWithDistance.sort((a, b) => {
+        // Normalize all values to 0-1 scale
+        const ratingA = (a.averageRating ?? 0) / 5;
+        const ratingB = (b.averageRating ?? 0) / 5;
+
+        const distanceA = a.distance / maxDistance;
+        const distanceB = b.distance / maxDistance;
+
+        const reviewsA = maxReviews ? a.reviews.length / maxReviews : 0;
+        const reviewsB = maxReviews ? b.reviews.length / maxReviews : 0;
+
+        const updatedAtA = new Date(a.updatedAt).getTime() / latestUpdate;
+        const updatedAtB = new Date(b.updatedAt).getTime() / latestUpdate;
+
+        const createdAtA = new Date(a.createdAt).getTime() / latestCreation;
+        const createdAtB = new Date(b.createdAt).getTime() / latestCreation;
+
+        // Weights for each criterion (total = 1)
+        const weights = {
+          rating: 0.35,    // 35% weight to rating
+          distance: 0.25,  // 25% weight to distance
+          reviews: 0.20,   // 20% weight to review count
+          updated: 0.15,   // 15% weight to update time
+          created: 0.05    // 5% weight to creation time
+        };
+
+        // Calculate combined scores
+        const scoreA = (
+          (weights.rating * ratingA) -
+          (weights.distance * distanceA) +
+          (weights.reviews * reviewsA) +
+          (weights.updated * updatedAtA) +
+          (weights.created * createdAtA)
+        );
+
+        const scoreB = (
+          (weights.rating * ratingB) -
+          (weights.distance * distanceB) +
+          (weights.reviews * reviewsB) +
+          (weights.updated * updatedAtB) +
+          (weights.created * createdAtB)
+        );
+
+        return scoreB - scoreA;
+      });
+
+      return {
+        posts: processedPosts,
+        pagination: {
+          total,
+          pages: Math.ceil(total / limit),
+          currentPage: page
+        }
+      };
+    }
+
+    return {
+      posts: posts,
+      pagination: {
+        total,
+        pages: Math.ceil(total / limit),
+        currentPage: page
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    throw error;
+  }
+}
 
 export async function getPostsByProfession(professions: string[]): Promise<{ posts: Post[] }> {
   try {

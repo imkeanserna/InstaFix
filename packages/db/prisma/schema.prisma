@@ -27,6 +27,7 @@ model User {
   payments     Payment[]
   payouts      Payout[]
   transactions Transaction[]
+  reviews      Review[]
 }
 
 model Freelancer {
@@ -61,6 +62,20 @@ model Post {
   servicesIncluded    ServicesIncluded[]
   requestConfirmation RequestConfirmationType?
   payments            Payment[]
+  reviews             Review[]
+  averageRating       Float?
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      @default(0)
+  comment   String?
+  userId    String
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Media {
