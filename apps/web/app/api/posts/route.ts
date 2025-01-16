@@ -1,7 +1,9 @@
 import { errorResponse } from "@/lib/errorResponse";
 import { NextRequest, NextResponse } from "next/server";
 import { getPosts } from "../_action/posts/getPosts";
-import { ResponseDataWithLocation, ResponseDataWithoutLocation } from "@repo/types";
+import { ResponseDataWithLocation, ResponseDataWithoutLocation, FilterOptions } from "@repo/types";
+import { parseLocationParams, parsePriceParams, parseServicesIncluded, validateNumericParam } from "../_action/helper/postUtils";
+import { EngagementType, TargetAudience } from "@prisma/client/edge";
 
 export const runtime = "edge";
 
@@ -9,23 +11,39 @@ export async function GET(request: NextRequest) {
   try {
     const page = parseInt(request.nextUrl.searchParams.get('page') ?? '1');
     const limit = parseInt(request.nextUrl.searchParams.get('limit') ?? '10');
+
+    if (page < 1) throw new Error('Page must be greater than 0');
+    if (limit < 1 || limit > 100) throw new Error('Limit must be between 1 and 100');
+
     const categoryName = request.nextUrl.searchParams.get('category');
     const subcategoryName = request.nextUrl.searchParams.get('subcategory');
-    const latitude = request.nextUrl.searchParams.get('latitude');
-    const longitude = request.nextUrl.searchParams.get('longitude');
-    const radiusInKm = parseFloat(request.nextUrl.searchParams.get('radius') ?? '10');
 
     if (subcategoryName && !categoryName) {
       return errorResponse('Category is required when filtering by subcategory', undefined, 400);
     }
 
-    const result: ResponseDataWithLocation | ResponseDataWithoutLocation = await getPosts({
-      page, limit, categoryName, subcategoryName, location: {
-        latitude: parseFloat(latitude ?? '0'),
-        longitude: parseFloat(longitude ?? '0'),
-        radiusInKm
-      }
-    });
+    const location = parseLocationParams(request);
+    const price = parsePriceParams(request);
+    const engagementType = request.nextUrl.searchParams.get('engagementType') as EngagementType | null;
+    const minRating = validateNumericParam(request.nextUrl.searchParams.get('minRating'), 0);
+    const targetAudience = request.nextUrl.searchParams.get('targetAudience') as TargetAudience | null;
+    const servicesIncluded = parseServicesIncluded(request.nextUrl.searchParams.get('services'));
+
+    const filterOptions: FilterOptions = {
+      page,
+      limit,
+      ...(location && { location }),
+      ...(price && { price }),
+      ...(engagementType && { engagementType }),
+      ...(minRating > 0 && { minRating }),
+      ...(targetAudience && { targetAudience }),
+      ...(servicesIncluded?.length && { servicesIncluded }),
+      ...(categoryName && { categoryName }),
+      ...(subcategoryName && { subcategoryName })
+    };
+
+    const result: ResponseDataWithLocation | ResponseDataWithoutLocation = await getPosts(filterOptions);
+
     return NextResponse.json({
       success: true,
       data: result

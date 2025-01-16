@@ -1,0 +1,81 @@
+import { PricingType, ServicesIncluded } from "@prisma/client/edge";
+import { NextRequest } from "next/server";
+import { FilterOptions } from "@repo/types";
+
+export const runtime = "edge";
+
+export function parseLocationParams(request: NextRequest): FilterOptions['location'] | null {
+  const latitude = request.nextUrl.searchParams.get('latitude');
+  const longitude = request.nextUrl.searchParams.get('longitude');
+  const radiusInKm = request.nextUrl.searchParams.get('radius');
+
+  if (!latitude && !longitude) {
+    return null;
+  }
+
+  if (!latitude || !longitude) {
+    throw new Error('Both latitude and longitude are required for location-based search');
+  }
+
+  const parsedLat = validateNumericParam(latitude, 0);
+  const parsedLng = validateNumericParam(longitude, 0);
+  const parsedRadius = validateNumericParam(radiusInKm, 10);
+
+  // Validate coordinates
+  if (parsedLat < -90 || parsedLat > 90) {
+    throw new Error('Latitude must be between -90 and 90 degrees');
+  }
+  if (parsedLng < -180 || parsedLng > 180) {
+    throw new Error('Longitude must be between -180 and 180 degrees');
+  }
+  if (parsedRadius <= 0 || parsedRadius > 500) {
+    throw new Error('Radius must be between 0 and 500 kilometers');
+  }
+
+  return {
+    latitude: parsedLat,
+    longitude: parsedLng,
+    radiusInKm: parsedRadius
+  };
+}
+
+export function validateNumericParam(value: string | null, defaultValue: number): number {
+  if (!value) return defaultValue;
+  const num = parseFloat(value);
+  return isNaN(num) ? defaultValue : num;
+}
+
+export function parsePriceParams(request: NextRequest) {
+  const minPrice = request.nextUrl.searchParams.get('minPrice');
+  const maxPrice = request.nextUrl.searchParams.get('maxPrice');
+  const priceType = request.nextUrl.searchParams.get('priceType') as PricingType | null;
+
+  if (!minPrice && !maxPrice && !priceType) {
+    return null;
+  }
+
+  const parsedMin = minPrice ? validateNumericParam(minPrice, 0) : undefined;
+  const parsedMax = maxPrice ? validateNumericParam(maxPrice, 0) : undefined;
+
+  // Validate price range
+  if (parsedMin !== undefined && parsedMax !== undefined && parsedMin > parsedMax) {
+    throw new Error('Minimum price cannot be greater than maximum price');
+  }
+
+  if (parsedMin !== undefined && parsedMin < 0) {
+    throw new Error('Minimum price cannot be negative');
+  }
+
+  return {
+    min: parsedMin,
+    max: parsedMax,
+    type: priceType || undefined
+  };
+}
+
+export function parseServicesIncluded(services: string | null): ServicesIncluded[] | undefined {
+  if (!services) return undefined;
+
+  const parsed = services.split(',').filter(Boolean) as ServicesIncluded[];
+  return parsed.length > 0 ? parsed : undefined;
+}

@@ -2,7 +2,7 @@ import { prisma } from '@/server/index';
 import { Category, Freelancer, Post, PostTag, Prisma } from '@prisma/client/edge'
 import { ResponseDataWithLocation, ResponseDataWithoutLocation, PostWithUserInfo } from "@repo/types";
 import { PostUpdateHandlers } from './updateHandlers';
-import { UpdatePostData } from "@repo/types";
+import { UpdatePostData, FilterOptions } from "@repo/types";
 import { getLocationBasedQuery, processLocationBasedPosts } from './location';
 
 export const runtime = 'edge'
@@ -16,20 +16,6 @@ export type PostWithRelations = Post & {
   })[];
 };
 
-type TypeLocation = {
-  latitude: number;
-  longitude: number;
-  radiusInKm: number;
-};
-
-type GetSortedPostArgs = {
-  page?: number;
-  limit?: number;
-  categoryName?: string | null;
-  subcategoryName?: string | null;
-  location?: TypeLocation | null;
-};
-
 interface DensityConfig {
   minPosts: number;
   initialRadius: number;
@@ -40,12 +26,62 @@ interface DensityConfig {
 export async function getPosts({
   page = 1,
   limit = 10,
+  location,
+  price,
+  engagementType,
+  minRating,
+  targetAudience,
+  servicesIncluded,
   categoryName,
-  subcategoryName,
-  location
-}: GetSortedPostArgs): Promise<ResponseDataWithLocation | ResponseDataWithoutLocation> {
+  subcategoryName
+}: FilterOptions): Promise<ResponseDataWithLocation | ResponseDataWithoutLocation> {
   try {
     const skip = (page - 1) * limit;
+
+    // Build base query conditions
+    const baseConditions = {
+      ...(price?.type && { pricingType: price.type }),
+      ...(price?.min !== undefined || price?.max !== undefined) && {
+        OR: [
+          {
+            AND: [
+              { pricingType: 'HOURLY' },
+              { hourlyRate: { gte: price?.min, lte: price?.max } }
+            ]
+          },
+          {
+            AND: [
+              { pricingType: 'FIXED_PRICE' },
+              { fixedPrice: { gte: price?.min, lte: price?.max } }
+            ]
+          }
+        ]
+      },
+      ...(engagementType && {
+        serviceEngagement: {
+          some: { engagementType }
+        }
+      }),
+      ...(minRating && {
+        averageRating: { gte: minRating }
+      }),
+      ...(targetAudience && {
+        targetAudience
+      }),
+      ...(servicesIncluded?.length && {
+        servicesIncluded: { hasEvery: servicesIncluded }
+      }),
+      ...(categoryName && {
+        tags: {
+          some: {
+            subcategory: {
+              category: { name: categoryName },
+              ...(subcategoryName && { name: subcategoryName })
+            }
+          }
+        }
+      })
+    };
 
     if (location?.latitude && location?.longitude) {
       // Density configuration
@@ -63,11 +99,13 @@ export async function getPosts({
 
       // Keep expanding radius until we have enough posts or hit max radius
       while (currentRadius <= densityConfig.maxRadius) {
-        const where = getLocationBasedQuery(
+        let where = getLocationBasedQuery(
           { ...location, radiusInKm: currentRadius },
           categoryName,
           subcategoryName
         );
+
+        where = { ...where, ...baseConditions };
 
         // Count posts at current radius
         const postCount = await prisma.post.count({ where });

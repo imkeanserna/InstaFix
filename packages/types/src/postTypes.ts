@@ -86,3 +86,26 @@ export type ResponseDataWithoutLocation = {
     currentPage: number;
   },
 };
+
+export type FilterOptions = {
+  page?: number;
+  limit?: number;
+  location?: TypeLocation | null;
+  price?: {
+    min?: number;
+    max?: number;
+    type?: PricingType;
+  };
+  engagementType?: EngagementType;
+  minRating?: number;
+  targetAudience?: TargetAudience;
+  servicesIncluded?: ServicesIncluded[];
+  categoryName?: string;
+  subcategoryName?: string;
+};
+
+type TypeLocation = {
+  latitude: number;
+  longitude: number;
+  radiusInKm: number;
+};

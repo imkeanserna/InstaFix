@@ -5,8 +5,6 @@ export const runtime = 'edge'
 
 export function getLocationBasedQuery(
   location: { latitude: number; longitude: number; radiusInKm: number },
-  categoryName?: string | null,
-  subcategoryName?: string | null
 ) {
   return {
     location: {
@@ -19,16 +17,6 @@ export function getLocationBasedQuery(
         lte: location.longitude + (location.radiusInKm / (111 * Math.cos(location.latitude * (Math.PI / 180)))),
       },
     },
-    ...(categoryName && {
-      tags: {
-        some: {
-          subcategory: {
-            category: { name: categoryName },
-            ...(subcategoryName && { name: subcategoryName })
-          }
-        }
-      }
-    })
   };
 }
 
