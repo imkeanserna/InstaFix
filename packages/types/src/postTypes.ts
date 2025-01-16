@@ -1,4 +1,4 @@
-import { EngagementType, MediaType, PricingType, RequestConfirmationType, ServiceLocationType, ServicesIncluded, TargetAudience } from "@prisma/client/edge";
+import { EngagementType, Location, Media, MediaType, Post, PricingType, RequestConfirmationType, ServiceLocationType, ServicesIncluded, TargetAudience } from "@prisma/client/edge";
 
 export type PostBasicInfo = {
   title?: string;
@@ -51,3 +51,38 @@ export type UpdatePostData = {
   location: PostLocation;
   pricing: PostPricing;
 }
+
+export type PostWithUserInfo = Post & {
+  location: Location | null;
+  media: Media[];
+  reviews: {
+    rating: number;
+    createdAt: Date;
+  }[];
+  user: {
+    name: string | null;
+    image: string | null;
+  }
+}
+
+export type ResponseDataWithLocation = {
+  posts: (PostWithUserInfo & {
+    distance: number
+  })[];
+  pagination: {
+    total: number;
+    pages: number;
+    currentPage: number;
+  },
+  searchRadius: number;
+  density: number;
+};
+
+export type ResponseDataWithoutLocation = {
+  posts: PostWithUserInfo[];
+  pagination: {
+    total: number;
+    pages: number;
+    currentPage: number;
+  },
+};

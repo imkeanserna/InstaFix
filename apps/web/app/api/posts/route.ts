@@ -1,6 +1,7 @@
 import { errorResponse } from "@/lib/errorResponse";
 import { NextRequest, NextResponse } from "next/server";
-import { getSortedPost } from "../_action/posts/getPosts";
+import { getPosts } from "../_action/posts/getPosts";
+import { ResponseDataWithLocation, ResponseDataWithoutLocation } from "@repo/types";
 
 export const runtime = "edge";
 
@@ -18,14 +19,13 @@ export async function GET(request: NextRequest) {
       return errorResponse('Category is required when filtering by subcategory', undefined, 400);
     }
 
-    const result = await getSortedPost({
+    const result: ResponseDataWithLocation | ResponseDataWithoutLocation = await getPosts({
       page, limit, categoryName, subcategoryName, location: {
         latitude: parseFloat(latitude ?? '0'),
         longitude: parseFloat(longitude ?? '0'),
         radiusInKm
       }
     });
-
     return NextResponse.json({
       success: true,
       data: result

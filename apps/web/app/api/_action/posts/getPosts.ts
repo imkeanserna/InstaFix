@@ -1,8 +1,9 @@
 import { prisma } from '@/server/index';
-import { Prisma } from '@prisma/client/edge';
-import { Category, Freelancer, Post, PostTag } from '@prisma/client/edge'
+import { Category, Freelancer, Post, PostTag, Prisma } from '@prisma/client/edge'
+import { ResponseDataWithLocation, ResponseDataWithoutLocation, PostWithUserInfo } from "@repo/types";
 import { PostUpdateHandlers } from './updateHandlers';
 import { UpdatePostData } from "@repo/types";
+import { getLocationBasedQuery, processLocationBasedPosts } from './location';
 
 export const runtime = 'edge'
 
@@ -15,187 +16,107 @@ export type PostWithRelations = Post & {
   })[];
 };
 
+type TypeLocation = {
+  latitude: number;
+  longitude: number;
+  radiusInKm: number;
+};
+
 type GetSortedPostArgs = {
   page?: number;
   limit?: number;
   categoryName?: string | null;
   subcategoryName?: string | null;
-  location?: {
-    latitude: number;
-    longitude: number;
-    radiusInKm: number;
-  } | null;
+  location?: TypeLocation | null;
 };
 
-export async function getSortedPost({
+interface DensityConfig {
+  minPosts: number;
+  initialRadius: number;
+  maxRadius: number;
+  expansionStep: number;
+}
+
+export async function getPosts({
   page = 1,
   limit = 10,
   categoryName,
   subcategoryName,
   location
-}: GetSortedPostArgs) {
+}: GetSortedPostArgs): Promise<ResponseDataWithLocation | ResponseDataWithoutLocation> {
   try {
     const skip = (page - 1) * limit;
 
-    let where: Prisma.PostWhereInput = {};
-
     if (location?.latitude && location?.longitude) {
-      // If location is provided, show all service types within radius
-      where = {
-        ...where,
-        location: {
-          latitude: {
-            gte: location.latitude - (location.radiusInKm / 111),
-            lte: location.latitude + (location.radiusInKm / 111),
-          },
-          longitude: {
-            gte: location.longitude - (location.radiusInKm / (111 * Math.cos(location.latitude * (Math.PI / 180)))),
-            lte: location.longitude + (location.radiusInKm / (111 * Math.cos(location.latitude * (Math.PI / 180)))),
-          },
-        },
+      // Density configuration
+      const densityConfig: DensityConfig = {
+        minPosts: 20,        // Minimum desired posts
+        initialRadius: 5,    // Start with 5km radius
+        maxRadius: 100,      // Never exceed 100km
+        expansionStep: 5     // Increase by 5km each time
       };
-    } else {
-      // If no location provided, show only ONLINE and HYBRID services
-      where = {
-        ...where,
-        OR: [
-          { serviceLocation: 'ONLINE' },
-          { serviceLocation: 'HYBRID' }
-        ]
-      };
-    }
 
-    // Add category filters
-    if (categoryName) {
-      where = {
-        ...where,
-        tags: {
-          some: {
-            subcategory: {
-              category: {
-                name: categoryName
+      let currentRadius = densityConfig.initialRadius;
+      let posts: PostWithUserInfo[] = [];
+      let total = 0;
+      let finalRadius = currentRadius;
+
+      // Keep expanding radius until we have enough posts or hit max radius
+      while (currentRadius <= densityConfig.maxRadius) {
+        const where = getLocationBasedQuery(
+          { ...location, radiusInKm: currentRadius },
+          categoryName,
+          subcategoryName
+        );
+
+        // Count posts at current radius
+        const postCount = await prisma.post.count({ where });
+
+        // We found enough posts, get the actual data
+        if (postCount > 0 && (postCount >= densityConfig.minPosts || currentRadius === densityConfig.maxRadius)) {
+          [posts, total] = await Promise.all([
+            prisma.post.findMany({
+              skip,
+              take: limit,
+              include: {
+                media: true,
+                location: true,
+                reviews: {
+                  select: {
+                    rating: true,
+                    createdAt: true,
+                  },
+                  orderBy: {
+                    createdAt: 'desc',
+                  },
+                },
+                user: {
+                  select: {
+                    name: true,
+                    image: true,
+                  }
+                }
               },
-              ...(subcategoryName && { name: subcategoryName })
-            }
-          }
+              orderBy: [
+                { averageRating: { sort: 'desc', nulls: 'last' } },
+                { reviews: { _count: 'desc' } },
+                { updatedAt: 'desc' },
+                { createdAt: 'desc' }
+              ],
+              where
+            }),
+            Promise.resolve(postCount)
+          ]);
+          finalRadius = currentRadius;
+          break;
         }
-      };
-    }
 
-    const orderBy: Prisma.PostOrderByWithRelationInput[] = [
-      {
-        averageRating: {
-          sort: 'desc',
-          nulls: 'last',
-        },
-      },
-      {
-        reviews: {
-          _count: 'desc',
-        },
-      },
-      {
-        updatedAt: 'desc',
-      },
-      {
-        createdAt: 'desc',
-      },
-    ];
+        currentRadius += densityConfig.expansionStep;
+      }
 
-    const posts = await prisma.post.findMany({
-      skip,
-      take: limit,
-      include: {
-        location: true,
-        reviews: {
-          select: {
-            rating: true,
-            createdAt: true,
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
-        user: {
-          select: {
-            name: true,
-            image: true,
-          }
-        }
-      },
-      orderBy,
-      where
-    });
-
-    const total = await prisma.post.count({
-      where
-    });
-
-    if (location?.latitude && location?.longitude) {
-      const postsWithDistance = posts.map((post) => ({
-        ...post,
-        distance: post.location
-          ? calculateDistance(
-            location.latitude,
-            location.longitude,
-            post.location.latitude,
-            post.location.longitude
-          )
-          : Infinity
-      }));
-
-      // Get maximum values for normalization
-      const maxDistance = Math.max(...postsWithDistance.map(post => post.distance));
-      const maxReviews = Math.max(...postsWithDistance.map(post => post.reviews.length));
-      const latestUpdate = Math.max(...postsWithDistance.map(post => new Date(post.updatedAt).getTime()));
-      const latestCreation = Math.max(...postsWithDistance.map(post => new Date(post.createdAt).getTime()));
-
-      // Custom sorting function that combines all criteria
-      const processedPosts = postsWithDistance.sort((a, b) => {
-        // Normalize all values to 0-1 scale
-        const ratingA = (a.averageRating ?? 0) / 5;
-        const ratingB = (b.averageRating ?? 0) / 5;
-
-        const distanceA = a.distance / maxDistance;
-        const distanceB = b.distance / maxDistance;
-
-        const reviewsA = maxReviews ? a.reviews.length / maxReviews : 0;
-        const reviewsB = maxReviews ? b.reviews.length / maxReviews : 0;
-
-        const updatedAtA = new Date(a.updatedAt).getTime() / latestUpdate;
-        const updatedAtB = new Date(b.updatedAt).getTime() / latestUpdate;
-
-        const createdAtA = new Date(a.createdAt).getTime() / latestCreation;
-        const createdAtB = new Date(b.createdAt).getTime() / latestCreation;
-
-        // Weights for each criterion (total = 1)
-        const weights = {
-          rating: 0.35,    // 35% weight to rating
-          distance: 0.25,  // 25% weight to distance
-          reviews: 0.20,   // 20% weight to review count
-          updated: 0.15,   // 15% weight to update time
-          created: 0.05    // 5% weight to creation time
-        };
-
-        // Calculate combined scores
-        const scoreA = (
-          (weights.rating * ratingA) -
-          (weights.distance * distanceA) +
-          (weights.reviews * reviewsA) +
-          (weights.updated * updatedAtA) +
-          (weights.created * createdAtA)
-        );
-
-        const scoreB = (
-          (weights.rating * ratingB) -
-          (weights.distance * distanceB) +
-          (weights.reviews * reviewsB) +
-          (weights.updated * updatedAtB) +
-          (weights.created * createdAtB)
-        );
-
-        return scoreB - scoreA;
-      });
+      const processedPosts: (PostWithUserInfo & {
+        distance: number
+      })[] = processLocationBasedPosts(posts, location, finalRadius);
 
       return {
         posts: processedPosts,
@@ -203,22 +124,79 @@ export async function getSortedPost({
           total,
           pages: Math.ceil(total / limit),
           currentPage: page
+        },
+        searchRadius: finalRadius,
+        density: total > 0 ? total / (Math.PI * finalRadius * finalRadius) : 0
+      };
+    } else {
+      // Non-location based query remains unchanged
+      const where = getNonLocationQuery(categoryName, subcategoryName) as Prisma.PostWhereInput;
+      const [posts, total] = await Promise.all([
+        prisma.post.findMany({
+          skip,
+          take: limit,
+          include: {
+            media: true,
+            location: true,
+            reviews: {
+              select: {
+                rating: true,
+                createdAt: true,
+              },
+              orderBy: {
+                createdAt: 'desc',
+              },
+            },
+            user: {
+              select: {
+                name: true,
+                image: true,
+              }
+            }
+          },
+          orderBy: [
+            { averageRating: { sort: 'desc', nulls: 'last' } },
+            { reviews: { _count: 'desc' } },
+            { updatedAt: 'desc' },
+            { createdAt: 'desc' }
+          ],
+          where
+        }),
+        prisma.post.count({ where })
+      ]);
+
+      return {
+        posts,
+        pagination: {
+          total,
+          pages: Math.ceil(total / limit),
+          currentPage: page
         }
       };
-    }
-
-    return {
-      posts: posts,
-      pagination: {
-        total,
-        pages: Math.ceil(total / limit),
-        currentPage: page
-      }
     };
   } catch (error) {
     console.error('Error fetching posts:', error);
     throw error;
   }
+}
+
+function getNonLocationQuery(categoryName?: string | null, subcategoryName?: string | null) {
+  return {
+    OR: [
+      { serviceLocation: 'ONLINE' },
+      { serviceLocation: 'HYBRID' }
+    ],
+    ...(categoryName && {
+      tags: {
+        some: {
+          subcategory: {
+            category: { name: categoryName },
+            ...(subcategoryName && { name: subcategoryName })
+          }
+        }
+      }
+    })
+  };
 }
 
 export async function getPostsByProfession(professions: string[]): Promise<{ posts: Post[] }> {
@@ -339,80 +317,4 @@ export async function validatePostOwnership(postId: string, userId: string) {
   }
 
   return post;
-}
-
-export async function getNearbyPosts({
-  latitude,
-  longitude,
-  radiusInKm = 10,
-  limit = 20
-}: {
-  latitude: number;
-  longitude: number;
-  radiusInKm?: number;
-  limit?: number;
-}) {
-  // Convert kilometers to degrees (approximate)
-  const degreeRadius = radiusInKm / 111;
-
-  try {
-    const nearbyPosts = await prisma.post.findMany({
-      where: {
-        location: {
-          latitude: {
-            gte: latitude - degreeRadius,
-            lte: latitude + degreeRadius,
-          },
-          longitude: {
-            gte: longitude - degreeRadius,
-            lte: longitude + degreeRadius,
-          },
-        },
-      },
-      include: {
-        location: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-          },
-        },
-      },
-      take: limit,
-    });
-
-    // Calculate actual distances and sort
-    const postsWithDistance = nearbyPosts.map(post => ({
-      ...post,
-      distance: calculateDistance(
-        latitude,
-        longitude,
-        post.location!.latitude,
-        post.location!.longitude
-      ),
-    }));
-
-    return postsWithDistance.sort((a, b) => a.distance - b.distance);
-  } catch (error) {
-    console.error('Error getting nearby posts:', error);
-    throw error;
-  }
-}
-
-function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
-  const R = 6371; // Earth's radius in kilometers
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in kilometers
 }
