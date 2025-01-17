@@ -200,4 +200,21 @@ function normalizeAddress(address: string): string {
     .trim();
 }
 
-
+export function getNonLocationQuery(categoryName?: string | null, subcategoryName?: string | null) {
+  return {
+    OR: [
+      { serviceLocation: 'ONLINE' },
+      { serviceLocation: 'HYBRID' }
+    ],
+    ...(categoryName && {
+      tags: {
+        some: {
+          subcategory: {
+            category: { name: categoryName },
+            ...(subcategoryName && { name: subcategoryName })
+          }
+        }
+      }
+    })
+  };
+}

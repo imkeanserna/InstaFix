@@ -1,9 +1,11 @@
 import { prisma } from '@/server/index';
-import { Category, Freelancer, Post, PostTag, Prisma } from '@prisma/client/edge'
+import { Category, Freelancer, Post, PostTag } from '@prisma/client/edge'
 import { ResponseDataWithLocation, ResponseDataWithoutLocation, PostWithUserInfo } from "@repo/types";
 import { PostUpdateHandlers } from './updateHandlers';
 import { UpdatePostData, FilterOptions } from "@repo/types";
-import { getLocationBasedQuery, processLocationBasedPosts } from './location';
+import { getLocationBasedQuery, getNonLocationQuery, processLocationBasedPosts } from './location';
+import { DEFAULT_INCLUDE, DEFAULT_ORDER_BY, DENSITY_CONFIG } from '../constant/queryPost';
+import { buildBaseConditions, buildSearchQuery } from '../helper/postUtils';
 
 export const runtime = 'edge'
 
@@ -16,131 +18,53 @@ export type PostWithRelations = Post & {
   })[];
 };
 
-interface DensityConfig {
-  minPosts: number;
-  initialRadius: number;
-  maxRadius: number;
-  expansionStep: number;
-}
+type WhereSearch = Record<string, unknown>;
 
-export async function getPosts({
-  page = 1,
-  limit = 10,
-  location,
-  price,
-  engagementType,
-  minRating,
-  targetAudience,
-  servicesIncluded,
-  categoryName,
-  subcategoryName
-}: FilterOptions): Promise<ResponseDataWithLocation | ResponseDataWithoutLocation> {
+type WhereClause = {
+  AND?: {
+    OR: (
+      | { serviceLocation: 'ONLINE' }
+      | { serviceLocation: 'HYBRID' }
+      | { title: { contains: string; mode: 'insensitive' } }
+    )[];
+  }[];
+} & WhereSearch;
+
+export async function getPosts(options: FilterOptions): Promise<ResponseDataWithLocation | ResponseDataWithoutLocation> {
   try {
+    const {
+      page = 1,
+      limit = 10,
+      location,
+      searchQuery
+    } = options;
     const skip = (page - 1) * limit;
-
-    // Build base query conditions
-    const baseConditions = {
-      ...(price?.type && { pricingType: price.type }),
-      ...(price?.min !== undefined || price?.max !== undefined) && {
-        OR: [
-          {
-            AND: [
-              { pricingType: 'HOURLY' },
-              { hourlyRate: { gte: price?.min, lte: price?.max } }
-            ]
-          },
-          {
-            AND: [
-              { pricingType: 'FIXED_PRICE' },
-              { fixedPrice: { gte: price?.min, lte: price?.max } }
-            ]
-          }
-        ]
-      },
-      ...(engagementType && {
-        serviceEngagement: {
-          some: { engagementType }
-        }
-      }),
-      ...(minRating && {
-        averageRating: { gte: minRating }
-      }),
-      ...(targetAudience && {
-        targetAudience
-      }),
-      ...(servicesIncluded?.length && {
-        servicesIncluded: { hasEvery: servicesIncluded }
-      }),
-      ...(categoryName && {
-        tags: {
-          some: {
-            subcategory: {
-              category: { name: categoryName },
-              ...(subcategoryName && { name: subcategoryName })
-            }
-          }
-        }
-      })
-    };
+    const searchTerms = searchQuery?.toLowerCase().trim().split(/\s+/);
 
     if (location?.latitude && location?.longitude) {
-      // Density configuration
-      const densityConfig: DensityConfig = {
-        minPosts: 20,        // Minimum desired posts
-        initialRadius: 5,    // Start with 5km radius
-        maxRadius: 100,      // Never exceed 100km
-        expansionStep: 5     // Increase by 5km each time
-      };
-
-      let currentRadius = densityConfig.initialRadius;
+      let currentRadius = DENSITY_CONFIG.initialRadius;
       let posts: PostWithUserInfo[] = [];
       let total = 0;
       let finalRadius = currentRadius;
 
       // Keep expanding radius until we have enough posts or hit max radius
-      while (currentRadius <= densityConfig.maxRadius) {
-        let where = getLocationBasedQuery(
-          { ...location, radiusInKm: currentRadius },
-          categoryName,
-          subcategoryName
-        );
-
-        where = { ...where, ...baseConditions };
+      while (currentRadius <= DENSITY_CONFIG.maxRadius) {
+        let where = getLocationBasedQuery({ ...location, radiusInKm: currentRadius });
+        where = searchQuery && searchTerms
+          ? { ...where, ...buildSearchQuery(searchTerms) }
+          : { ...where, ...buildBaseConditions(options) };
 
         // Count posts at current radius
         const postCount = await prisma.post.count({ where });
 
         // We found enough posts, get the actual data
-        if (postCount > 0 && (postCount >= densityConfig.minPosts || currentRadius === densityConfig.maxRadius)) {
+        if (postCount > 0 && (postCount >= DENSITY_CONFIG.minPosts || currentRadius === DENSITY_CONFIG.maxRadius)) {
           [posts, total] = await Promise.all([
             prisma.post.findMany({
               skip,
               take: limit,
-              include: {
-                media: true,
-                location: true,
-                reviews: {
-                  select: {
-                    rating: true,
-                    createdAt: true,
-                  },
-                  orderBy: {
-                    createdAt: 'desc',
-                  },
-                },
-                user: {
-                  select: {
-                    name: true,
-                    image: true,
-                  }
-                }
-              },
-              orderBy: [
-                { averageRating: { sort: 'desc', nulls: 'last' } },
-                { reviews: { _count: 'desc' } },
-                { updatedAt: 'desc' },
-                { createdAt: 'desc' }
-              ],
+              include: DEFAULT_INCLUDE,
+              orderBy: DEFAULT_ORDER_BY,
               where
             }),
             Promise.resolve(postCount)
@@ -148,8 +72,7 @@ export async function getPosts({
           finalRadius = currentRadius;
           break;
         }
-
-        currentRadius += densityConfig.expansionStep;
+        currentRadius += DENSITY_CONFIG.expansionStep;
       }
 
       const processedPosts: (PostWithUserInfo & {
@@ -168,36 +91,37 @@ export async function getPosts({
       };
     } else {
       // Non-location based query remains unchanged
-      const where = getNonLocationQuery(categoryName, subcategoryName) as Prisma.PostWhereInput;
-      const [posts, total] = await Promise.all([
+      let where: WhereClause = searchQuery && searchTerms
+        ? {
+          ...buildSearchQuery(searchTerms),
+          AND: [
+            {
+              OR: [
+                { serviceLocation: 'ONLINE' },
+                { serviceLocation: 'HYBRID' },
+              ],
+            },
+            {
+              OR: searchTerms?.map(term => ({
+                title: {
+                  contains: term,
+                  mode: 'insensitive' as const,
+                },
+              })) || [],
+            },
+          ],
+        }
+        : {
+          ...getNonLocationQuery(options.categoryName, options.subcategoryName),
+          ...buildBaseConditions(options)
+        };
+
+      const [posts, total]: [PostWithUserInfo[], number] = await Promise.all([
         prisma.post.findMany({
           skip,
           take: limit,
-          include: {
-            media: true,
-            location: true,
-            reviews: {
-              select: {
-                rating: true,
-                createdAt: true,
-              },
-              orderBy: {
-                createdAt: 'desc',
-              },
-            },
-            user: {
-              select: {
-                name: true,
-                image: true,
-              }
-            }
-          },
-          orderBy: [
-            { averageRating: { sort: 'desc', nulls: 'last' } },
-            { reviews: { _count: 'desc' } },
-            { updatedAt: 'desc' },
-            { createdAt: 'desc' }
-          ],
+          include: DEFAULT_INCLUDE,
+          orderBy: DEFAULT_ORDER_BY,
           where
         }),
         prisma.post.count({ where })
@@ -216,25 +140,6 @@ export async function getPosts({
     console.error('Error fetching posts:', error);
     throw error;
   }
-}
-
-function getNonLocationQuery(categoryName?: string | null, subcategoryName?: string | null) {
-  return {
-    OR: [
-      { serviceLocation: 'ONLINE' },
-      { serviceLocation: 'HYBRID' }
-    ],
-    ...(categoryName && {
-      tags: {
-        some: {
-          subcategory: {
-            category: { name: categoryName },
-            ...(subcategoryName && { name: subcategoryName })
-          }
-        }
-      }
-    })
-  };
 }
 
 export async function getPostsByProfession(professions: string[]): Promise<{ posts: Post[] }> {

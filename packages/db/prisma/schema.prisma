@@ -211,6 +211,16 @@ model Transaction {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model PopularSearch {
+  id           String   @id @default(cuid())
+  query        String   @unique
+  count        Int      @default(1)
+  lastSearched DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@index([count, lastSearched])
+}
+
 enum Role {
   USER
   BOT

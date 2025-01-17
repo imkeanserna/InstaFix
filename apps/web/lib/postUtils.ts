@@ -1,4 +1,3 @@
-import { currentUser } from "@/lib";
 import { Post } from "@prisma/client/edge";
 
 export const runtime = "edge";

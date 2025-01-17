@@ -102,6 +102,7 @@ export type FilterOptions = {
   servicesIncluded?: ServicesIncluded[];
   categoryName?: string;
   subcategoryName?: string;
+  searchQuery?: string;
 };
 
 type TypeLocation = {

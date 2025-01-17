@@ -79,3 +79,94 @@ export function parseServicesIncluded(services: string | null): ServicesIncluded
   const parsed = services.split(',').filter(Boolean) as ServicesIncluded[];
   return parsed.length > 0 ? parsed : undefined;
 }
+
+// Query builder
+export const buildBaseConditions = (options: FilterOptions) => {
+  const {
+    price,
+    engagementType,
+    minRating,
+    targetAudience,
+    servicesIncluded,
+    categoryName,
+    subcategoryName
+  } = options;
+
+  return {
+    ...(price?.type && { pricingType: price.type }),
+    ...(price?.min !== undefined || price?.max !== undefined) && {
+      OR: [
+        {
+          AND: [
+            { pricingType: 'HOURLY' },
+            { hourlyRate: { gte: price?.min, lte: price?.max } }
+          ]
+        },
+        {
+          AND: [
+            { pricingType: 'FIXED_PRICE' },
+            { fixedPrice: { gte: price?.min, lte: price?.max } }
+          ]
+        }
+      ]
+    },
+    ...(engagementType && {
+      serviceEngagement: { some: { engagementType } }
+    }),
+    ...(minRating && {
+      averageRating: { gte: minRating }
+    }),
+    ...(targetAudience && { targetAudience }),
+    ...(servicesIncluded?.length && {
+      servicesIncluded: { hasEvery: servicesIncluded }
+    }),
+    ...(categoryName && {
+      tags: {
+        some: {
+          subcategory: {
+            category: { name: categoryName },
+            ...(subcategoryName && { name: subcategoryName })
+          }
+        }
+      }
+    })
+  };
+};
+
+export const buildSearchQuery = (searchTerms: string[]) => ({
+  OR: [
+    {
+      OR: searchTerms?.map(term => ({
+        title: { contains: term, mode: 'insensitive' }
+      }))
+    },
+    {
+      OR: searchTerms?.map(term => ({
+        description: { contains: term, mode: 'insensitive' }
+      }))
+    },
+    { skills: { hasSome: searchTerms } },
+    {
+      tags: {
+        some: {
+          OR: searchTerms?.map(term => ({
+            OR: [
+              {
+                subcategory: {
+                  name: { contains: term, mode: 'insensitive' }
+                }
+              },
+              {
+                subcategory: {
+                  category: {
+                    name: { contains: term, mode: 'insensitive' }
+                  }
+                }
+              }
+            ]
+          }))
+        }
+      }
+    }
+  ]
+});

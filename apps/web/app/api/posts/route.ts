@@ -4,6 +4,7 @@ import { getPosts } from "../_action/posts/getPosts";
 import { ResponseDataWithLocation, ResponseDataWithoutLocation, FilterOptions } from "@repo/types";
 import { parseLocationParams, parsePriceParams, parseServicesIncluded, validateNumericParam } from "../_action/helper/postUtils";
 import { EngagementType, TargetAudience } from "@prisma/client/edge";
+import { trackPopularSearch } from "../_action/posts/searchQuery";
 
 export const runtime = "edge";
 
@@ -22,6 +23,8 @@ export async function GET(request: NextRequest) {
       return errorResponse('Category is required when filtering by subcategory', undefined, 400);
     }
 
+    const searchQuery = request.nextUrl.searchParams.get('search') ?? '';
+    const completeSearch = request.nextUrl.searchParams.get('complete') === 'true';
     const location = parseLocationParams(request);
     const price = parsePriceParams(request);
     const engagementType = request.nextUrl.searchParams.get('engagementType') as EngagementType | null;
@@ -32,6 +35,7 @@ export async function GET(request: NextRequest) {
     const filterOptions: FilterOptions = {
       page,
       limit,
+      ...(searchQuery && { searchQuery }),
       ...(location && { location }),
       ...(price && { price }),
       ...(engagementType && { engagementType }),
@@ -43,6 +47,11 @@ export async function GET(request: NextRequest) {
     };
 
     const result: ResponseDataWithLocation | ResponseDataWithoutLocation = await getPosts(filterOptions);
+
+    // For storing popular search
+    if (completeSearch && searchQuery.trim()) {
+      await trackPopularSearch(searchQuery);
+    }
 
     return NextResponse.json({
       success: true,
