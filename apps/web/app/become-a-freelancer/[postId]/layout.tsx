@@ -1,4 +1,4 @@
-import { getPostById } from "@/app/api/_action/posts/getPosts";
+import { getCreatePostById } from "@/app/api/_action/posts/getPosts";
 import { currentUser } from "@/lib";
 import { notFound } from "next/navigation";
 
@@ -16,7 +16,7 @@ export default async function RootLayout({
   params
 }: LayoutProps) {
   const user = await currentUser();
-  const post = await getPostById(user?.id!, params.postId);
+  const post = await getCreatePostById(user?.id!, params.postId);
 
   if (!post) {
     notFound();

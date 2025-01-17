@@ -173,7 +173,7 @@ export async function getPostsByProfession(professions: string[]): Promise<{ pos
   }
 }
 
-export async function getPostById(userId: string, postId: string) {
+export async function getCreatePostById(userId: string, postId: string) {
   if (!userId || !postId) {
     return null;
   }

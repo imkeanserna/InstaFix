@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
-    "recoil": "^0.7.7"
+    "framer-motion": "^11.18.1",
+    "recoil": "^0.7.7",
+    "zod": "^3.24.1"
   }
 }

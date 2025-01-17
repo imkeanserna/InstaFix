@@ -104,7 +104,6 @@ export async function getSearchSuggestions(
 
   // Add subcategories (with parent category)
   subcategories.forEach((subcategory: Subcategory & { category: Category }) => {
-    console.log(subcategory);
     suggestions.add({
       text: `${subcategory.category.name} › ${subcategory.name}`,
       type: 'subcategory'

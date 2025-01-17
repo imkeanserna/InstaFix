@@ -1,6 +1,6 @@
 import { errorResponse } from "@/lib/errorResponse";
 import { NextRequest, NextResponse } from "next/server";
-import { getPostById, updatePost } from "../../_action/posts/getPosts";
+import { getCreatePostById, updatePost } from "../../_action/posts/getPosts";
 import { currentUser } from "@/lib";
 import { User } from "next-auth";
 
@@ -70,7 +70,7 @@ export async function GET(
   }
 
   try {
-    const post = await getPostById(user.id, params?.postId);
+    const post = await getCreatePostById(user.id, params?.postId);
 
     return NextResponse.json({
       success: true,
