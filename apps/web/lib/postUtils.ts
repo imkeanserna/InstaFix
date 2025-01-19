@@ -1,4 +1,5 @@
 import { Post } from "@prisma/client/edge";
+import { ResponseDataWithCursor, ResponseDataWithLocationAndCursor, GetPostsResponse, SearchWithPaginationOptions } from "@repo/types";
 
 export const runtime = "edge";
 
@@ -121,5 +122,74 @@ export async function getPreviewPost(postId: string) {
     return result.data;
   } catch (error) {
     return null;
+  }
+}
+
+type FindPostsResponse = {
+  success: boolean;
+  data: ResponseDataWithLocationAndCursor | ResponseDataWithCursor;
+  error?: string;
+}
+
+export async function getPosts(params: SearchWithPaginationOptions = {}): Promise<GetPostsResponse> {
+  const queryParams = new URLSearchParams();
+  const paramMapping = {
+    cursor: params.cursor,
+    take: params.take?.toString(),
+    category: params.categoryId,
+    subcategory: params.subcategoryId,
+    search: params.searchQuery,
+    complete: params.complete ? 'true' : undefined,
+    latitude: params.location?.latitude?.toString(),
+    longitude: params.location?.longitude?.toString(),
+    radius: params.location?.radiusInKm?.toString(),
+    minPrice: params.price?.min?.toString(),
+    maxPrice: params.price?.max?.toString(),
+    engagementType: params.engagementType,
+    minRating: params.minRating?.toString(),
+    targetAudience: params.targetAudience,
+    services: params.servicesIncluded?.length ? params.servicesIncluded.join(',') : undefined
+  };
+
+  Object.entries(paramMapping).forEach(([key, value]) => {
+    if (value) queryParams.set(key, value);
+  });
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_BACKEND_URL}/api/posts?${queryParams}`,
+      {
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: FindPostsResponse = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to get response from chat AI');
+    }
+
+    return {
+      data: result.data,
+      nextCursor: result.data.posts.length > 0 ? result.data.pagination?.endCursor : undefined
+    };
+  } catch (error) {
+    clearTimeout(timeout);
+    return {
+      data: [],
+      nextCursor: undefined
+    };
   }
 }

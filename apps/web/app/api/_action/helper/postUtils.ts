@@ -80,6 +80,18 @@ export function parseServicesIncluded(services: string | null): ServicesIncluded
   return parsed.length > 0 ? parsed : undefined;
 }
 
+// Validate the take parameter for cursor pagination
+export function parseAndValidateTake(takeStr: string): number {
+  const take = parseInt(takeStr);
+  if (isNaN(take) || take < 1) {
+    throw new Error('Take parameter must be a positive number');
+  }
+  if (take > 100) {
+    throw new Error('Take parameter must not exceed 100');
+  }
+  return take;
+}
+
 // Query builder
 export const buildBaseConditions = (options: FilterOptions) => {
   const {
@@ -88,8 +100,8 @@ export const buildBaseConditions = (options: FilterOptions) => {
     minRating,
     targetAudience,
     servicesIncluded,
-    categoryName,
-    subcategoryName
+    categoryId,
+    subcategoryId
   } = options;
 
   return {
@@ -120,12 +132,12 @@ export const buildBaseConditions = (options: FilterOptions) => {
     ...(servicesIncluded?.length && {
       servicesIncluded: { hasEvery: servicesIncluded }
     }),
-    ...(categoryName && {
+    ...(categoryId && {
       tags: {
         some: {
           subcategory: {
-            category: { name: categoryName },
-            ...(subcategoryName && { name: subcategoryName })
+            category: { id: categoryId },
+            ...(subcategoryId && { id: subcategoryId })
           }
         }
       }

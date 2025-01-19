@@ -1,8 +1,13 @@
 import { prisma } from '@/server/index';
 import { Category, Freelancer, Post, PostTag } from '@prisma/client/edge'
-import { ResponseDataWithLocation, ResponseDataWithoutLocation, PostWithUserInfo } from "@repo/types";
 import { PostUpdateHandlers } from './updateHandlers';
-import { UpdatePostData, FilterOptions } from "@repo/types";
+import {
+  UpdatePostData,
+  PostWithUserInfo,
+  CursorPaginationOptions,
+  ResponseDataWithLocationAndCursor,
+  ResponseDataWithCursor,
+} from "@repo/types";
 import { getLocationBasedQuery, getNonLocationQuery, processLocationBasedPosts } from './location';
 import { DEFAULT_INCLUDE, DEFAULT_ORDER_BY, DENSITY_CONFIG } from '../constant/queryPost';
 import { buildBaseConditions, buildSearchQuery } from '../helper/postUtils';
@@ -30,22 +35,22 @@ type WhereClause = {
   }[];
 } & WhereSearch;
 
-export async function getPosts(options: FilterOptions): Promise<ResponseDataWithLocation | ResponseDataWithoutLocation> {
+export async function getPosts(options: CursorPaginationOptions): Promise<ResponseDataWithLocationAndCursor | ResponseDataWithCursor> {
   try {
     const {
-      page = 1,
-      limit = 10,
+      cursor,
+      take = 10,
       location,
       searchQuery
     } = options;
-    const skip = (page - 1) * limit;
     const searchTerms = searchQuery?.toLowerCase().trim().split(/\s+/);
 
     if (location?.latitude && location?.longitude) {
       let currentRadius = DENSITY_CONFIG.initialRadius;
       let posts: PostWithUserInfo[] = [];
-      let total = 0;
       let finalRadius = currentRadius;
+      let hasNextPage = false;
+      let endCursor: string | undefined;
 
       // Keep expanding radius until we have enough posts or hit max radius
       while (currentRadius <= DENSITY_CONFIG.maxRadius) {
@@ -59,35 +64,51 @@ export async function getPosts(options: FilterOptions): Promise<ResponseDataWith
 
         // We found enough posts, get the actual data
         if (postCount > 0 && (postCount >= DENSITY_CONFIG.minPosts || currentRadius === DENSITY_CONFIG.maxRadius)) {
-          [posts, total] = await Promise.all([
-            prisma.post.findMany({
-              skip,
-              take: limit,
-              include: DEFAULT_INCLUDE,
-              orderBy: DEFAULT_ORDER_BY,
-              where
-            }),
-            Promise.resolve(postCount)
-          ]);
+          // Fetch one extra post to determine if there's a next page
+          const fetchedPosts = await prisma.post.findMany({
+            take: take + 1,
+            skip: cursor ? 1 : 0, // Skip the cursor item if it exists
+            cursor: cursor ? { id: cursor } : undefined,
+            include: DEFAULT_INCLUDE,
+            orderBy: DEFAULT_ORDER_BY,
+            where
+          });
+
+          hasNextPage = fetchedPosts.length > take;
+          posts = fetchedPosts.slice(0, take);
+
+          if (posts.length > 0) {
+            endCursor = posts[posts.length - 1].id;
+          }
+
           finalRadius = currentRadius;
-          break;
+          const processedPosts: (PostWithUserInfo & {
+            distance: number
+          })[] = processLocationBasedPosts(posts, location, finalRadius);
+
+          return {
+            posts: processedPosts,
+            pagination: {
+              cursor,
+              hasNextPage,
+              endCursor
+            },
+            searchRadius: finalRadius,
+            density: postCount / (Math.PI * finalRadius * finalRadius)
+          };
         }
+
         currentRadius += DENSITY_CONFIG.expansionStep;
       }
 
-      const processedPosts: (PostWithUserInfo & {
-        distance: number
-      })[] = processLocationBasedPosts(posts, location, finalRadius);
-
       return {
-        posts: processedPosts,
+        posts: [],
         pagination: {
-          total,
-          pages: Math.ceil(total / limit),
-          currentPage: page
+          cursor,
+          hasNextPage: false
         },
         searchRadius: finalRadius,
-        density: total > 0 ? total / (Math.PI * finalRadius * finalRadius) : 0
+        density: 0
       };
     } else {
       // Non-location based query remains unchanged
@@ -112,27 +133,32 @@ export async function getPosts(options: FilterOptions): Promise<ResponseDataWith
           ],
         }
         : {
-          ...getNonLocationQuery(options.categoryName, options.subcategoryName),
+          ...getNonLocationQuery(options.categoryId, options.subcategoryId),
           ...buildBaseConditions(options)
         };
 
-      const [posts, total]: [PostWithUserInfo[], number] = await Promise.all([
-        prisma.post.findMany({
-          skip,
-          take: limit,
-          include: DEFAULT_INCLUDE,
-          orderBy: DEFAULT_ORDER_BY,
-          where
-        }),
-        prisma.post.count({ where })
-      ]);
+      const fetchedPosts = await prisma.post.findMany({
+        take: take + 1,
+        skip: cursor ? 1 : 0, // Skip the cursor item if it exists
+        cursor: cursor ? { id: cursor } : undefined,
+        include: DEFAULT_INCLUDE,
+        orderBy: DEFAULT_ORDER_BY,
+        where
+      });
+
+      const hasNextPage = fetchedPosts.length > take;
+      const posts: (
+        PostWithUserInfo &
+        { distance: number | null }
+      )[] = fetchedPosts.slice(0, take) as (PostWithUserInfo & { distance: number | null })[];;
+      const endCursor = posts.length > 0 ? posts[posts.length - 1].id : undefined;
 
       return {
         posts,
         pagination: {
-          total,
-          pages: Math.ceil(total / limit),
-          currentPage: page
+          cursor,
+          hasNextPage,
+          endCursor
         }
       };
     };

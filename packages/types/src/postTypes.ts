@@ -1,4 +1,15 @@
-import { EngagementType, Location, Media, MediaType, Post, PricingType, RequestConfirmationType, ServiceLocationType, ServicesIncluded, TargetAudience } from "@prisma/client/edge";
+import {
+  EngagementType,
+  Location,
+  Media,
+  MediaType,
+  Post,
+  PricingType,
+  RequestConfirmationType,
+  ServiceLocationType,
+  ServicesIncluded,
+  TargetAudience
+} from "@prisma/client/edge";
 
 export type PostBasicInfo = {
   title?: string;
@@ -65,26 +76,43 @@ export type PostWithUserInfo = Post & {
   }
 }
 
-export type ResponseDataWithLocation = {
+type CursorPagination = {
+  cursor?: string;
+  hasNextPage: boolean;
+  endCursor?: string;
+};
+
+export type ResponseDataWithCursor = {
+  posts: (PostWithUserInfo & {
+    distance: number | null
+  })[];
+  pagination: CursorPagination;
+};
+
+export type ResponseDataWithLocationCursor = {
   posts: (PostWithUserInfo & {
     distance: number
   })[];
-  pagination: {
-    total: number;
-    pages: number;
-    currentPage: number;
-  },
+  pagination: CursorPagination;
+};
+
+export type ResponseDataWithLocationAndCursor = ResponseDataWithLocationCursor & {
   searchRadius: number;
   density: number;
 };
 
-export type ResponseDataWithoutLocation = {
-  posts: PostWithUserInfo[];
-  pagination: {
-    total: number;
-    pages: number;
-    currentPage: number;
-  },
+export type SearchWithPaginationOptions = CursorPaginationOptions & {
+  complete?: string
+}
+
+export type CursorPaginationOptions = Omit<FilterOptions, 'page' | 'limit'> & {
+  cursor?: string;
+  take?: number;
+};
+
+export type GetPostsResponse = {
+  data: ResponseDataWithLocationAndCursor | ResponseDataWithCursor | [];
+  nextCursor?: string;
 };
 
 export type FilterOptions = {
@@ -100,8 +128,8 @@ export type FilterOptions = {
   minRating?: number;
   targetAudience?: TargetAudience;
   servicesIncluded?: ServicesIncluded[];
-  categoryName?: string;
-  subcategoryName?: string;
+  categoryId?: string;
+  subcategoryId?: string;
   searchQuery?: string;
 };
 
