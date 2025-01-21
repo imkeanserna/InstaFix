@@ -14,7 +14,15 @@ type PostQueryResponse = {
   nextCursor: string | undefined;
 };
 
-export const usePosts = (params: SearchWithPaginationOptions) => {
+type UsePostsOptions = {
+  shouldRefetch?: boolean;
+};
+
+export const usePosts = (
+  params: SearchWithPaginationOptions,
+  options: UsePostsOptions = {}
+) => {
+  const { shouldRefetch = true } = options;
   return useInfiniteQuery<
     PostQueryResponse,
     Error,
@@ -24,7 +32,17 @@ export const usePosts = (params: SearchWithPaginationOptions) => {
   >({
     queryKey: ['posts', params],
     queryFn: async ({ pageParam }) => {
-      const result: GetPostsResponse = await getPosts({ ...params, cursor: pageParam });
+      const transformedParams = {
+        ...params,
+        location: params.location ? {
+          latitude: params.location.latitude,
+          longitude: params.location.longitude,
+          radiusInKm: params.location.radiusInKm
+        } : undefined,
+        cursor: pageParam
+      };
+
+      const result: GetPostsResponse = await getPosts(transformedParams);
 
       if (Array.isArray(result.data)) {
         return {
@@ -50,7 +68,8 @@ export const usePosts = (params: SearchWithPaginationOptions) => {
       if (!lastPage.posts.pagination?.hasNextPage) return undefined;
       return lastPage.nextCursor;
     },
-    staleTime: 1000 * 60 * 2,
+    enabled: shouldRefetch,
+    staleTime: 1000 * 60 * 2, // 2 minutes cache
     retry: 2,
     refetchOnWindowFocus: true,
   });

@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@repo/ui/components/ui/card';
+import { MapPin, Search } from 'lucide-react';
 import { Input } from '@repo/ui/components/ui/input';
 import type maplibregl from 'maplibre-gl';
 import { LoadingSpinnerMore } from '@repo/ui/components/ui/loading-spinner-more';
+import { getStoredLocation } from '@/lib/sessionUtils';
 
 type LatLng = {
   lat: number;
@@ -172,36 +172,30 @@ export default function LocationNavigation({
 
     try {
       // Default Location if user does not have a location
-      let center: LatLng = { lat: 40.7128, lng: -74.0060 };
-      let address = "New York City, New York, USA";
+      const storedLocation = getStoredLocation();
+      let center: LatLng;
+      let address: string;
 
-      try {
-        center = await getUserLocation();
+      if (storedLocation) {
+        center = { lat: storedLocation.lat, lng: storedLocation.lng };
+        address = storedLocation.address;
+      } else {
         try {
+          const position = await getUserLocation();
+          center = { lat: position.lat, lng: position.lng };
           address = await getAddressFromCoords(center);
-          setSearchQuery(address);
-          setSelectedLocation({
-            address: address,
-            lat: center.lat,
-            lng: center.lng
-          });
-        } catch (addressError) {
-          const coordString = `${center.lat.toFixed(6)}, ${center.lng.toFixed(6)}`;
-          setSearchQuery(coordString);
-          setSelectedLocation({
-            address: coordString,
-            lat: center.lat,
-            lng: center.lng
-          });
+        } catch (locationError) {
+          center = { lat: 40.7128, lng: -74.0060 };
+          address = "New York City, New York, USA";
         }
-      } catch (locationError) {
-        setSearchQuery(address);
-        setSelectedLocation({
-          address: address,
-          lat: center.lat,
-          lng: center.lng
-        });
       }
+
+      setSearchQuery(address);
+      setSelectedLocation({
+        address: address,
+        lat: center.lat,
+        lng: center.lng
+      });
 
       const mapStyle = maptilerKey
         ? `https://api.maptiler.com/maps/streets/style.json?key=${maptilerKey}`
@@ -275,7 +269,7 @@ export default function LocationNavigation({
       setError('Failed to initialize map');
       setIsMapLoading(false);
     }
-  }, [destroyMap, getUserLocation, getAddressFromCoords, setSelectedLocation, maptilerKey]);
+  }, [destroyMap, setSelectedLocation, maptilerKey]);
 
   useEffect(() => {
     loadMapLibreResources();
@@ -487,7 +481,10 @@ export default function LocationNavigation({
             <div className={`p-4 bg-white/90 backdrop-blur-sm rounded-md ${isFullscreen ? 'absolute bottom-4 left-4 right-4 z-10' : ''
               }`}>
               <h3 className="font-medium">Selected Location:</h3>
-              <p className="text-gray-600">{selectedLocation.address}</p>
+              <div className='flex items-center space-x-1 text-gray-600'>
+                <MapPin className='h-6 w-6 sm:h-4 sm:w-4' />
+                <p >{selectedLocation.address}</p>
+              </div>
             </div>
           )}
         </div>

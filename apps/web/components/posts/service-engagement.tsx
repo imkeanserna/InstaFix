@@ -7,34 +7,34 @@ import { Calendar, Clock, MessagesSquare, RefreshCcw, Settings } from "lucide-re
 import { useEffect, useState } from "react";
 import { ToggleGroupSelection } from "@repo/ui/components/ui/toggle-group-selection";
 
-export function ServiceEngagement() {
-  const engagementTypes = [
-    {
-      value: EngagementType.ONE_TIME_PROJECT,
-      label: "One Time Project",
-      description: "Deliver a specific task or project with a clear scope and timeline. Perfect for well-defined objectives.",
-      icon: <Clock className="w-6 h-6 text-yellow-500" />
-    },
-    {
-      value: EngagementType.ONGOING_COLLABORATION,
-      label: "Ongoing Collaboration",
-      description: "Work together regularly on recurring tasks or continuous projects. Ideal for long-term partnerships.",
-      icon: <RefreshCcw className="w-6 h-6 text-yellow-500" />
-    },
-    {
-      value: EngagementType.CONSULTATION,
-      label: "Consultation",
-      description: "Get expert advice and guidance for your specific needs. Perfect for strategic planning and problem-solving.",
-      icon: <MessagesSquare className="w-6 h-6 text-yellow-500" />
-    },
-    {
-      value: EngagementType.CUSTOM_ARRANGEMENT,
-      label: "Custom Arrangement",
-      description: "Create a tailored service package that perfectly matches your unique requirements and preferences.",
-      icon: <Settings className="w-6 h-6 text-yellow-500" />
-    },
-  ];
+export const engagementTypes = [
+  {
+    value: EngagementType.ONE_TIME_PROJECT,
+    label: "One Time Project",
+    description: "Deliver a specific task or project with a clear scope and timeline. Perfect for well-defined objectives.",
+    icon: <Clock className="w-6 h-6 text-yellow-500" />
+  },
+  {
+    value: EngagementType.ONGOING_COLLABORATION,
+    label: "Ongoing Collaboration",
+    description: "Work together regularly on recurring tasks or continuous projects. Ideal for long-term partnerships.",
+    icon: <RefreshCcw className="w-6 h-6 text-yellow-500" />
+  },
+  {
+    value: EngagementType.CONSULTATION,
+    label: "Consultation",
+    description: "Get expert advice and guidance for your specific needs. Perfect for strategic planning and problem-solving.",
+    icon: <MessagesSquare className="w-6 h-6 text-yellow-500" />
+  },
+  {
+    value: EngagementType.CUSTOM_ARRANGEMENT,
+    label: "Custom Arrangement",
+    description: "Create a tailored service package that perfectly matches your unique requirements and preferences.",
+    icon: <Settings className="w-6 h-6 text-yellow-500" />
+  },
+];
 
+export function ServiceEngagement() {
   const [selectedType, setSelectedType] = useState<EngagementType | null>(null);
   const { formData, updateFormData } = useFormData();
   const { setStepValidity } = useRouteValidation('privacy-type');

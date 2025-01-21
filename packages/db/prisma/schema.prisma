@@ -23,6 +23,8 @@ model User {
   image        String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  location     Location?     @relation(fields: [locationId], references: [id])
+  locationId   String?
   posts        Post[]
   payments     Payment[]
   payouts      Payout[]
@@ -135,6 +137,7 @@ model Location {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   posts             Post[]
+  users             User[]
 }
 
 model ChatSession {
