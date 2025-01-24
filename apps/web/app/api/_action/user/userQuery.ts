@@ -15,6 +15,10 @@ export async function addUser({
   image,
 }: IAddUser) {
   try {
+    if (!email) {
+      throw new Error("Email is required");
+    }
+
     const isUserExist = await getUserByEmail(email);
 
     if (isUserExist) {

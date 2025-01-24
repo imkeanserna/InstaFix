@@ -48,7 +48,10 @@ export function validateNumericParam(value: string | null, defaultValue: number)
 export function parsePriceParams(request: NextRequest) {
   const minPrice = request.nextUrl.searchParams.get('minPrice');
   const maxPrice = request.nextUrl.searchParams.get('maxPrice');
-  const priceType = request.nextUrl.searchParams.get('priceType') as PricingType | null;
+  const priceType = validateEnumParam(
+    request.nextUrl.searchParams.get('priceType'),
+    PricingType
+  ) as PricingType | null;
 
   if (!minPrice && !maxPrice && !priceType) {
     return null;
@@ -76,7 +79,12 @@ export function parsePriceParams(request: NextRequest) {
 export function parseServicesIncluded(services: string | null): ServicesIncluded[] | undefined {
   if (!services) return undefined;
 
-  const parsed = services.split(',').filter(Boolean) as ServicesIncluded[];
+  const parsed = services
+    .split(',')
+    .filter(Boolean)
+    .map(service => service.trim().substring(0, 100))
+    .filter(service => service.length > 0) as ServicesIncluded[];
+
   return parsed.length > 0 ? parsed : undefined;
 }
 
@@ -182,3 +190,11 @@ export const buildSearchQuery = (searchTerms: string[]) => ({
     }
   ]
 });
+
+export function validateEnumParam<T extends string>(value: string | null, enumObj: Record<string, string>, defaultValue?: T): T | undefined {
+  if (!value) return defaultValue;
+  if (Object.values(enumObj).includes(value)) {
+    return value as T;
+  }
+  throw new Error(`Invalid enum value. Allowed values: ${Object.values(enumObj).join(', ')}`);
+}

@@ -10,7 +10,7 @@ type GetCategoriesResponse = {
   error?: string;
 }
 
-interface CategoryResponse {
+export interface CategoryResponse {
   id: string;
   name: string;
   subcategories: Subcategory[] | null;
