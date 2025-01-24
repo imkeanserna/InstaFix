@@ -2,11 +2,12 @@ import { errorResponse } from "@/lib/errorResponse";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from 'zod';
 import { getSearchSuggestions } from "../_action/posts/searchQuery";
+import { SearchSuggestion } from '@repo/types';
 
 export const runtime = "edge";
 
 const searchQuerySchema = z.object({
-  q: z.string().min(2).max(100),
+  q: z.string().min(3).max(100),
   limit: z.number().min(1).max(50).optional().default(5)
 });
 
@@ -16,13 +17,12 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q');
     const limit = searchParams.get('limit');
 
-    // Validate parameters
     const validatedData = searchQuerySchema.parse({
       q: query,
       limit: limit ? parseInt(limit) : undefined
     });
 
-    const suggestions = await getSearchSuggestions(
+    const suggestions: SearchSuggestion[] = await getSearchSuggestions(
       validatedData.q,
       validatedData.limit
     );

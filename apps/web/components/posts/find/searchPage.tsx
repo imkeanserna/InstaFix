@@ -28,10 +28,9 @@ export function SearchPage() {
       return true;
     }
     // Check for any changes in search params
+    // Check if search query changed and refetch if search query changed
     if (currentSearchParams !== lastSelection.current.searchParams) {
-      // Check if search query changed
       const searchQueryChanged = currentSearchQuery !== lastSelection.current.searchQuery;
-      // Refetch if search query changed
       return searchQueryChanged;
     }
     return false;
