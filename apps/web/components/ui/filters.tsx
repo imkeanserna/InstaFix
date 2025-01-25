@@ -21,7 +21,7 @@ import { AnimatePresence, motion, PanInfo, useAnimation } from 'framer-motion'
 import { Button } from "@repo/ui/components/ui/button";
 import { useMediaQuery } from "@/hooks/useMedia";
 
-interface FiltersProps {
+export interface FiltersProps {
   initialState: {
     location: Location | null;
     priceMin: number | null;
@@ -41,28 +41,18 @@ export const FilterDrawerWrapper = ({ initialState, onFilterChange, className }:
     <>
       <Button
         onClick={() => setIsVisible(!isVisible)}
-        className="fixed bottom-4 right-4 px-4 py-7 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full shadow-lg z-50 transition-all duration-200 hover:scale-110"
+        className="px-4 py-7 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full shadow-lg z-50 transition-all duration-200 hover:scale-110"
       >
         <SlidersHorizontal className="w-6 h-6" />
       </Button>
       <AnimatePresence>
         {isVisible && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              onClick={() => setIsVisible(false)}
-              className="fixed inset-0 bg-black z-40"
-            />
-            <Filters
-              initialState={initialState}
-              onFilterChange={onFilterChange}
-              className={className}
-              onClose={() => setIsVisible(false)}
-            />
-          </>
+          <Filters
+            initialState={initialState}
+            onFilterChange={onFilterChange}
+            className={className}
+            onClose={() => setIsVisible(false)}
+          />
         )}
       </AnimatePresence>
     </>
@@ -73,6 +63,7 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
   FiltersProps &
   { onClose: () => void; }
 ) => {
+  const [isMapInteracting, setIsMapInteracting] = useState(false);
   const [values, setValues] = useState([
     initialState.priceMin ?? 5,
     initialState.priceMax ?? 250
@@ -132,6 +123,10 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const velocity = info.velocity.y;
     const currentOffset = info.offset.y;
+
+    if (isMapInteracting) {
+      return;
+    }
 
     if (velocity > 500 || currentOffset > 200) {
       // Close the drawer completely if swiped down fast or far enough
@@ -248,11 +243,11 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
       initial="hidden"
       animate="visible"
       exit="exit"
-      drag="y"
+      drag={!isMapInteracting ? "y" : false}
       dragConstraints={{ top: 0, bottom: window.innerHeight - minHeight }}
       dragElastic={0.2}
       onDragEnd={handleDragEnd}
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl"
+      className="fixed border-t-2 border-gray-100 bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl"
     >
       {/* Drawer Handle */}
       <div
@@ -285,6 +280,7 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
                 selectedLocation={selectedLocation}
                 setSelectedLocation={handleLocationSelect}
                 maptilerKey={process.env.MAPTILER_API_KEY}
+                setIsMapInteracting={setIsMapInteracting}
               />
             </div>
 

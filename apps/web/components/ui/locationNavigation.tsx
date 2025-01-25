@@ -44,12 +44,14 @@ interface LocationNavigationProps {
   selectedLocation: Location | null;
   setSelectedLocation: (value: Location | null) => void;
   maptilerKey?: string;
+  setIsMapInteracting?: (value: boolean) => void;
 }
 
 export default function LocationNavigation({
   selectedLocation,
   setSelectedLocation,
-  maptilerKey
+  maptilerKey,
+  setIsMapInteracting
 }: LocationNavigationProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -245,6 +247,7 @@ export default function LocationNavigation({
         marker.on('dragend', () => {
           const lngLat = marker.getLngLat();
           updateLocationFromLatLng({ lat: lngLat.lat, lng: lngLat.lng });
+          if (setIsMapInteracting) setIsMapInteracting(false);
         });
 
         markerRef.current = marker;
@@ -256,6 +259,14 @@ export default function LocationNavigation({
           updateLocationFromLatLng({ lat: e.lngLat.lat, lng: e.lngLat.lng });
           markerRef.current.setLngLat([e.lngLat.lng, e.lngLat.lat]);
         }
+      });
+
+      map.on("mousedown", () => {
+        if (setIsMapInteracting) setIsMapInteracting(true);
+      });
+
+      map.on("mouseup", () => {
+        if (setIsMapInteracting) setIsMapInteracting(false);
       });
 
       map.on('error', (e) => {
