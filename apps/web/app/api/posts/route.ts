@@ -13,12 +13,18 @@ export async function GET(request: NextRequest) {
   try {
     const cursor = request.nextUrl.searchParams.get('cursor');
     const take = parseAndValidateTake(request.nextUrl.searchParams.get('take') ?? '10');
-    const categoryId = request.nextUrl.searchParams.get('category');
-    const subcategoryId = request.nextUrl.searchParams.get('subcategory');
+    const categoryIds = request.nextUrl.searchParams.get('categories')?.split(',').filter(Boolean);
+    const subcategoryIds = request.nextUrl.searchParams.get('subcategories')?.split(',').filter(Boolean);
     const searchQuery = sanitizeSearchQuery(request.nextUrl.searchParams.get('search') ?? '');
 
-    if (subcategoryId && !categoryId) {
-      return errorResponse('Category is required when filtering by subcategory', undefined, 400);
+    if (subcategoryIds && subcategoryIds.length > 0) {
+      if (!categoryIds || categoryIds.length === 0) {
+        return errorResponse(
+          'Category is required when filtering by subcategories',
+          undefined,
+          400
+        );
+      }
     }
 
     if (searchQuery.length > 0 && searchQuery.length < 3) {
@@ -53,8 +59,8 @@ export async function GET(request: NextRequest) {
       ...(minRating > 0 && { minRating }),
       ...(targetAudience && { targetAudience }),
       ...(servicesIncluded?.length && { servicesIncluded }),
-      ...(categoryId && { categoryId }),
-      ...(subcategoryId && { subcategoryId })
+      ...(categoryIds && { categoryIds }),
+      ...(subcategoryIds && { subcategoryIds })
     };
 
     const result: ResponseDataWithLocationAndCursor | ResponseDataWithCursor = await getPosts(filterOptions);

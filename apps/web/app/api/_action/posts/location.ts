@@ -200,18 +200,22 @@ function normalizeAddress(address: string): string {
     .trim();
 }
 
-export function getNonLocationQuery(categoryId?: string | null, subcategoryId?: string | null) {
+export function getNonLocationQuery(categoryIds?: string[] | null, subcategoryIds?: string[] | null) {
   return {
     OR: [
       { serviceLocation: 'ONLINE' },
       { serviceLocation: 'HYBRID' }
     ],
-    ...(categoryId && {
+    ...(categoryIds && categoryIds.length > 0 && {
       tags: {
         some: {
           subcategory: {
-            category: { id: categoryId },
-            ...(subcategoryId && { id: subcategoryId })
+            category: {
+              id: { in: categoryIds }
+            },
+            ...(subcategoryIds && subcategoryIds.length > 0 && {
+              id: { in: subcategoryIds }
+            })
           }
         }
       }

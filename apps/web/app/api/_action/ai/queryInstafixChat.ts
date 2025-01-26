@@ -1,5 +1,5 @@
 import { IFetchPredictionResponse } from "@repo/types";
-import { fetchPrediction } from "./fetchPrediction";
+import { fetchChatGroq, fetchPrediction } from "./fetchPrediction";
 
 export const categories = {
   "Personal Services": [
@@ -121,7 +121,7 @@ Return the list of relevant specific professions in JSON format only '{"Professi
 
 export async function fetchAIResponse(query: string): Promise<IFetchPredictionResponse> {
   try {
-    const response = await fetchPrediction(query);
+    const response = await fetchChatGroq(query);
     return response as IFetchPredictionResponse;
   } catch (error) {
     throw error;

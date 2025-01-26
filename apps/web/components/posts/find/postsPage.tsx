@@ -4,7 +4,7 @@ import { CategorySelector } from "@/components/categories/categorySelector";
 import { FilterDrawerWrapper } from "@/components/ui/filters";
 import { usePosts } from "@/hooks/posts/usePosts";
 import { EngagementType, PricingType, ServicesIncluded, TargetAudience } from "@prisma/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 import { motion } from 'framer-motion'
 import { Loader2 } from "lucide-react";
@@ -15,6 +15,7 @@ import { getStoredLocation } from "@/lib/sessionUtils";
 export function PostsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
 
   const lastSelection = useRef<{
     category: string | null;
@@ -25,6 +26,10 @@ export function PostsPage() {
     subcategory: null,
     searchParams: ''
   });
+
+  const isCameraRoute = pathname === '/find/camera';
+  const detectedString = searchParams.get('detected') || null;
+  const professions: string[] = searchParams.get('professions')?.split(',').map((item) => item.trim()) || [];
 
   useEffect(() => {
     const storedLocation = getStoredLocation();
@@ -118,8 +123,8 @@ export function PostsPage() {
     isLoading,
     error
   } = usePosts({
-    categoryId: searchParams.get('category') || undefined,
-    subcategoryId: searchParams.get('subcategory') || undefined,
+    categoryIds: searchParams.get('category') ? [searchParams.get('category')!] : undefined,
+    subcategoryIds: searchParams.get('subcategory') ? [searchParams.get('subcategory')!] : undefined,
     location: searchParams.get('location')
       ? (() => {
         const parsedLocation: Location = JSON.parse(searchParams.get('location')!);
@@ -146,26 +151,40 @@ export function PostsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="">
-        <div className="lg:col-span-4">
-          {/* <Filters */}
-          {/*   initialState={getInitialState()} */}
-          {/*   onFilterChange={updateUrlParams} */}
-          {/* /> */}
-          <FilterDrawerWrapper
-            initialState={getInitialState()}
-            onFilterChange={updateUrlParams}
-          />
+      {isCameraRoute && detectedString && professions.length > 0 &&
+        <div>
+          <p>AI Detected: It looks you have issue on {detectedString}</p>
+          <div className="space-x-2">
+            {professions.map(profession => (
+              <span
+                key={profession}
+                className="border border-gray-300 px-2 py-1 rounded-md bg-gray-100 text-xs">
+                {profession}
+              </span>
+            ))}
+          </div>
         </div>
+      }
+      <div className="">
+        {!isCameraRoute && (
+          <div className="lg:col-span-4">
+            <FilterDrawerWrapper
+              initialState={getInitialState()}
+              onFilterChange={updateUrlParams}
+            />
+          </div>
+        )}
         <div className="lg:col-span-8">
-          <CategorySelector
-            initialState={{
-              category: searchParams.get('category') || null,
-              subcategory: searchParams.get('subcategory') || null
-            }}
-            onCategoryChange={(category, subcategory) =>
-              updateUrlParams({ category, subcategory })}
-          />
+          {!isCameraRoute && (
+            <CategorySelector
+              initialState={{
+                category: searchParams.get('category') || null,
+                subcategory: searchParams.get('subcategory') || null
+              }}
+              onCategoryChange={(category, subcategory) =>
+                updateUrlParams({ category, subcategory })}
+            />
+          )}
           <div className="mt-8">
             <PostsGrid
               postsData={postsData}

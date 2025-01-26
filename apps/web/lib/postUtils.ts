@@ -136,8 +136,8 @@ export async function getPosts(params: SearchWithPaginationOptions = {}): Promis
   const paramMapping = {
     cursor: params.cursor,
     take: params.take?.toString(),
-    category: params.categoryId,
-    subcategory: params.subcategoryId,
+    categories: params.categoryIds,
+    subcategories: params.subcategoryIds,
     search: params.searchQuery,
     complete: params.complete ? 'true' : undefined,
     latitude: params.location?.latitude?.toString(),
@@ -153,7 +153,10 @@ export async function getPosts(params: SearchWithPaginationOptions = {}): Promis
   };
 
   Object.entries(paramMapping).forEach(([key, value]) => {
-    if (value) queryParams.set(key, value);
+    if (value) {
+      const formattedValue = Array.isArray(value) ? value.join(',') : value;
+      queryParams.set(key, formattedValue);
+    }
   });
 
   const controller = new AbortController();

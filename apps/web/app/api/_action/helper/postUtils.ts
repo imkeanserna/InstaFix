@@ -108,8 +108,8 @@ export const buildBaseConditions = (options: FilterOptions) => {
     minRating,
     targetAudience,
     servicesIncluded,
-    categoryId,
-    subcategoryId
+    categoryIds,
+    subcategoryIds
   } = options;
 
   return {
@@ -140,16 +140,20 @@ export const buildBaseConditions = (options: FilterOptions) => {
     ...(servicesIncluded?.length && {
       servicesIncluded: { hasEvery: servicesIncluded }
     }),
-    ...(categoryId && {
+    ...(categoryIds || subcategoryIds) && {
       tags: {
         some: {
-          subcategory: {
-            category: { id: categoryId },
-            ...(subcategoryId && { id: subcategoryId })
-          }
+          ...(categoryIds && {
+            subcategory: {
+              category: { id: { in: categoryIds } }
+            }
+          }),
+          ...(subcategoryIds && {
+            subcategoryId: { in: subcategoryIds }
+          })
         }
       }
-    })
+    }
   };
 };
 

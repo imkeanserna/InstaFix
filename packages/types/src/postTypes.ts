@@ -128,8 +128,8 @@ export type FilterOptions = {
   minRating?: number;
   targetAudience?: TargetAudience;
   servicesIncluded?: ServicesIncluded[];
-  categoryId?: string;
-  subcategoryId?: string;
+  categoryIds?: string[];
+  subcategoryIds?: string[];
   searchQuery?: string;
 };
 

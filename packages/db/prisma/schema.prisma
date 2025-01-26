@@ -110,13 +110,13 @@ model PostTag {
 
 model Category {
   id            String        @id @default(cuid())
-  name          String
+  name          String        @unique
   subcategories Subcategory[]
 }
 
 model Subcategory {
   id         String    @id @default(cuid())
-  name       String
+  name       String    @unique
   categoryId String
   category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   PostTag    PostTag[]

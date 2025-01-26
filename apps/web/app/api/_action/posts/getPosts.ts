@@ -133,7 +133,7 @@ export async function getPosts(options: CursorPaginationOptions): Promise<Respon
           ],
         }
         : {
-          ...getNonLocationQuery(options.categoryId, options.subcategoryId),
+          ...getNonLocationQuery(options.categoryIds, options.subcategoryIds),
           ...buildBaseConditions(options)
         };
 
@@ -162,6 +162,28 @@ export async function getPosts(options: CursorPaginationOptions): Promise<Respon
         }
       };
     };
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    throw error;
+  }
+}
+
+export async function getSubCategory({ profession }: { profession: string[] }) {
+  try {
+    const subCategories = await prisma.subcategory.findMany({
+      where: {
+        name: {
+          in: profession
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        categoryId: true
+      }
+    });
+
+    return subCategories;
   } catch (error) {
     console.error('Error fetching posts:', error);
     throw error;

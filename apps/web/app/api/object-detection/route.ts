@@ -1,11 +1,11 @@
 import { IFetchPredictionResponse, IHuggingFaceResponse } from '@repo/types';
 import type { NextRequest } from 'next/server'
-import { getPostsByProfession } from '../_action/posts/getPosts';
+import { getSubCategory } from '../_action/posts/getPosts';
 import { fetchAIResponse, handleServiceDetectionQuery } from '../_action/ai/queryInstafixChat';
 import { analyzeImageWithHuggingFace } from '../_action/ai/fetchPrediction';
 import { parseJsonResponse } from '@/lib/parseJsonResponse';
 import { ErrorResponse, errorResponse } from '@/lib/errorResponse';
-import { Post } from '@prisma/client';
+import { Post, Subcategory } from '@prisma/client/edge';
 
 type ObjectDetectionResponseData = {
   posts: Post[]
@@ -43,17 +43,20 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     const fullQuery = handleServiceDetectionQuery(objectDetection.generated_text);
-    console.log(fullQuery)
     const result: IFetchPredictionResponse = await fetchAIResponse(fullQuery);
-    console.log(result)
-
     const parsedData = parseJsonResponse(result.data[0]);
 
-    if ('Professions' in parsedData) {
-      const { posts } = await getPostsByProfession(parsedData.Professions);
+    if (parsedData && 'Professions' in parsedData && parsedData.Professions.length > 0) {
+      const subCategories: Subcategory[] | null = await getSubCategory({
+        profession: parsedData.Professions
+      });
       return Response.json({
         success: true,
-        data: posts
+        data: {
+          detected: objectDetection.generated_text,
+          professions: parsedData.Professions,
+          subCategories: subCategories
+        }
       });
     }
     return Response.json({
