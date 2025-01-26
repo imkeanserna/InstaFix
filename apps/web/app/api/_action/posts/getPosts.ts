@@ -1,5 +1,5 @@
 import { prisma } from '@/server/index';
-import { Category, Freelancer, Post, PostTag } from '@prisma/client/edge'
+import { Category, User, Post, PostTag } from '@prisma/client/edge'
 import { PostUpdateHandlers } from './updateHandlers';
 import {
   UpdatePostData,
@@ -15,7 +15,7 @@ import { buildBaseConditions, buildSearchQuery } from '../helper/postUtils';
 export const runtime = 'edge'
 
 export type PostWithRelations = Post & {
-  freelancer: Freelancer;
+  user: User;
   tags: (PostTag & {
     subcategory: {
       category: Category;

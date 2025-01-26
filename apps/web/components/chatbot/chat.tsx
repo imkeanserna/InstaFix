@@ -172,7 +172,7 @@ export function ChatBotAi() {
                     onChange={handleInputChange}
                     onSubmit={handleSubmit}
                     placeholder="Describe your problem here..."
-                    className="flex-grow rounded-xl bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400 focus:border-violet-500 focus:ring-violet-500"
+                    className="flex-grow p-3 rounded-xl bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-400 focus:border-violet-500 focus:ring-violet-500"
                   />
                   <Button
                     type="submit"

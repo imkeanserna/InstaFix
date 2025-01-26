@@ -58,6 +58,7 @@ export const getMessages = async ({
         messages: {
           include: {
             messagePosts: {
+              take: 5,
               include: {
                 post: {
                   include: {
@@ -70,10 +71,13 @@ export const getMessages = async ({
                         }
                       }
                     },
-                    freelancer: true
+                    user: true
                   }
                 }
               }
+            },
+            _count: {
+              select: { messagePosts: true }
             }
           },
           orderBy: {
@@ -112,6 +116,7 @@ export const getMessage = async ({ sessionId, messageId }: {
           },
           include: {
             messagePosts: {
+              take: 5,
               include: {
                 post: {
                   include: {
@@ -124,10 +129,13 @@ export const getMessage = async ({ sessionId, messageId }: {
                         }
                       }
                     },
-                    freelancer: true
+                    user: true
                   }
                 }
               }
+            },
+            _count: {
+              select: { messagePosts: true }
             }
           }
         }

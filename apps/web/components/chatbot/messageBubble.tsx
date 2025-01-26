@@ -19,7 +19,8 @@ export const MessageBubble = ({
   messagePostsMap?: Record<string, MessagePostWithPost[]>;
 }) => {
   const isUser = message?.role === Role.USER;
-  const POSTS_TO_SHOW = 3;
+  // --TODO: We need to use this in the future for see more posts
+  const POSTS_TO_SHOW = 100;
   const posts = message?.id && messagePostsMap ? messagePostsMap[message.id] || [] : [];
   const hasMorePosts = posts.length > POSTS_TO_SHOW;
   const limitedPosts = posts.slice(0, POSTS_TO_SHOW);

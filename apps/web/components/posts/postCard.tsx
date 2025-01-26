@@ -34,7 +34,7 @@ export const PostCard = ({ post }: { post: PostWithRelations }) => {
               </div>
               <div className="flex items-center gap-3 mt-1">
                 <span className="text-xs text-gray-500 font-medium">
-                  by {post.freelancer?.name || "Anonymous"}
+                  by {post.user.name || "Anonymous"}
                 </span>
                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                   <Calendar className="w-3 h-3" />

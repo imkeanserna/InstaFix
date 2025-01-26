@@ -1,8 +1,8 @@
-import { Message, Post, MessagePost, Freelancer, PostTag, Category } from "@prisma/client/edge"
+import { Message, Post, MessagePost, User, PostTag, Category } from "@prisma/client/edge"
 
 export type MessagePostWithPost = MessagePost & {
   post: Post & {
-    freelancer: Freelancer;
+    user: User;
     tags: (PostTag & {
       subcategory: {
         category: Category;
