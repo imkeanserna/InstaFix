@@ -13,6 +13,7 @@ type GetCategoriesResponse = {
 export interface CategoryResponse {
   id: string;
   name: string;
+  imageSrc: string | null;
   subcategories: Subcategory[] | null;
 }
 

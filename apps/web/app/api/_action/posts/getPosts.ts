@@ -179,6 +179,7 @@ export async function getSubCategory({ profession }: { profession: string[] }) {
       select: {
         id: true,
         name: true,
+        imageSrc: true,
         categoryId: true
       }
     });

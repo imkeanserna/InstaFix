@@ -10,7 +10,7 @@ const Page = () => {
   return (
     <div className="dark:bg-background">
       {/* <ImageUpload /> */}
-      <DiaglogCamera />
+      {/* <DiaglogCamera /> */}
       {/* <CategorySelector /> */}
       {/* <Filters /> */}
       <PostsPage />
