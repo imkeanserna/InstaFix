@@ -12,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
+    <div className="px-4 sm:px-6 lg:px-24">
       <FindNavbar />
       {children}
     </div>

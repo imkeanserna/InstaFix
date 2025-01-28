@@ -123,7 +123,7 @@ export function CategorySelector({ initialState, onCategoryChange }: CategorySel
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-2xl p-2 sm:p-4 md:p-8">
+    <div className="bg-white rounded-2xl">
       <div className="flex gap-2">
         <div className={`relative ${selectedCategory ? 'w-auto' : 'overflow-x-auto'}`}>
           {!selectedCategory && showLeftCategoryButton && (

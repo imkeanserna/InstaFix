@@ -40,10 +40,15 @@ export const FilterDrawerWrapper = ({ initialState, onFilterChange, className }:
   return (
     <>
       <Button
+        variant="ghost"
+        size="lg"
         onClick={() => setIsVisible(!isVisible)}
-        className="px-4 py-7 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full shadow-lg z-50 transition-all duration-200 hover:scale-110"
+        className="whitespace-nowrap border text-xs border-gray-300 md:hover:border-gray-900 
+              dark:border-slate-700 rounded-xl shadow-sm md:hover:bg-yellow-400 dark:hover:bg-slate-800
+              p-2 md:p-6 group transition-transform active:scale-95"
       >
-        <SlidersHorizontal className="w-6 h-6" />
+        <SlidersHorizontal className="md:mr-2 h-4 w-4 md:h5 md:w-5" />
+        <span className="hidden md:inline">Filters</span>
       </Button>
       <AnimatePresence>
         {isVisible && (

@@ -5,17 +5,19 @@ import { FilterDrawerWrapper } from "@/components/ui/filters";
 import { usePosts } from "@/hooks/posts/usePosts";
 import { EngagementType, PricingType, ServicesIncluded, TargetAudience } from "@prisma/client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from 'framer-motion'
 import { Loader2 } from "lucide-react";
 import { Location } from "@/components/ui/locationNavigation";
 import { PostWithUserInfo } from "@repo/types";
 import { getStoredLocation } from "@/lib/sessionUtils";
+import { ImageUpload } from "@/components/ui/imageUpload";
 
 export function PostsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const lastSelection = useRef<{
     category: string | null;
@@ -150,7 +152,7 @@ export function PostsPage() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="py-8 w-full">
       {isCameraRoute && detectedString && professions.length > 0 &&
         <div>
           <p>AI Detected: It looks you have issue on {detectedString}</p>
@@ -165,37 +167,56 @@ export function PostsPage() {
           </div>
         </div>
       }
-      <div className="">
-        {!isCameraRoute && (
-          <div className="lg:col-span-4">
+
+      {!isCameraRoute && (
+        <div className="flex flex-col">
+          {/* Mobile "Select all" button */}
+          <button
+            className="md:hidden text-right text-xs text-gray-900 hover:underline mb-2"
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+          >
+            {showMobileFilters ? 'Hide filters' : 'See All'}
+          </button>
+          <div className={`md:hidden ${showMobileFilters ? 'flex justify-end gap-2' : 'hidden'}`}>
             <FilterDrawerWrapper
               initialState={getInitialState()}
               onFilterChange={updateUrlParams}
             />
+            <ImageUpload />
           </div>
-        )}
-        <div className="lg:col-span-8">
-          {!isCameraRoute && (
-            <CategorySelector
-              initialState={{
-                category: searchParams.get('category') || null,
-                subcategory: searchParams.get('subcategory') || null
-              }}
-              onCategoryChange={(category, subcategory) =>
-                updateUrlParams({ category, subcategory })}
-            />
-          )}
-          <div className="mt-8">
-            <PostsGrid
-              postsData={postsData}
-              isLoading={isLoading}
-              error={error}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              onLoadMore={fetchNextPage}
-            />
+
+          {/* Main content area & Desktop filters */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-center gap-12 mb-8">
+            <div className="min-w-0">
+              <CategorySelector
+                initialState={{
+                  category: searchParams.get('category') || null,
+                  subcategory: searchParams.get('subcategory') || null
+                }}
+                onCategoryChange={(category, subcategory) =>
+                  updateUrlParams({ category, subcategory })}
+              />
+            </div>
+            <div className="hidden md:flex gap-5">
+              <FilterDrawerWrapper
+                initialState={getInitialState()}
+                onFilterChange={updateUrlParams}
+              />
+              <ImageUpload />
+            </div>
           </div>
         </div>
+      )}
+
+      <div className="mt-8">
+        <PostsGrid
+          postsData={postsData}
+          isLoading={isLoading}
+          error={error}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          onLoadMore={fetchNextPage}
+        />
       </div>
     </div>
   );
