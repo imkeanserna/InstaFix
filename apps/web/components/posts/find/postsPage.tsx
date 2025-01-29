@@ -3,15 +3,13 @@
 import { CategorySelector } from "@/components/categories/categorySelector";
 import { FilterDrawerWrapper } from "@/components/ui/filters";
 import { usePosts } from "@/hooks/posts/usePosts";
-import { EngagementType, PricingType, ServicesIncluded, TargetAudience } from "@prisma/client";
+import { EngagementType, PricingType, ServicesIncluded, TargetAudience } from "@prisma/client/edge";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { motion } from 'framer-motion'
-import { Loader2 } from "lucide-react";
 import { Location } from "@/components/ui/locationNavigation";
-import { PostWithUserInfo } from "@repo/types";
 import { getStoredLocation } from "@/lib/sessionUtils";
 import { ImageUpload } from "@/components/ui/imageUpload";
+import { PostsGrid } from "./postsCard";
 
 export function PostsPage() {
   const searchParams = useSearchParams();
@@ -208,99 +206,14 @@ export function PostsPage() {
         </div>
       )}
 
-      <div className="mt-8">
-        <PostsGrid
-          postsData={postsData}
-          isLoading={isLoading}
-          error={error}
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          onLoadMore={fetchNextPage}
-        />
-      </div>
+      <PostsGrid
+        postsData={postsData || undefined}
+        isLoading={isLoading}
+        error={error}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={fetchNextPage}
+      />
     </div>
   );
-}
-
-interface PostsGridProps {
-  postsData: any
-  isLoading: boolean
-  error: Error | null
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  onLoadMore: () => void
-}
-
-export function PostsGrid({
-  postsData,
-  isLoading,
-  error,
-  hasNextPage,
-  isFetchingNextPage,
-  onLoadMore
-}: PostsGridProps) {
-  const allPosts = postsData?.pages.flatMap((page: any) =>
-    Array.isArray(page.posts) ? page.posts : page.posts.posts
-  ) || []
-
-  if (isLoading && !isFetchingNextPage) {
-    return <div className="flex items-center justify-center p-8">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="space-y-2 text-center"
-      >
-        <Loader2 className="w-8 h-8 mx-auto text-yellow-500 animate-spin" />
-        <p className="text-sm text-gray-600">Loading posts...</p>
-      </motion.div>
-    </div>
-  }
-
-  if (error) {
-    return <div className="text-center p-8 text-red-500">
-      Error loading posts
-    </div>
-  }
-
-  if (allPosts.length === 0) {
-    return <div className="text-center p-8 text-gray-500">
-      No posts found
-    </div>
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {allPosts.map((post: (PostWithUserInfo & {
-          distance: number | null
-        })) => (
-          <motion.div
-            key={post.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div>
-              <p>{post.title}</p>
-              <p>{post.pricingType === PricingType.HOURLY ? `$${post.hourlyRate}` : `$${post.fixedPrice}`}</p>
-              <p>{post.distance}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {hasNextPage && (
-        <div className="text-center">
-          <button
-            onClick={onLoadMore}
-            disabled={isFetchingNextPage}
-            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 
-              disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isFetchingNextPage ? 'Loading more...' : 'Load more'}
-          </button>
-        </div>
-      )}
-    </div>
-  )
 }

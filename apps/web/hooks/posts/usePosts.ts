@@ -2,7 +2,7 @@
 
 import { getPosts } from "@/lib/postUtils";
 import { GetPostsResponse, ResponseDataWithCursor, ResponseDataWithLocationAndCursor, SearchWithPaginationOptions } from "@repo/types";
-import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery, UseInfiniteQueryResult } from "@tanstack/react-query";
 
 export type PostPage = {
   posts: ResponseDataWithLocationAndCursor | ResponseDataWithCursor;
@@ -18,10 +18,12 @@ type UsePostsOptions = {
   shouldRefetch?: boolean;
 };
 
+type PostsQueryResult = UseInfiniteQueryResult<InfiniteData<PostPage>, Error>;
+
 export const usePosts = (
   params: SearchWithPaginationOptions,
   options: UsePostsOptions = {}
-) => {
+): PostsQueryResult => {
   const { shouldRefetch = true } = options;
   return useInfiniteQuery<
     PostQueryResponse,
