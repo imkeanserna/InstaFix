@@ -187,6 +187,14 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .animate-float-slow {
+    animation: floatSlow 6s ease-in-out infinite;
+  }
+
+  .animate-float-slower {
+    animation: floatSlower 8s ease-in-out infinite;
+  }
 }
 
 @layer base {
@@ -351,5 +359,29 @@
 
   100% {
     transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes floatSlow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes floatSlower {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-15px);
   }
 }

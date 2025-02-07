@@ -1,0 +1,78 @@
+import { Booking } from "@prisma/client/edge";
+import { TypedBooking } from "@repo/types";
+
+type CreateBookingsResponse = {
+  success: boolean;
+  data: Booking;
+  error?: string;
+}
+
+export async function createBooking({
+  postId,
+  date,
+  description,
+  quantity,
+}: {
+  postId: string;
+  date: Date;
+  description: string;
+  quantity: number;
+}) {
+  try {
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}/booking`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        date,
+        description: description,
+        quantity: quantity
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to creating post');
+    }
+
+    const result: CreateBookingsResponse = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to create booking');
+    }
+
+    return result.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+type GetBookingsResponse = {
+  success: boolean;
+  data: TypedBooking[];
+  error?: string;
+}
+
+export async function getBookings({ postId }: { postId: string }) {
+  try {
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}/booking`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to creating post');
+    }
+
+    const result: GetBookingsResponse = await response.json();
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to create booking');
+    }
+
+    return result.data;
+  } catch (error) {
+    return [];
+  }
+}

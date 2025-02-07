@@ -1,3 +1,4 @@
+import { Prisma, Review } from "@prisma/client/edge";
 import {
   EngagementType,
   Location,
@@ -137,4 +138,63 @@ type TypeLocation = {
   latitude: number;
   longitude: number;
   radiusInKm: number;
+};
+
+type DynamicPostInclude = {
+  payments: true;
+  reviews: true;
+};
+
+export type DynamicPostWithIncludes = Prisma.PostGetPayload<{
+  include: DynamicPostInclude;
+}>;
+
+type StaticPostInclude = {
+  media: true;
+  user: {
+    select: {
+      id: true;
+      name: true;
+      image: true;
+      createdAt: true;
+    }
+  };
+  tags: {
+    include: {
+      subcategory: {
+        select: {
+          name: true
+        }
+      }
+    }
+  };
+  serviceEngagement: true;
+  location: true;
+};
+
+export type StaticPostWithIncludes = Prisma.PostGetPayload<{
+  include: StaticPostInclude;
+}>;
+
+export type StaticPostWithIncludesWithHighlights = {
+  post: Prisma.PostGetPayload<{
+    include: StaticPostInclude;
+  }>;
+  highlightsPosts: PostWithUserInfo[];
+};
+
+export type TypedReview = Review & {
+  user: {
+    name: string | null;
+    image: string | null;
+    createdAt: Date;
+    location: {
+      fullAddress: string;
+    } | null;
+  }
+}
+
+export type ReviewsResponseWithCursor = {
+  reviews: TypedReview[];
+  pagination: CursorPagination;
 };

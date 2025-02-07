@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui/components/ui/button";
 import { LazyAvatarImage, LazyPostImage } from "../lazyImage";
 import { differenceInDays } from "date-fns";
+import { formatPrice } from "@/lib/postUtils";
 
 interface PostsGridProps {
   postsData: InfiniteData<PostPage> | undefined
@@ -137,13 +138,6 @@ export function PostCard({ post, isFeatured }: {
   const isNewPost = differenceInDays(new Date(), post.createdAt) <= 21;
   const router = useRouter();
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    }).format(price);
-  };
-
   const handleClick = () => {
     if (!isImageLoading && !isAvatarLoading) {
       router.push(`/find/${post.user.name}/${post.title}/${post.id}`);
@@ -186,7 +180,7 @@ export function PostCard({ post, isFeatured }: {
             <CarouselDots className="absolute bottom-3 left-1/2 transform -translate-x-1/2" />
 
             {/*New post badge that has ratings and reviews*/}
-            {isNewPost && (
+            {!isImageLoading && isNewPost && (
               <div className="absolute top-2 left-2">
                 <div className="relative">
                   <div className="py-1 px-4 rounded-lg shadow-2xl bg-gradient-to-r from-amber-500 to-amber-600 

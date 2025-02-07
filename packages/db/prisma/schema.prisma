@@ -16,20 +16,22 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  name         String?
-  password     String?
-  image        String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  location     Location?     @relation(fields: [locationId], references: [id])
-  locationId   String?
-  posts        Post[]
-  payments     Payment[]
-  payouts      Payout[]
-  transactions Transaction[]
-  reviews      Review[]
+  id                 String        @id @default(cuid())
+  email              String        @unique
+  name               String?
+  password           String?
+  image              String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  location           Location?     @relation(fields: [locationId], references: [id])
+  locationId         String?
+  posts              Post[]
+  payments           Payment[]
+  payouts            Payout[]
+  transactions       Transaction[]
+  reviews            Review[]
+  clientBookings     Booking[]     @relation("ClientBookings")
+  freelancerBookings Booking[]     @relation("FreelancerBookings")
 }
 
 model Post {
@@ -61,13 +63,39 @@ model Post {
   payments            Payment[]
   reviews             Review[]
   averageRating       Float?
+  bookings            Booking[]
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  date         DateTime
+  startTime    DateTime?
+  endTime      DateTime?
+  status       BookingStatus @default(PENDING)
+  description  String
+  totalAmount  Float
+  quantity     Int?
+  post         Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId       String
+  client       User          @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
+  clientId     String
+  freelancer   User          @relation("FreelancerBookings", fields: [freelancerId], references: [id], onDelete: Cascade)
+  freelancerId String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([date, freelancerId])
+  @@index([date, freelancerId])
+  @@index([clientId])
+  @@index([postId])
+  @@index([status])
 }
 
 model Review {
   id        String   @id @default(cuid())
-  rating    Int      @default(0)
+  rating    Float    @default(0.0)
   comment   String?
-  userId    String
+  userId    String   @unique
   postId    String
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -297,4 +325,11 @@ enum PayoutStatus {
 enum TransactionType {
   PAYMENT
   PAYOUT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
 }

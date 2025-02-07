@@ -1,7 +1,5 @@
 import { Post } from "@prisma/client/edge";
-import { ResponseDataWithCursor, ResponseDataWithLocationAndCursor, GetPostsResponse, SearchWithPaginationOptions } from "@repo/types";
-
-export const runtime = "edge";
+import { ResponseDataWithCursor, ResponseDataWithLocationAndCursor, GetPostsResponse, SearchWithPaginationOptions, DynamicPostWithIncludes, StaticPostWithIncludesWithHighlights } from "@repo/types";
 
 type PostResponse = {
   success: boolean;
@@ -10,6 +8,13 @@ type PostResponse = {
   };
   error?: string;
 }
+
+export const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(price);
+};
 
 export async function draftPost() {
   try {
@@ -195,5 +200,101 @@ export async function getPosts(params: SearchWithPaginationOptions = {}): Promis
       data: [],
       nextCursor: undefined
     };
+  }
+}
+
+export async function getPost({ postId }: { postId: string }) {
+  try {
+    if (!postId) {
+      return null;
+    }
+
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result: PostResponse = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to get response from chat AI');
+    }
+
+    return result.data;
+  } catch (error) {
+    return null;
+  }
+}
+
+type StaticPostResponse = {
+  success: boolean;
+  data: StaticPostWithIncludesWithHighlights;
+  error?: string;
+}
+
+export async function getPostStatic({ postId }: { postId: string }) {
+  try {
+    if (!postId) {
+      throw new Error('post id is required');
+    }
+
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}/static`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result: StaticPostResponse = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to get response from chat AI');
+    }
+
+    return result.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+type DynamicPostResponse = {
+  success: boolean;
+  data: DynamicPostWithIncludes;
+  error?: string;
+}
+
+export async function getPostDynamic({ postId }: { postId: string }) {
+  try {
+    if (!postId) {
+      throw new Error('post id is required');
+    }
+
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}/dynamic`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result: DynamicPostResponse = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to get response from chat AI');
+    }
+
+    return result.data;
+  } catch (error) {
+    throw error;
   }
 }
