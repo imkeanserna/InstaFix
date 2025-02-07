@@ -1,7 +1,5 @@
 import Categories from "@/components/posts/categories";
 
-export const runtime = "edge";
-
 export default function Page() {
   return (
     <div className="h-full py-20 sm:py-16">

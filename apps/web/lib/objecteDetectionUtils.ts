@@ -1,7 +1,5 @@
 import { Subcategory } from "@prisma/client/edge";
 
-export const runtime = "edge";
-
 interface ObjectDetectionResponse {
   success: boolean;
   data: {

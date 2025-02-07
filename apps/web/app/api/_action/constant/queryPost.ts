@@ -1,7 +1,5 @@
 import { Prisma } from '@prisma/client/edge';
 
-export const runtime = 'edge'
-
 type PostOrderBy = {
   averageRating: { sort: Prisma.SortOrder; nulls: Prisma.NullsOrder };
 } | {

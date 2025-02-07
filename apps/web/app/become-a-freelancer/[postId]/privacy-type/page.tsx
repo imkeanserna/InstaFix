@@ -1,7 +1,5 @@
 import { ServiceEngagement } from "@/components/posts/service-engagement";
 
-export const runtime = "edge";
-
 export default function Page() {
   return (
     <div className="h-full w-full py-20 sm:py-16 md:py-48">

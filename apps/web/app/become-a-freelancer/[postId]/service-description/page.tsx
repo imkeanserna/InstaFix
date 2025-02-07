@@ -1,7 +1,5 @@
 import { ServiceDescription } from "@/components/posts/service-description";
 
-export const runtime = "edge";
-
 export default function Page() {
   return (
     <div className="h-full py-28 md:py-28">

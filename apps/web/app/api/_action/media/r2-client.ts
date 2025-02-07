@@ -1,7 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3';
 
-export const runtime = 'edge'
-
 interface R2Config {
   endpoint: string;
   accessKeyId: string;

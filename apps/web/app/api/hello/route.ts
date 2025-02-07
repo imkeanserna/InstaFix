@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 import { getRequestContext } from '@cloudflare/next-on-pages'
 import { prisma } from "@/server/index";
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   try {

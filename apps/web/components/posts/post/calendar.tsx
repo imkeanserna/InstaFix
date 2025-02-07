@@ -36,7 +36,7 @@ export function PostCalendar({ postId, user }: { postId: string, user: User | nu
   };
 
   return (
-    <div >
+    <div className="flex justify-center items-center">
       <DualCalendar
         selectedDate={selectedDate}
         onSelect={(date) => {

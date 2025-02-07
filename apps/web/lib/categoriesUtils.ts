@@ -1,7 +1,5 @@
 import { Category, Subcategory } from "@prisma/client/edge";
 
-export const runtime = "edge";
-
 type GetCategoriesResponse = {
   success: boolean;
   data: {

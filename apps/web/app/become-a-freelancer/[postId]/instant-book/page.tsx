@@ -1,7 +1,5 @@
 import RequestConfirmation from "@/components/posts/service-engagement";
 
-export const runtime = "edge";
-
 export default function Page() {
   return (
     <div className="h-full bg-gradient-to-b from-white to-yellow-50 py-20 sm:py-28">

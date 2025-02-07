@@ -2,8 +2,6 @@ import Image from "next/image";
 import SignInButton from "@/components/ui/signInButton";
 import { ChatBotAi } from "@/components/chatbot/chat";
 
-export const runtime = "edge";
-
 export default function Home() {
   return (
     <main className="flex dark:text-white transition-colors duration-300 min-h-screen flex-col items-center justify-between p-24">

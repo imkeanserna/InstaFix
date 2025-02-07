@@ -2,8 +2,6 @@ import { PricingType, ServicesIncluded } from "@prisma/client/edge";
 import { NextRequest } from "next/server";
 import { FilterOptions } from "@repo/types";
 
-export const runtime = "edge";
-
 export function parseLocationParams(request: NextRequest): FilterOptions['location'] | null {
   const latitude = request.nextUrl.searchParams.get('latitude');
   const longitude = request.nextUrl.searchParams.get('longitude');

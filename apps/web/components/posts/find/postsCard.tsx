@@ -5,12 +5,13 @@ import { InfiniteData } from "@tanstack/react-query";
 import { motion } from 'framer-motion'
 import { PostWithUserInfo } from "@repo/types";
 import { PricingType } from "@prisma/client/edge";
-import Image from "next/image";
 import { useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, CarouselDots } from "@repo/ui/components/ui/carousel";
 import { Heart, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui/components/ui/button";
+import { LazyAvatarImage, LazyPostImage } from "../lazyImage";
+import { differenceInDays } from "date-fns";
 
 interface PostsGridProps {
   postsData: InfiniteData<PostPage> | undefined
@@ -39,7 +40,7 @@ export function PostsGrid({
     </motion.div>
   }
 
-  const allPosts = postsData?.pages.flatMap((page: any) =>
+  const allPosts = postsData?.pages.flatMap((page: PostPage) =>
     Array.isArray(page.posts) ? page.posts : page.posts.posts
   ) || []
 
@@ -121,10 +122,11 @@ export function PostsGrid({
   )
 }
 
-function PostCard({ post }: {
+export function PostCard({ post, isFeatured }: {
   post: (PostWithUserInfo & {
     distance: number | null
-  })
+  }),
+  isFeatured?: boolean
 }) {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
@@ -132,6 +134,7 @@ function PostCard({ post }: {
   const allImages = [
     ...(post.media?.map(m => m.url) || [])
   ].filter(Boolean);
+  const isNewPost = differenceInDays(new Date(), post.createdAt) <= 21;
   const router = useRouter();
 
   const formatPrice = (price: number) => {
@@ -143,7 +146,7 @@ function PostCard({ post }: {
 
   const handleClick = () => {
     if (!isImageLoading && !isAvatarLoading) {
-      router.push(`/find/${post.user.name}/${post.title}`);
+      router.push(`/find/${post.user.name}/${post.title}/${post.id}`);
     }
   };
 
@@ -181,37 +184,54 @@ function PostCard({ post }: {
               </div>
             )}
             <CarouselDots className="absolute bottom-3 left-1/2 transform -translate-x-1/2" />
+
+            {/*New post badge that has ratings and reviews*/}
+            {isNewPost && (
+              <div className="absolute top-2 left-2">
+                <div className="relative">
+                  <div className="py-1 px-4 rounded-lg shadow-2xl bg-gradient-to-r from-amber-500 to-amber-600 
+                    backdrop-blur-md bg-opacity-60 border border-white/20">
+                    <p className="capitalize font-semibold text-white text-sm tracking-wide">New!</p>
+                  </div>
+                  <div className="absolute -inset-0.5 bg-amber-300/20 rounded-lg blur-xl opacity-50"></div>
+                </div>
+              </div>
+            )}
           </Carousel>
-          <div className="flex justify-between absolute bottom-[-1.6rem] left-2 w-full pe-3">
-            <div className="flex items-end space-x-2">
-              <div className="h-12 w-12 border-[3px] border-white rounded-full relative shadow-sm">
-                <LazyAvatarImage
-                  src={post.user.image || "/placeholder-avatar.jpg"}
-                  alt={post.user.name || "User Avatar"}
-                  className="rounded-full object-cover"
-                  onLoadingChange={setIsAvatarLoading}
-                />
+          {!isFeatured && (
+            <div className="flex justify-between absolute bottom-[-1.6rem] left-2 w-full pe-3">
+              <div className="flex items-end space-x-2">
+                <div className="h-12 w-12 border-[3px] border-white rounded-full relative shadow-sm">
+                  <LazyAvatarImage
+                    src={post.user.image || "/placeholder-avatar.jpg"}
+                    alt={post.user.name || "User Avatar"}
+                    className="rounded-full object-cover"
+                    onLoadingChange={setIsAvatarLoading}
+                  />
+                </div>
+                {isAvatarLoading || isImageLoading ? (
+                  <TextSkeleton width="w-20" height="h-3" />
+                ) : (
+                  <p className={`font-semibold text-gray-800 text-xs truncate capitalize mb-1 transition-opacity duration-200
+                ${isAvatarLoading || isImageLoading ? 'opacity-0' : 'opacity-100'}`}>
+                    {post.user.name || "Unknown User"}
+                  </p>
+                )}
               </div>
               {isAvatarLoading || isImageLoading ? (
-                <TextSkeleton width="w-20" height="h-3" />
+                <div className="flex items-end">
+                  <TextSkeleton width="w-8" height="h-4" />
+                </div>
               ) : (
-                <p className={`font-semibold text-gray-800 text-xs truncate capitalize mb-1 transition-opacity duration-200
-                ${isAvatarLoading || isImageLoading ? 'opacity-0' : 'opacity-100'}`}>
-                  {post.user.name || "Unknown User"}
-                </p>
+                <span className={`flex items-end space-x-1 text-gray-800 text-sm transition-opacity duration-200 font-medium
+              ${isAvatarLoading || isImageLoading ? 'opacity-0' : 'opacity-100'}`}>
+                  <>
+                    {post.averageRating && '⭐'} {post.averageRating}
+                  </>
+                </span>
               )}
             </div>
-            {isAvatarLoading || isImageLoading ? (
-              <div className="flex items-end">
-                <TextSkeleton width="w-8" height="h-4" />
-              </div>
-            ) : (
-              <span className={`flex items-end space-x-1 text-gray-800 text-sm transition-opacity duration-200 font-medium
-              ${isAvatarLoading || isImageLoading ? 'opacity-0' : 'opacity-100'}`}>
-                ⭐ 9.5
-              </span>
-            )}
-          </div>
+          )}
           {/* Heart button */}
           <Button
             onClick={handleLikeClick}
@@ -227,14 +247,14 @@ function PostCard({ post }: {
         </div>
       </div>
       {/* Content Section */}
-      <div className="flex flex-col justify-between mt-8 px-2">
-        {isAvatarLoading || isImageLoading ? (
+      <div className={`flex flex-col justify-between ${isFeatured ? 'pt-4' : 'mt-8'} px-2`}>
+        {(isAvatarLoading && isImageLoading) || isImageLoading ? (
           <TextSkeleton width="w-3/4" height="h-4" />
         ) : (
           <p className="text-sm font-medium">{post.title}</p>
         )}
         <div className="flex flex-col space-y-0.5 mt-2">
-          {isAvatarLoading || isImageLoading ? (
+          {(isAvatarLoading && isImageLoading) || isImageLoading ? (
             <>
               <TextSkeleton width="w-1/2" height="h-4" />
               <TextSkeleton width="w-1/3" height="h-4" />
@@ -248,13 +268,13 @@ function PostCard({ post }: {
               <span className="text-sm text-gray-500 flex gap-1">
                 {post.distance
                   ? `${Intl.NumberFormat("en-US", { maximumFractionDigits: 1 }).format(post.distance)} kilometers away`
-                  : "N/A"}
+                  : ""}
               </span>
             </>
           )}
         </div>
         <div className="text-gray-800 text-sm truncate space-x-1 mt-2">
-          {isAvatarLoading || isImageLoading ? (
+          {(isAvatarLoading && isImageLoading) || isImageLoading ? (
             <TextSkeleton width="w-16" height="h-4" />
           ) : (
             <>
@@ -269,68 +289,6 @@ function PostCard({ post }: {
     </div>
   );
 }
-
-const LazyPostImage = ({ src, alt, className = "", onLoadingChange }: {
-  src: string
-  alt: string
-  className?: string
-  onLoadingChange?: (loading: boolean) => void
-}) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  const handleLoad = () => {
-    setIsLoaded(true);
-    onLoadingChange?.(false);
-  };
-
-  return (
-    <div className="relative w-full h-full">
-      {!isLoaded && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-xl flex items-center justify-center">
-          <div className="h-full w-full bg-gray-300 rounded-md" />
-        </div>
-      )}
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-        className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
-        onLoad={handleLoad}
-      />
-    </div>
-  );
-};
-
-const LazyAvatarImage = ({ src, alt, className = "", onLoadingChange }: {
-  src: string
-  alt: string
-  className?: string
-  onLoadingChange?: (loading: boolean) => void
-}) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  const handleLoad = () => {
-    setIsLoaded(true);
-    onLoadingChange?.(false);
-  };
-
-  return (
-    <div className="relative w-full h-full">
-      {!isLoaded && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-full" />
-      )}
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes="48px"
-        className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
-        onLoad={handleLoad}
-      />
-    </div>
-  );
-};
 
 const TextSkeleton = ({ width = "w-24", height = "h-4" }: { width?: string, height?: string }) => (
   <div className={`${width} ${height} bg-gray-200 animate-pulse rounded-md`} />

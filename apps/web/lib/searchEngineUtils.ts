@@ -1,8 +1,6 @@
 import { SearchSuggestion } from "@repo/types";
 import { PopularSearch } from "@prisma/client/edge";
 
-export const runtime = "edge";
-
 type SearchSuggestionResponse = {
   success: boolean;
   data: SearchSuggestion[];

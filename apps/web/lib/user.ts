@@ -2,8 +2,6 @@
 import { Location, User } from "@prisma/client/edge";
 import { IAddUser } from "@repo/types";
 
-export const runtime = "edge";
-
 type ApiResponse = {
   success: boolean;
   data: User & {

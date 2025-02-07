@@ -1,5 +1,3 @@
-export const runtime = "edge";
-
 export function sanitizeSearchQuery(query: string): string {
   return query
     .replace(/[<>]/g, '') // Remove angle brackets

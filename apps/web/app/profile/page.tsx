@@ -5,8 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/ui
 import { Badge } from "lucide-react";
 import { redirect } from "next/navigation";
 
-export const runtime = "edge";
-
 const Page = async () => {
   const user = await currentUser();
 

@@ -2,8 +2,6 @@ import { getCreatePostById } from "@/app/api/_action/posts/getPosts";
 import { currentUser } from "@/lib";
 import { notFound } from "next/navigation";
 
-export const runtime = "edge";
-
 interface LayoutProps {
   children: React.ReactNode;
   params: {

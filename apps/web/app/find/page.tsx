@@ -4,8 +4,6 @@ import { PostsPage } from "@/components/posts/find/postsPage";
 import { Filters } from "@/components/ui/filters";
 import { ImageUpload } from "@/components/ui/imageUpload";
 
-export const runtime = "edge";
-
 const Page = () => {
   return (
     <div className="dark:bg-background">

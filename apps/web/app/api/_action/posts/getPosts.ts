@@ -310,3 +310,36 @@ export async function validatePostOwnership(postId: string, userId: string) {
 
   return post;
 }
+
+export async function getPostByUser(userId: string) {
+  try {
+    if (!userId) throw new Error('Missing user id');
+
+    const posts: PostWithUserInfo[] = await prisma.post.findMany({
+      where: {
+        userId: userId
+      },
+      include: {
+        location: true,
+        media: true,
+        reviews: {
+          select: {
+            rating: true,
+            createdAt: true
+          }
+        },
+        user: {
+          select: {
+            name: true,
+            image: true
+          }
+        }
+      }
+    });
+
+    return posts;
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    throw error;
+  }
+}

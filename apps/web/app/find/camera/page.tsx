@@ -1,6 +1,3 @@
-
-export const runtime = "edge";
-
 import { PostsPage } from "@/components/posts/find/postsPage";
 
 const Page = () => {
