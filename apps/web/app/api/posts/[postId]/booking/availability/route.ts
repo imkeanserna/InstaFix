@@ -37,7 +37,6 @@ export async function GET(
   { params }: { params: { postId: string } }
 ) {
   try {
-    console.log("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
     const postId = params?.postId;
     if (!postId) {
       return errorResponse('post id is required', undefined, 400);
@@ -76,6 +75,9 @@ export async function GET(
         freelancerId: freelancerId,
         date: {
           equals: normalizedDate
+        },
+        status: {
+          in: ['PENDING', 'CONFIRMED', 'COMPLETED']
         }
       },
     });

@@ -135,7 +135,10 @@ export async function GET(
 
     const bookings: TypedBooking[] = await prisma.booking.findMany({
       where: {
-        postId: postId
+        postId: postId,
+        status: {
+          in: ['PENDING', 'CONFIRMED']
+        }
       },
       select: {
         id: true,
