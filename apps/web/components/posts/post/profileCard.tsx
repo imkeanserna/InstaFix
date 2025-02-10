@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avat
 import { Card, CardContent, CardHeader } from "@repo/ui/components/ui/card";
 import { differenceInDays } from "date-fns";
 import { Calendar, Clock, MapPin, MessageSquareCode, Star, Users } from "lucide-react";
+import { Divider } from "./postContent";
 
 interface FreelancerProfileProps {
   name: string;
@@ -34,7 +35,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileProps> = ({
   const showRatingsAndReviews = reviews > 0 && rating && rating > 0;
 
   return (
-    <div className="w-full flex flex-col relative bg-gradient-to-br from-amber-50/50 via-white to-yellow-50/50">
+    <div className="w-full flex flex-col items-center justify-center relative bg-gradient-to-br from-amber-50/50 via-white to-yellow-50/50">
       {/* Background patterns */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(251,191,36,0.05)_1px,transparent_0)] [background-size:24px_24px]"></div>
 
@@ -59,19 +60,21 @@ const FreelancerProfileCard: React.FC<FreelancerProfileProps> = ({
               <p className="text-xs text-gray-500 font-medium">Freelance Creator</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <StatItem
-              icon={<MessageSquareCode className="h-4 w-4 text-gray-500" />}
+              icon={<MessageSquareCode className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />}
               value={isNewProfile && !showRatingsAndReviews ? "New" : `${reviews}`}
               label="Reviews"
             />
+            <Divider marginY="my-0 block md:hidden" />
             <StatItem
-              icon={<Star className="h-4 w-4 text-gray-500" />}
+              icon={<Star className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />}
               value={rating.toFixed(1)}
               label="Rating"
             />
+            <Divider marginY="my-0 block md:hidden" />
             <StatItem
-              icon={<Calendar className="h-4 w-4 text-gray-500" />}
+              icon={<Calendar className="h-3 w-3 md:h-4 md:w-4 text-gray-500" />}
               value={formatTimeAgo(monthsHosting)}
               label={`${formatTimeAgo(monthsHosting, true)} Hosting`}
             />
@@ -83,15 +86,15 @@ const FreelancerProfileCard: React.FC<FreelancerProfileProps> = ({
         <CardContent className="p-0">
           <div className="flex gap-4 text-gray-600">
             <DetailItem
-              icon={<MapPin className="h-4 w-4 text-yellow-500" />}
+              icon={<MapPin className="h-3 w-3 md:h-4 md:w-4 text-yellow-500" />}
               text={getServiceConfig(serviceLocation).label}
             />
             <DetailItem
-              icon={<Users className="h-4 w-4 text-yellow-500" />}
+              icon={<Users className="h-3 w-3 md:h-4 md:w-4 text-yellow-500" />}
               text={getAudienceConfig(audience).label}
             />
             <DetailItem
-              icon={<Clock className="h-4 w-4 text-yellow-500" />}
+              icon={<Clock className="h-3 w-3 md:h-4 md:w-4 text-yellow-500" />}
               text={getEngagementConfig(engagementType.engagementType).label}
             />
           </div>
@@ -109,7 +112,7 @@ const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: string
     </div>
     <div className="flex items-center gap-1 capitalize">
       {icon}
-      <span className="text-xs text-gray-700">{label}</span>
+      <span className="text-[10px] md:text-xs text-gray-700">{label}</span>
     </div>
   </div>
 );
@@ -118,7 +121,7 @@ const StatItem = ({ icon, value, label }: { icon: React.ReactNode; value: string
 const DetailItem = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
   <div className="flex items-center gap-2 py-1">
     {icon}
-    <span className="text-xs">{text}</span>
+    <span className="text-[10px] md:text-xs">{text}</span>
   </div>
 );
 
