@@ -76,3 +76,46 @@ export async function getBookings({ postId }: { postId: string }) {
     return [];
   }
 }
+
+interface BookingResponse {
+  success: boolean;
+  data: {
+    isAvailable: boolean;
+    existingBooking: {
+      id: string;
+      date: string;
+      status: string;
+    } | null;
+  };
+  error?: string;
+}
+
+export async function getBook({ postId, freelancerId, date }: {
+  postId: string,
+  freelancerId: string,
+  date: Date
+}) {
+  try {
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}/booking/availability?freelancerId=${freelancerId}&date=${date.toISOString().split('T')[0]}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to creating post');
+    }
+
+    const result: BookingResponse = await response.json();
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to create booking');
+    }
+
+    return result.data;
+  } catch (error) {
+    throw error;
+  }
+}

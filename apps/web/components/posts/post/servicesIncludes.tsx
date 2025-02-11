@@ -16,18 +16,21 @@ export function ServicesIncludes({ services }: { services: ServicesIncluded[] })
   };
 
   return (
-    <div className="space-y-8">
-      <h3 className="text-2xl font-medium">What this service includes</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-8">
+    <div className="space-y-6 sm:space-y-8">
+      <h3 className="text-xl sm:text-2xl font-medium px-4 sm:px-0">What this service includes</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 px-4 sm:px-8">
         {services.map((service) => {
           const ServiceIcon = serviceDetails[service].icon;
           return (
-            <div key={service} className="flex items-start gap-5 group">
-              <div className="mt-1">
-                <ServiceIcon className="w-6 h-6 text-yellow-900 fill-yellow-400 group-hover:scale-110 transition-all duration-300" strokeWidth={1.5} />
+            <div key={service} className="flex items-start gap-3 sm:gap-5 group">
+              <div className="mt-1 shrink-0">
+                <ServiceIcon
+                  className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-900 fill-yellow-400 group-hover:scale-110 transition-all duration-300"
+                  strokeWidth={1.5}
+                />
               </div>
-              <div className="flex-1 space-y-1">
-                <h4 className="text-base font-medium text-gray-900">
+              <div className="flex-1 space-y-0.5 sm:space-y-1">
+                <h4 className="text-sm sm:text-base font-medium text-gray-900">
                   {serviceDetails[service].label}
                 </h4>
                 <p className="text-xs text-gray-500">

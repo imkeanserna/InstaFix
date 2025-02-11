@@ -1,5 +1,6 @@
 import ProfileDropdown from "@/components/user/ProfileDropdown";
 import { currentUser } from "@/lib";
+import { getInitials } from "@/lib/profile";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
 import { Badge } from "lucide-react";
@@ -11,13 +12,6 @@ const Page = async () => {
   if (!user) {
     redirect("/auth/login");
   }
-
-  // Helper function to get initials
-  const getInitials = (name: string) => {
-    return name
-      ? name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
-      : 'UN';
-  };
 
   return (
     <div className="w-full min-h-screen bg-background transition-colors duration-300 flex items-center justify-center px-4 py-8">

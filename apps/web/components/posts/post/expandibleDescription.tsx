@@ -11,21 +11,21 @@ import {
 import { Button } from "@repo/ui/components/ui/button";
 import { ChevronRight, X } from 'lucide-react';
 
-export default function ExpandableDescription({ title, description }: {
+export default function ExpandableDescription({ title, description, maxLength = 400 }: {
   title: string
   description: string
+  maxLength?: number
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const maxLength = 400;
   const isLongDescription = description.length > maxLength;
   const truncatedDescription = isLongDescription
     ? `${description.slice(0, maxLength)}...`
     : description;
 
   return (
-    <div className="space-y-4">
-      <div className='flex flex-col items-end'>
-        <p className="text-gray-800 leading-8">
+    <div className="w-full space-y-4">
+      <div className="flex flex-col items-end w-full">
+        <p className="text-gray-800 leading-8 w-full">
           {truncatedDescription}
         </p>
         {isLongDescription && (
@@ -35,16 +35,14 @@ export default function ExpandableDescription({ title, description }: {
             onClick={() => setIsModalOpen(true)}
           >
             Show more
-            <ChevronRight
-              className="w-4 h-4 transform transition-transform duration-200 ease-in-out group-hover:translate-x-1"
-            />
+            <ChevronRight className="w-4 h-4 transform transition-transform duration-200 ease-in-out group-hover:translate-x-1" />
           </Button>
         )}
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl pt-12">
-          <DialogClose className="absolute left-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+        <DialogContent className="max-w-2xl w-full sm:max-w-3xl sm:w-full pt-12 h-full sm:max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <DialogClose className="absolute left-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
             <X className="h-5 w-5" />
             <span className="sr-only">Close</span>
           </DialogClose>

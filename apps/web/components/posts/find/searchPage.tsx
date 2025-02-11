@@ -5,8 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useRef } from "react";
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
-import { PostsGrid } from "./postsPage";
 import { getStoredLocation } from "@/lib/sessionUtils";
+import { PostsGrid } from "./postsCard";
 
 export function SearchPage() {
   const searchParams = useSearchParams();

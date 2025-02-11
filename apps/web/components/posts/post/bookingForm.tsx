@@ -13,7 +13,7 @@ import { useBookingData } from "@/hooks/posts/useBookingData";
 import { User } from "next-auth";
 import { formatPrice } from "@/lib/postUtils";
 
-const createBookingSchema = z.object({
+export const createBookingSchema = z.object({
   date: z.date(),
   description: z.string()
     .min(5, "Description must be at least 5 characters long")
@@ -25,11 +25,15 @@ const createBookingSchema = z.object({
 export function BookingForm({
   postId,
   user,
-  rate
+  rate,
+  username,
+  freelancerId
 }: {
   postId: string,
   user: User | null
   rate: number
+  username: string
+  freelancerId: string
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -105,22 +109,23 @@ export function BookingForm({
         setError("Cannot book a date in the past");
         return;
       }
-
       const bookingData = createBookingSchema.parse({
         date: selectedDate,
         description: description,
         quantity: quantity,
       });
 
-      // --TODO: This is just a testing
-      // const booking = await createBooking({ postId: postId, ...bookingData });
-
-      setDescription("");
-      setQuantity(1);
-      setInputDate("");
-      clearDate();
-
-      // --TODO: push this to the booking process
+      const formattedDate = bookingData.date.toISOString().split('T')[0];
+      const baseUrl = `/book/${encodeURIComponent(username)}/${encodeURIComponent(postId)}`;
+      const queryParams = new URLSearchParams({
+        freelancerId: freelancerId,
+        checkout: formattedDate,
+        description: bookingData.description,
+        numberOfItems: bookingData.quantity.toString()
+      }).toString();
+      const fullUrl = `${baseUrl}?${queryParams}`;
+      console.log('Query params:', fullUrl);
+      router.push(fullUrl);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create booking";
       setError(errorMessage);
@@ -186,7 +191,7 @@ export function BookingForm({
     }
   };
 
-  return <div className={`flex flex-col rounded-xl border border-gray-300 p-6 shadow-2xl`}>
+  return <div className={`flex flex-col rounded-xl p-6 shadow-2xl`}>
     <div className="flex gap-2 items-end mb-6">
       <p className="text-2xl font-medium">₱{formatPrice(rate)}</p>
       <span>hour</span>
@@ -201,7 +206,7 @@ export function BookingForm({
               value={inputDate}
               onChange={handleInputChange}
               maxLength={10}
-              className="flex-grow px-32 py-8 text-base border-t-gray-900 border-x-gray-900 border-b-0 rounded-t-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none"
+              className="flex-grow px-4 md:px-32 pt-10 pb-4 md:py-8 text-base border-t-gray-900 border-x-gray-900 border-b-0 rounded-t-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none"
             />
             <span className={`absolute top-2 left-4 text-xs font-medium uppercase transform origin-top-right flex gap-4 ${error ? 'text-red-400' : 'text-gray-900'}`}>Date</span>
           </div>

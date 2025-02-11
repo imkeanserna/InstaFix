@@ -1,5 +1,5 @@
 import { Post } from "@prisma/client/edge";
-import { ResponseDataWithCursor, ResponseDataWithLocationAndCursor, GetPostsResponse, SearchWithPaginationOptions, DynamicPostWithIncludes, StaticPostWithIncludesWithHighlights } from "@repo/types";
+import { ResponseDataWithCursor, ResponseDataWithLocationAndCursor, GetPostsResponse, SearchWithPaginationOptions, DynamicPostWithIncludes, StaticPostWithIncludesWithHighlights, PostWithUserInfo } from "@repo/types";
 
 type PostResponse = {
   success: boolean;
@@ -203,6 +203,12 @@ export async function getPosts(params: SearchWithPaginationOptions = {}): Promis
   }
 }
 
+type PostResponseById = {
+  success: boolean;
+  data: PostWithUserInfo;
+  error?: string;
+}
+
 export async function getPost({ postId }: { postId: string }) {
   try {
     if (!postId) {
@@ -219,7 +225,7 @@ export async function getPost({ postId }: { postId: string }) {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const result: PostResponse = await response.json();
+    const result: PostResponseById = await response.json();
 
     if (!result.success) {
       throw new Error(result.error || 'Failed to get response from chat AI');

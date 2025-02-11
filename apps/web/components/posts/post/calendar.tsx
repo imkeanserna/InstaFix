@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { DualCalendar } from "@repo/ui/components/ui/calendar"
+import { DualCalendar, SingleCalendar } from "@repo/ui/components/ui/calendar"
 import { useBookingData } from "@/hooks/posts/useBookingData";
 import { User } from "next-auth";
 
@@ -37,15 +37,28 @@ export function PostCalendar({ postId, user }: { postId: string, user: User | nu
 
   return (
     <div className="flex justify-center items-center">
-      <DualCalendar
-        selectedDate={selectedDate}
-        onSelect={(date) => {
-          handleDateSelect(date);
-        }}
-        clearSelectedDate={clearDate}
-        bookings={bookingData || []}
-        userId={user?.id || ''}
-      />
+      <div className="block sm:hidden">
+        <SingleCalendar
+          selectedDate={selectedDate}
+          onSelect={(date) => {
+            handleDateSelect(date);
+          }}
+          clearSelectedDate={clearDate}
+          bookings={bookingData || []}
+          userId={user?.id || ''}
+        />
+      </div>
+      <div className="hidden sm:flex">
+        <DualCalendar
+          selectedDate={selectedDate}
+          onSelect={(date) => {
+            handleDateSelect(date);
+          }}
+          clearSelectedDate={clearDate}
+          bookings={bookingData || []}
+          userId={user?.id || ''}
+        />
+      </div>
     </div>
   );
 }

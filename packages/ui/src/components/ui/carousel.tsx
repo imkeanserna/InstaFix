@@ -299,6 +299,27 @@ const CarouselDots = React.forwardRef<
 })
 CarouselDots.displayName = "CarouselDots"
 
+const CarouselCounter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
+  const { selectedIndex, scrollSnaps } = useCarousel()
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "bg-black/50 text-white px-3 py-1",
+        className
+      )}
+      {...props}
+    >
+      {selectedIndex + 1} / {scrollSnaps.length}
+    </div>
+  )
+})
+CarouselCounter.displayName = "CarouselCounter"
+
 export {
   type CarouselApi,
   Carousel,
@@ -306,5 +327,6 @@ export {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
-  CarouselDots
+  CarouselDots,
+  CarouselCounter
 }

@@ -3,6 +3,12 @@
 import { EngagementType, ServiceLocationType, TargetAudience } from "@prisma/client/edge";
 import { Building, Building2, Clock, Globe, Heart, MessageSquare, RepeatIcon, Settings, UserCheck, Users, Users2 } from "lucide-react";
 
+export const getInitials = (name: string) => {
+  return name
+    ? name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+    : 'UN';
+};
+
 export const formatTimeAgo = (date: Date, formatTime?: boolean): number | string => {
   const now = new Date();
   const diffInMs = now.getTime() - new Date(date).getTime();

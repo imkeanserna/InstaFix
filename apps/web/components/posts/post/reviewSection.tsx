@@ -15,6 +15,9 @@ import { differenceInDays, formatDistanceToNow } from 'date-fns';
 import { Dialog, DialogClose, DialogContent, DialogTrigger } from "@repo/ui/components/ui/dialog";
 import { Button } from "@repo/ui/components/ui/button";
 import { Review } from "@prisma/client/edge";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@repo/ui/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { useMediaQuery } from "@/hooks/useMedia";
 
 interface RatingSectionProps {
   rate: number | null;
@@ -60,18 +63,18 @@ export function RatingSection({
   if (isNewProfile && !showRatingsAndReviews) {
     return (
       <div className="w-full relative" ref={containerRef}>
-        <Divider marginY="my-10" />
-        <div className="flex flex-col py-10 items-center text-center group relative">
+        <Divider marginY="my-6 sm:my-10" />
+        <div className="flex flex-col py-6 sm:py-10 items-center text-center group relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2">
-            <PartyPopper className="w-8 h-8 text-amber-500 animate-bounce" />
+            <PartyPopper className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500 animate-bounce" />
           </div>
 
           <div className="relative">
-            <p className="text-7xl font-semibold bg-clip-text text-transparent group-hover:scale-105 transition-transform bg-gradient-to-br from-amber-500 to-amber-700">
+            <p className="text-5xl sm:text-7xl font-semibold bg-clip-text text-transparent group-hover:scale-105 transition-transform bg-gradient-to-br from-amber-500 to-amber-700">
               New
             </p>
-            <Sparkles className="absolute -top-4 -right-8 w-6 h-6 text-amber-400" />
-            <Sparkles className="absolute -top-4 -left-8 w-6 h-6 text-amber-400" />
+            <Sparkles className="absolute -top-4 -right-6 sm:-right-8 w-4 h-4 sm:w-6 sm:h-6 text-amber-400" />
+            <Sparkles className="absolute -top-4 -left-6 sm:-left-8 w-4 h-4 sm:w-6 sm:h-6 text-amber-400" />
           </div>
 
           <div className="flex items-center gap-2 mt-2">
@@ -81,13 +84,13 @@ export function RatingSection({
             </p>
           </div>
 
-          <div className="mt-6 max-w-lg p-4 bg-amber-50/50 rounded-xl border border-amber-100">
-            <p className="text-sm text-gray-700">
+          <div className="mt-4 sm:mt-6 max-w-lg p-3 sm:p-4 bg-amber-50/50 rounded-xl border border-amber-100">
+            <p className="text-xs sm:text-sm text-gray-700">
               {`Book now for your very first experience! Don't miss out on exciting opportunities.`}
             </p>
           </div>
         </div>
-        <Divider marginY="my-10" />
+        <Divider marginY="my-6 sm:my-10" />
       </div>
     );
   }
@@ -106,11 +109,11 @@ export function RatingSection({
           />
         </div>
       )}
-      <Divider marginY="my-10" />
-      <div className="flex justify-center items-center gap-20">
+      <Divider marginY="my-6 sm:my-10" />
+      <div className="flex flex-col-reverse md:flex-row justify-center items-center gap-8 md:gap-20">
         <RatingBars reviews={reviews} isLoading={isLoading} />
-        <div className="w-px h-56 bg-gradient-to-b from-transparent via-amber-200 to-transparent"></div>
-        <div className="w-[400px] text-center space-y-4">
+        <div className="hidden md:block w-px h-56 bg-gradient-to-b from-transparent via-amber-200 to-transparent"></div>
+        <div className="w-full md:w-[400px] text-center space-y-4">
           {!isNewProfile
             ?
             <>
@@ -119,42 +122,42 @@ export function RatingSection({
                 <>
                   <div className="flex flex-col items-center gap-2">
                     {getRatingIcon(rate)}
-                    <p className="text-9xl font-medium text-yellow-500 flex items-center gap-2">
+                    <p className="text-7xl md:text-9xl font-medium text-yellow-500 flex items-center gap-2">
                       {rate}
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-xl font-semibold flex items-center justify-center gap-2">
-                      Professional Choicedasdas
-                      <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                    <p className="text-lg md:text-xl font-semibold flex items-center justify-center gap-2">
+                      Professional Choice
+                      <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-500 fill-yellow-500" />
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs md:text-sm text-gray-500">
                       This freelancer is a trusted choice, recognized for expertise, reliability, and top ratings.
                     </p>
                   </div>
                 </>
                 :
                 <>
-                  <div className="flex flex-col items-center gap-4 p-6">
-                    <p className="text-3xl font-semibold bg-clip-text text-transparent group-hover:scale-105 transition-transform bg-gradient-to-br from-amber-500 to-amber-700">
+                  <div className="flex flex-col items-center gap-4 p-4 md:p-6">
+                    <p className="text-2xl md:text-3xl font-semibold bg-clip-text text-transparent group-hover:scale-105 transition-transform bg-gradient-to-br from-amber-500 to-amber-700">
                       No Reviews Yet
                     </p>
-                    <p className="text-sm text-gray-500">Be the first to experience and rate this service!</p>
+                    <p className="text-xs md:text-sm text-gray-500">Be the first to experience and rate this service!</p>
                   </div>
                 </>
               }
             </>
             :
-            <div className="flex flex-col items-center gap-4 p-6">
-              <p className="text-3xl font-semibold bg-clip-text text-transparent group-hover:scale-105 transition-transform bg-gradient-to-br from-amber-500 to-amber-700">
+            <div className="flex flex-col items-center gap-4 p-4 md:p-6">
+              <p className="text-2xl md:text-3xl font-semibold bg-clip-text text-transparent group-hover:scale-105 transition-transform bg-gradient-to-br from-amber-500 to-amber-700">
                 No Reviews Yet
               </p>
-              <p className="text-sm text-gray-500">Be the first to experience and rate this service!</p>
+              <p className="text-xs md:text-sm text-gray-500">Be the first to experience and rate this service!</p>
             </div>
           }
         </div>
       </div>
-      <Divider marginY="my-10" />
+      <Divider marginY="my-6 sm:my-10" />
     </div>
   );
 };
@@ -214,9 +217,9 @@ export function RatingBars({ reviews, isLoading }: {
 
   return (
     <Card className="w-full max-w-md border-0 shadow-none" ref={ref}>
-      <CardHeader className="p-4">
+      <CardHeader className="p-3 md:p-4">
         <motion.p
-          className="text-sm text-gray-500"
+          className="text-xs md:text-sm text-gray-500"
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.5 }}
@@ -227,22 +230,22 @@ export function RatingBars({ reviews, isLoading }: {
       <CardContent>
         <div className="space-y-1">
           {[5, 4, 3, 2, 1].map((rating, index) => {
-            const count = ratings[rating as 1 | 2 | 3 | 4 | 5] || 0;;
+            const count = ratings[rating as 1 | 2 | 3 | 4 | 5] || 0;
             const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
 
             return (
-              <div key={rating} className="flex items-center gap-3">
+              <div key={rating} className="flex items-center gap-2 md:gap-3">
                 <motion.span
-                  className="text-sm"
+                  className="text-xs md:text-sm"
                   initial={{ opacity: 0 }}
                   animate={isInView ? { opacity: 1 } : { opacity: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
                   {rating}
                 </motion.span>
-                <div className="relative h-2 flex-1 bg-gray-200 rounded overflow-hidden">
+                <div className="relative h-1.5 md:h-2 flex-1 bg-gray-200 rounded overflow-hidden">
                   <motion.div
-                    className="absolute h-2 bg-yellow-500 rounded origin-left"
+                    className="absolute h-1.5 md:h-2 bg-yellow-500 rounded origin-left"
                     initial="hidden"
                     animate={isInView ? "visible" : "hidden"}
                     variants={barVariants}
@@ -258,7 +261,7 @@ export function RatingBars({ reviews, isLoading }: {
                   />
                 </div>
                 <motion.span
-                  className="w-8 text-sm text-start text-gray-500"
+                  className="w-6 md:w-8 text-xs md:text-sm text-start text-gray-500"
                   variants={countVariants}
                   initial="hidden"
                   animate={isInView ? "visible" : "hidden"}
@@ -292,6 +295,11 @@ export function ReviewSection({
     isLoading,
     error
   } = useReviews(postId, 10);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const plugin = useRef(
+    Autoplay({ delay: 3000, stopOnInteraction: true })
+  );
 
   if (isLoading || isFetchingNextPage || error || !reviewData) {
     return <ReviewSectionSkeleton />;
@@ -305,26 +313,55 @@ export function ReviewSection({
   const totalReviews = allReviews.length;
 
   return (
-    <div className="space-y-6 px-60">
+    <div className="space-y-6 lg:px-60">
       <p className="text-2xl font-medium">{totalReviews} reviews</p>
-      <div className="grid grid-cols-2 gap-8">
+
+      {/* Desktop View - Grid Layout */}
+      <div className="hidden md:grid grid-cols-2 gap-8">
         {displayedReviews.map((review) => (
           <ReviewCard key={review.id} review={review} typeLocation="shortLocation" />
         ))}
       </div>
+
+      {/* Mobile View - Carousel Layout */}
+      <div className="block md:hidden">
+        <Carousel
+          plugins={[plugin.current]}
+          className="w-full relative"
+          onMouseEnter={plugin.current.stop}
+          onMouseLeave={plugin.current.reset}
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+        >
+          <CarouselContent className="-ml-2">
+            {displayedReviews.map((review) => (
+              <CarouselItem key={review.id} className="pl-2 basis-[80%]">
+                <div className="p-1">
+                  <ReviewCard review={review} typeLocation="shortLocation" />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="absolute top-0 right-0 h-full w-[20%] bg-gradient-to-l from-white via-white/50 to-transparent pointer-events-none" />
+          <CarouselPrevious className="left-2" />
+          <CarouselNext className="right-2" />
+        </Carousel>
+      </div>
+
       <div className="py-4">
-        {totalReviews > 6 && (
+        {(isMobile || totalReviews > 6) && (
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline"
-                className="px-4 text-sm py-6 rounded-xl font-medium hover:bg-yellow-400 border border-gray-900 active:scale-95 transition-all"
+                className="w-full md:w-auto px-4 text-sm py-6 rounded-xl font-medium hover:bg-yellow-400 border border-gray-900 active:scale-95 transition-all"
               >
-
-                <Grip className='h-4 w-4 mr-2' />
+                <Grip className="h-4 w-4 mr-2" />
                 Show all {totalReviews} reviews
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-5xl h-[90vh] py-8">
+            <DialogContent className="max-w-5xl h-full md:h-[90vh] py-8">
               <DialogClose className="absolute left-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
                 <X className="h-5 w-5" />
                 <span className="sr-only">Close</span>
@@ -333,10 +370,10 @@ export function ReviewSection({
                 <ReviewDialogSkeleton />
               ) : (
                 <>
-                  <div className="flex justify-center items-center gap-8">
+                  <div className="flex flex-col-reverse md:flex-row justify-center items-center gap-8">
                     <RatingBars reviews={reviews} />
-                    <div className="w-px h-56 bg-gradient-to-b from-transparent via-amber-200 to-transparent"></div>
-                    <div className="w-[400px] text-center space-y-4">
+                    <div className="hidden md:block w-px h-56 bg-gradient-to-b from-transparent via-amber-200 to-transparent"></div>
+                    <div className="w-full md:w-[400px] text-center space-y-4">
                       <div className="flex flex-col items-center gap-2">
                         {getRatingIcon(rate)}
                         <p className="text-6xl font-medium text-yellow-500 flex items-center gap-2">
@@ -355,7 +392,7 @@ export function ReviewSection({
                     </div>
                   </div>
                   <div className="border-t border-gray-200 overflow-y-auto">
-                    <div className="grid grid-cols-1 gap-6 px-20 py-10">
+                    <div className="grid grid-cols-1 gap-6 px-4 md:px-20 py-10">
                       <p className="text-2xl font-medium">{totalReviews} reviews</p>
                       {allReviews.map((review) => (
                         <ReviewCard key={review.id} review={review} typeLocation="longLocation" />
