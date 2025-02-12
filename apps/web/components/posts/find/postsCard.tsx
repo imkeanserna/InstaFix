@@ -5,7 +5,7 @@ import { InfiniteData } from "@tanstack/react-query";
 import { motion } from 'framer-motion'
 import { PostWithUserInfo } from "@repo/types";
 import { PricingType } from "@prisma/client/edge";
-import { useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, CarouselDots } from "@repo/ui/components/ui/carousel";
 import { Heart, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,18 @@ interface PostsGridProps {
   onLoadMore: () => void
 }
 
-export function PostsGrid({
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1
+    }
+  }
+};
+
+export const PostsGrid = memo(function PostsGrid({
   postsData,
   isLoading,
   error,
@@ -31,6 +42,13 @@ export function PostsGrid({
   isFetchingNextPage,
   onLoadMore
 }: PostsGridProps) {
+  const allPosts = useMemo(() =>
+    postsData?.pages.flatMap((page: PostPage) =>
+      Array.isArray(page.posts) ? page.posts : page.posts.posts
+    ) || [],
+    [postsData]
+  );
+
   if (!postsData) {
     return <motion.div
       initial={{ opacity: 0 }}
@@ -40,21 +58,6 @@ export function PostsGrid({
       <PostsGridSkeleton />
     </motion.div>
   }
-
-  const allPosts = postsData?.pages.flatMap((page: PostPage) =>
-    Array.isArray(page.posts) ? page.posts : page.posts.posts
-  ) || []
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1
-      }
-    }
-  };
 
   if (isLoading || isFetchingNextPage || error) {
     return <motion.div
@@ -76,7 +79,7 @@ export function PostsGrid({
     <div className="space-y-6 mx-auto">
       <motion.div
         className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-12 md:gap-6"
-        variants={container}
+        variants={containerVariants}
         initial="hidden"
         animate="show"
         viewport={{ once: true }}
@@ -121,9 +124,12 @@ export function PostsGrid({
       )}
     </div>
   )
-}
+});
 
-export function PostCard({ post, isFeatured }: {
+export const PostCard = memo(function PostCard({
+  post,
+  isFeatured
+}: {
   post: (PostWithUserInfo & {
     distance: number | null
   }),
@@ -132,23 +138,29 @@ export function PostCard({ post, isFeatured }: {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
-  const allImages = [
-    ...(post.media?.map(m => m.url) || [])
-  ].filter(Boolean);
-  const isNewPost = differenceInDays(new Date(), post.createdAt) <= 21;
   const router = useRouter();
 
-  const handleClick = () => {
+  const allImages = useMemo(() =>
+    [...(post.media?.map(m => m.url) || [])].filter(Boolean),
+    [post.media]
+  );
+
+  const isNewPost = useMemo(() =>
+    differenceInDays(new Date(), post.createdAt) <= 21,
+    [post.createdAt]
+  );
+
+  const handleClick = useCallback(() => {
     if (!isImageLoading && !isAvatarLoading) {
       router.push(`/find/${post.user.name}/${post.title}/${post.id}`);
     }
-  };
+  }, [isImageLoading, isAvatarLoading, router, post.user.name, post.title, post.id]);
 
-  const handleLikeClick = (e: React.MouseEvent) => {
+  const handleLikeClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsLiked(!isLiked);
+    setIsLiked(prev => !prev);
     // Notify the backend here!
-  };
+  }, []);
 
   return (
     <div className="h-full group cursor-pointer transition-all duration-200 hover:translate-y-[-4px] active:scale-[0.98]"
@@ -282,7 +294,10 @@ export function PostCard({ post, isFeatured }: {
       </div>
     </div>
   );
-}
+});
+
+PostsGrid.displayName = 'PostsGrid';
+PostCard.displayName = 'PostCard';
 
 const TextSkeleton = ({ width = "w-24", height = "h-4" }: { width?: string, height?: string }) => (
   <div className={`${width} ${height} bg-gray-200 animate-pulse rounded-md`} />

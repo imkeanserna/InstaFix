@@ -167,7 +167,7 @@ export function PostsPage() {
       }
 
       {!isCameraRoute && (
-        <div className="flex flex-col">
+        <div className="flex flex-col px-2 md:px-0">
           {/* Mobile "Select all" button */}
           <button
             className="md:hidden text-right text-xs text-gray-900 hover:underline mb-2"
@@ -206,14 +206,16 @@ export function PostsPage() {
         </div>
       )}
 
-      <PostsGrid
-        postsData={postsData || undefined}
-        isLoading={isLoading}
-        error={error}
-        hasNextPage={hasNextPage}
-        isFetchingNextPage={isFetchingNextPage}
-        onLoadMore={fetchNextPage}
-      />
+      <div className="px-6 md:px-0">
+        <PostsGrid
+          postsData={postsData || undefined}
+          isLoading={isLoading}
+          error={error}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          onLoadMore={fetchNextPage}
+        />
+      </div>
     </div>
   );
 }
