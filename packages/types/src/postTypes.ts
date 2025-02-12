@@ -1,4 +1,4 @@
-import { Prisma, Review } from "@prisma/client/edge";
+import { Like, Prisma, Review } from "@prisma/client/edge";
 import {
   EngagementType,
   Location,
@@ -74,7 +74,8 @@ export type PostWithUserInfo = Post & {
   user: {
     name: string | null;
     image: string | null;
-  }
+  };
+  likes: Like[];
 }
 
 type CursorPagination = {
@@ -143,6 +144,7 @@ type TypeLocation = {
 type DynamicPostInclude = {
   payments: true;
   reviews: true;
+  likes: true;
 };
 
 export type DynamicPostWithIncludes = Prisma.PostGetPayload<{

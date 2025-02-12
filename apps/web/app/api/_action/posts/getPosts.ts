@@ -333,7 +333,8 @@ export async function getPostByUser(userId: string) {
             name: true,
             image: true
           }
-        }
+        },
+        likes: true
       }
     });
 

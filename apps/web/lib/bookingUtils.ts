@@ -19,6 +19,10 @@ export async function createBooking({
   quantity: number;
 }) {
   try {
+    if (!postId) {
+      throw new Error('post id is required');
+    }
+
     const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}/booking`, {
       method: 'POST',
       headers: {
@@ -55,6 +59,10 @@ type GetBookingsResponse = {
 
 export async function getBookings({ postId }: { postId: string }) {
   try {
+    if (!postId) {
+      throw new Error('post id is required');
+    }
+
     const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}/booking`, {
       method: 'GET',
       headers: {

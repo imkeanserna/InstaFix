@@ -13,6 +13,7 @@ import { Button } from "@repo/ui/components/ui/button";
 import { LazyAvatarImage, LazyPostImage } from "../lazyImage";
 import { differenceInDays } from "date-fns";
 import { formatPrice } from "@/lib/postUtils";
+import { useLike } from "@/hooks/posts/useLike";
 
 interface PostsGridProps {
   postsData: InfiniteData<PostPage> | undefined
@@ -137,7 +138,10 @@ export const PostCard = memo(function PostCard({
 }) {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
-  const [isLiked, setIsLiked] = useState(false);
+  const { isLiked, toggleLike } = useLike({
+    postId: post.id,
+    likes: post.likes
+  });
   const router = useRouter();
 
   const allImages = useMemo(() =>
@@ -155,12 +159,6 @@ export const PostCard = memo(function PostCard({
       router.push(`/find/${post.user.name}/${post.title}/${post.id}`);
     }
   }, [isImageLoading, isAvatarLoading, router, post.user.name, post.title, post.id]);
-
-  const handleLikeClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsLiked(prev => !prev);
-    // Notify the backend here!
-  }, []);
 
   return (
     <div className="h-full group cursor-pointer transition-all duration-200 hover:translate-y-[-4px] active:scale-[0.98]"
@@ -240,14 +238,14 @@ export const PostCard = memo(function PostCard({
           )}
           {/* Heart button */}
           <Button
-            onClick={handleLikeClick}
+            onClick={toggleLike}
             className="absolute top-2 right-2 p-2 bg-white/30 backdrop-blur-md rounded-xl border border-white/20
               hover:bg-white/40 active:scale-95 transition-all duration-200"
             aria-label={isLiked ? "Unlike post" : "Like post"}
           >
             <Heart className={`w-5 h-5 ${isLiked
               ? 'fill-yellow-500 stroke-yellow-500'
-              : 'fill-white stroke-none hover:fill-yellow-500'
+              : 'fill-white stroke-none'
               } transition-colors duration-200`} />
           </Button>
         </div>

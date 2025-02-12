@@ -85,11 +85,13 @@ export const PriceDetails = ({
     <div className="mt-2 space-y-3">
       <div className="flex justify-between mb-2">
         <p className="underline">Description</p>
-        <ExpandableDescription
-          description={description!}
-          title='Booking Request Description'
-          maxLength={30}
-        />
+        <div className="text-end">
+          <ExpandableDescription
+            description={description!}
+            title='Booking Request Description'
+            maxLength={30}
+          />
+        </div>
       </div>
       <div className="flex justify-between mb-2">
         <p className="underline">Checkout Date</p>

@@ -22,6 +22,7 @@ export async function GET(
       include: {
         payments: true,
         reviews: true,
+        likes: true
       },
     });
 
@@ -34,7 +35,6 @@ export async function GET(
       data: post
     })
   } catch (error) {
-    console.error('Error processing post dynamic:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return errorResponse('Something went wrong, Try again', errorMessage);
   }

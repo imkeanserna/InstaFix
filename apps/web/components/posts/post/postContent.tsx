@@ -19,16 +19,20 @@ import { LocationDisplay } from '@/components/ui/locationNavigation';
 import { BookingDrawerWrapper } from '@/components/book/bookingDrawer';
 import { useSearchParams } from "next/navigation";
 import { differenceInDays } from 'date-fns';
+import { useLike } from '@/hooks/posts/useLike';
 
 export function PostContent({ postId, username }: {
   postId: string,
   username: string,
 }) {
-  const [isLiked, setIsLiked] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const { staticData, dynamicData, isLoading, isError } = usePostData(postId);
   const { data: session } = useSession();
   const searchParams = useSearchParams();
+  const { isLiked, toggleLike } = useLike({
+    postId: postId,
+    likes: dynamicData?.likes || []
+  });
 
   useEffect(() => {
     const dateParam = searchParams.get('date');
@@ -45,12 +49,6 @@ export function PostContent({ postId, username }: {
 
   const isNewPost = differenceInDays(new Date(), staticData?.post.createdAt) <= 21;
   const showRatingsAndReviews = dynamicData.reviews.length > 0 && dynamicData.averageRating && dynamicData.averageRating > 0;
-
-  const handleLikeClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsLiked(!isLiked);
-    // --TODO: Hit the backend server to toggle the like
-  };
 
   return (
     <div className='w-full'>
@@ -86,7 +84,7 @@ export function PostContent({ postId, username }: {
           <div className='flex flex-col'>
             <div className='flex lg:hidden justify-end mb-2'>
               <Button
-                onClick={handleLikeClick}
+                onClick={toggleLike}
                 className={`group flex items-center gap-2 py-4 px-6
                   bg-white
                   rounded-xl
@@ -128,7 +126,7 @@ export function PostContent({ postId, username }: {
               )}
               <div className='hidden lg:inline'>
                 <Button
-                  onClick={handleLikeClick}
+                  onClick={toggleLike}
                   className={`group flex items-center gap-2 p-4 
                     bg-white
                     rounded-xl

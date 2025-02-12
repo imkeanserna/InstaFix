@@ -32,6 +32,7 @@ model User {
   reviews            Review[]
   clientBookings     Booking[]     @relation("ClientBookings")
   freelancerBookings Booking[]     @relation("FreelancerBookings")
+  likes              Like[]
 }
 
 model Post {
@@ -64,6 +65,18 @@ model Post {
   reviews             Review[]
   averageRating       Float?
   bookings            Booking[]
+  likes               Like[]
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
 }
 
 model Booking {

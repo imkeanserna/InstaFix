@@ -30,6 +30,7 @@ export const DEFAULT_INCLUDE = {
       image: true
     }
   },
+  likes: true
 } as const;
 
 export const DEFAULT_ORDER_BY: PostOrderByArray = [
