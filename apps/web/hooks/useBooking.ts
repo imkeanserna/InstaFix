@@ -125,13 +125,12 @@ export const useBooking = (postId: string) => {
 
       if (response) {
         setBookSuccess(true);
-        toast.success('Your request has been submitted successfully');
       }
     } catch (error) {
       toast.error('Failed requesting booking, Please try again');
+      router.back();
     } finally {
       setIsLoading(false);
-      router.back();
     }
   };
 

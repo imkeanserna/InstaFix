@@ -10,6 +10,8 @@ import { BookingSummary, PostHeader, PriceDetails, TotalPrice } from "./bookingS
 import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { addDays, format } from "date-fns";
 import { useSession } from "next-auth/react";
+import { BookingSuccessModal } from "./bookingSuccessModal";
+import { useState } from "react";
 
 export function BookPage({ postId }: { postId: string }) {
   const router = useRouter();
@@ -25,6 +27,7 @@ export function BookPage({ postId }: { postId: string }) {
     handleSubmit
   } = useBooking(postId);
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const cancellationDeadline = addDays(new Date(), 1);
   const formattedDate = format(cancellationDeadline, "MMM d");
   const { data: session } = useSession();
@@ -137,6 +140,16 @@ export function BookPage({ postId }: { postId: string }) {
           />
         </div>
       </div>
+      {post.title && (
+        <BookingSuccessModal
+          isOpen={bookSuccess || showSuccessModal}
+          onClose={() => {
+            setShowSuccessModal(false);
+            router.back();
+          }}
+          postTitle={post?.title}
+        />
+      )}
     </div>
   );
 }
