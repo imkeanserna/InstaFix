@@ -240,10 +240,10 @@ export const PostCard = memo(function PostCard({
           <Button
             onClick={toggleLike}
             className="absolute top-2 right-2 p-2 bg-white/30 backdrop-blur-md rounded-xl border border-white/20
-              hover:bg-white/40 active:scale-95 transition-all duration-200"
+              hover:bg-white/40 active:scale-95 transition-all duration-200 py-6 md:py-4"
             aria-label={isLiked ? "Unlike post" : "Like post"}
           >
-            <Heart className={`w-5 h-5 ${isLiked
+            <Heart className={`w-8 h-8 md:w-5 md:h-5 ${isLiked
               ? 'fill-yellow-500 stroke-yellow-500'
               : 'fill-white stroke-none'
               } transition-colors duration-200`} />

@@ -74,7 +74,7 @@ export const Drawer = React.memo(({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Drawer height
-  const drawerHeight = window.innerHeight * 0.53;
+  const drawerHeight = window.innerHeight * 0.48;
   const minHeight = 100;
 
   const springTransition = {
