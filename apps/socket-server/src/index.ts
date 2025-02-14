@@ -1,41 +1,94 @@
 import { createServer, IncomingMessage } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import dotenv from "dotenv";
+import { BookingManager, User } from "./handlers/booking-manager";
+import jwt from 'jsonwebtoken';
+import url from 'url';
+import { JWT_SECRET, SERVER_PORT } from "./config/config";
+import { DirectMessagingPubSub } from "./pubsub/redisClient";
 
-dotenv.config();
-
-const PORT = process.env.PORT || 3001;
+export interface AuthenticatedWebSocket extends WebSocket {
+  userId: string;
+}
 
 class RealTimeServer {
   private server: ReturnType<typeof createServer>;
   private wss: WebSocketServer;
+  private bookingManager: BookingManager;
+  private messagingService: DirectMessagingPubSub;
 
   constructor() {
     this.server = createServer();
-    this.wss = new WebSocketServer({ server: this.server });
+    this.wss = new WebSocketServer({
+      server: this.server,
+      verifyClient: this.verifyClient.bind(this)
+    });
+    this.bookingManager = new BookingManager();
+    this.messagingService = DirectMessagingPubSub.getInstance();
   }
 
-  private handleConnection(ws: WebSocket, req: IncomingMessage): void {
-    const origin = req.headers.origin;
-
-    const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:3000"];
-
-    if (origin) {
-      if (!allowedOrigins.includes(origin)) {
-        console.log(`Connection rejected from origin: ${origin}`);
-        ws.close();
-        return;
+  private verifyClient(
+    info: { origin: string; secure: boolean; req: IncomingMessage },
+    callback: (verified: boolean, code?: number, message?: string) => void
+  ): void {
+    try {
+      // Check allowed origins
+      const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:3000"];
+      if (!allowedOrigins.includes(info.origin)) {
+        return callback(false, 403, "Origin not allowed");
       }
+
+      // Get token from query parameter
+      const { query } = url.parse(info.req.url!, true);
+      const token = query.token as string;
+
+      if (!token) {
+        return callback(false, 401, "Authentication token missing");
+      }
+
+      // Verify JWT token
+      jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+          return callback(false, 401, "Invalid token");
+        }
+
+        // Attach user data to request for later use
+        (info.req as any).userId = (decoded as any).userId;
+        callback(true);
+      });
+    } catch (error) {
+      console.error('Client verification error:', error);
+      callback(false, 500, "Internal server error");
     }
+  }
+
+  private handleConnection(ws: AuthenticatedWebSocket, req: IncomingMessage): void {
+    ws.userId = (req as any).userId;
+
+    this.messagingService.connect(ws.userId, ws);
 
     ws.on("message", async (payload) => {
-      const { event, data } = JSON.parse(payload.toString())
+      try {
+        const { event, data } = JSON.parse(payload.toString());
 
-      console.log(`Received event: ${event} with data: ${data}`);
+        switch (event) {
+          case "Booking":
+            await this.bookingManager.handleBookingEvent(ws, data);
+            break;
+          case "Chat":
+            // Handle chat events
+            break;
+          default:
+            console.log(`Unknown event: ${event}`);
+        }
+      } catch (error) {
+        console.error('Message handling error:', error);
+      }
     });
 
     ws.on("error", this.handleError);
     ws.on("close", () => {
+      this.messagingService.disconnect(ws.userId);
       this.handleDisconnection();
     });
   }
@@ -49,10 +102,12 @@ class RealTimeServer {
   }
 
   public start(): void {
-    this.wss.on("connection", (ws: WebSocket, req: IncomingMessage) => this.handleConnection(ws, req));
+    this.wss.on("connection", (ws: WebSocket, req: IncomingMessage) =>
+      this.handleConnection(ws as AuthenticatedWebSocket, req)
+    );
 
-    this.server.listen(PORT, () => {
-      console.log(`Server listening on port ${PORT}`);
+    this.server.listen(SERVER_PORT, () => {
+      console.log(`Server listening on port ${SERVER_PORT}`);
     });
 
     process.on("SIGINT", () => this.gracefulShutdown());
@@ -61,6 +116,14 @@ class RealTimeServer {
 
   private gracefulShutdown(): void {
     console.log("Shutting down server...");
+
+    this.wss.clients.forEach((client: WebSocket) => {
+      const authClient = client as AuthenticatedWebSocket;
+      if (authClient.userId) {
+        this.messagingService.disconnect(authClient.userId);
+      }
+    });
+
     this.wss.close(() => {
       console.log("WebSocket server closed");
       this.server.close(() => {
