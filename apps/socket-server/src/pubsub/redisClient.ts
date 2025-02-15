@@ -1,10 +1,17 @@
 import { WebSocket } from "ws";
 import { Redis } from "ioredis";
 import { REDIS_URL } from "../config/config";
+import { BookingEventType, ErrorPayload, MessageType } from "@repo/types";
 
 interface User {
   userId: string;
   ws: WebSocket;
+}
+
+interface MessagePayload<T = any> {
+  type: MessageType;
+  action?: string;
+  payload: T;
 }
 
 export class DirectMessagingPubSub {
@@ -64,7 +71,21 @@ export class DirectMessagingPubSub {
     console.log(`User ${userId} disconnected`);
   }
 
-  async sendDirectMessage(
+  notifyUsers<T>(messageType: MessageType, action: BookingEventType, data: T, userId: string) {
+    if (!this.isUserConnected(userId)) {
+      return;
+    }
+
+    const message: MessagePayload<T> = {
+      type: messageType,
+      action: action,
+      payload: data
+    };
+
+    this.sendDirectMessage(userId, JSON.stringify(message));
+  }
+
+  private async sendDirectMessage(
     receiverId: string,
     payload: any
   ): Promise<void> {
@@ -77,8 +98,34 @@ export class DirectMessagingPubSub {
     await this.publisher.publish(channel, message);
   }
 
+  handleError(error: unknown, userId: string): void {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    let status = 500;
+
+    // Map common errors to appropriate status codes
+    if (errorMessage === 'Post id is required' || errorMessage === 'Cannot book your own service') {
+      status = 400;
+    } else if (errorMessage === 'Post not found') {
+      status = 404;
+    }
+
+    const errorPayload: ErrorPayload = {
+      success: false,
+      error: 'Something went wrong, Try again',
+      details: errorMessage,
+      status
+    };
+
+    const message: MessagePayload<ErrorPayload> = {
+      type: MessageType.ERROR,
+      payload: errorPayload
+    };
+
+    this.sendDirectMessage(userId, JSON.stringify(message));
+  }
+
   // Helper method to check if user is connected
-  isUserConnected(userId: string): boolean {
+  private isUserConnected(userId: string): boolean {
     return this.userChannels.has(userId);
   }
 }
