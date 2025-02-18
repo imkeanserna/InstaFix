@@ -1,7 +1,8 @@
 import { WebSocket } from "ws";
 import { Redis } from "ioredis";
 import { REDIS_URL } from "../config/config";
-import { BookingEventType, ErrorPayload, MessageType } from "@repo/types";
+import { ErrorPayload, MessageType, NotificationType } from "@repo/types";
+import { BookingEventType } from "@prisma/client/edge";
 
 interface User {
   userId: string;
@@ -71,8 +72,9 @@ export class DirectMessagingPubSub {
     console.log(`User ${userId} disconnected`);
   }
 
-  notifyUsers<T>(messageType: MessageType, action: BookingEventType, data: T, userId: string) {
+  notifyUsers<T>(messageType: MessageType, action: BookingEventType | NotificationType, data: T, userId: string) {
     if (!this.isUserConnected(userId)) {
+      console.log(`User ${userId} is not connected`);
       return;
     }
 
