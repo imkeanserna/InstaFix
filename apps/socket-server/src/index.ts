@@ -1,11 +1,11 @@
 import { createServer, IncomingMessage } from "http";
 import { WebSocket, WebSocketServer } from "ws";
-import dotenv from "dotenv";
-import { BookingManager, User } from "./handlers/booking-manager";
+import { BookingManager } from "./handlers/booking-manager";
 import jwt from 'jsonwebtoken';
 import url from 'url';
-import { JWT_SECRET, SERVER_PORT } from "./config/config";
+import { FRONTEND_URL, JWT_SECRET, SERVER_PORT } from "./config/config";
 import { DirectMessagingPubSub } from "./pubsub/redisClient";
+import { MessageType } from "@repo/types";
 
 export interface AuthenticatedWebSocket extends WebSocket {
   userId: string;
@@ -33,7 +33,7 @@ class RealTimeServer {
   ): void {
     try {
       // Check allowed origins
-      const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:3000"];
+      const allowedOrigins = [FRONTEND_URL, "http://localhost:3000"];
       if (!allowedOrigins.includes(info.origin)) {
         return callback(false, 403, "Origin not allowed");
       }
@@ -41,6 +41,8 @@ class RealTimeServer {
       // Get token from query parameter
       const { query } = url.parse(info.req.url!, true);
       const token = query.token as string;
+      console.log("TTTTTTTTTTTTTTOKKKKKKKKKEN")
+      console.log(token)
 
       if (!token) {
         return callback(false, 401, "Authentication token missing");
@@ -72,10 +74,10 @@ class RealTimeServer {
         const { event, data } = JSON.parse(payload.toString());
 
         switch (event) {
-          case "Booking":
+          case MessageType.BOOKING:
             await this.bookingManager.handleBookingEvent(ws, data);
             break;
-          case "Chat":
+          case MessageType.CHAT:
             // Handle chat events
             break;
           default:

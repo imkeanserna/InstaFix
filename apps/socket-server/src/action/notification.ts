@@ -1,28 +1,41 @@
-import { NotificationType } from '@prisma/client/edge';
+import { BookingEventType } from '@prisma/client/edge';
 import { prisma } from '../db/index';
+import { TypeBookingNotification } from '@repo/types';
 
 // export const runtime = 'edge'
-//
-// user
-// post title
-// booking description
-// booking status
-// notification created
-//
-// -- notification page
-// notification id
 
 export async function addBookingNotification({
-  bookingId
+  bookingId,
+  userId,
+  type
 }: {
   bookingId: string,
+  userId: string,
+  type: BookingEventType
 }) {
-  try {
-    // validate the parameters
+  if (!bookingId) {
+    throw new Error('Booking ID is required');
+  }
 
-    const notification = await prisma.notification.create({
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    select: {
+      id: true,
+      clientId: true,
+      freelancerId: true,
+      status: true
+    }
+  });
+
+  if (!booking) {
+    throw new Error('Booking not found');
+  }
+
+  try {
+    const notification: TypeBookingNotification = await prisma.bookingNotification.create({
       data: {
-        type: NotificationType.BOOKING,
+        userId: userId,
+        type: type,
         bookingId: bookingId,
       },
       select: {
@@ -35,13 +48,6 @@ export async function addBookingNotification({
             description: true,
             status: true,
             client: {
-              select: {
-                id: true,
-                name: true,
-                image: true
-              }
-            },
-            freelancer: {
               select: {
                 id: true,
                 name: true,

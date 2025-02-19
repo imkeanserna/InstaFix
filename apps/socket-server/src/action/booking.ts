@@ -1,7 +1,9 @@
-import { Booking, Post } from '@prisma/client/edge';
+import { Booking, BookingStatus, Post } from '@prisma/client/edge';
 import { prisma } from '../db/index';
 import { startOfDay, endOfDay } from "date-fns";
-import { CreateBookingInput, User } from '../handlers/booking-manager';
+import { CreateBookingInput } from '../handlers/booking-manager';
+
+// export const runtime = 'edge'
 
 export async function addBooking({
   data,
@@ -57,6 +59,52 @@ export async function addBooking({
           freelancerId: post.userId,
         },
       });
+    });
+
+    return booking;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateBooking({
+  bookingId,
+  clientId,
+  freelancerId,
+  status
+}: {
+  bookingId: string,
+  clientId: string,
+  freelancerId: string,
+  status: BookingStatus
+}) {
+  try {
+    const existingBooking = await prisma.booking.findUnique({
+      where: {
+        id: bookingId
+      }
+    });
+
+    if (!existingBooking) {
+      throw new Error('Booking not found');
+    }
+
+    // Verify the booking belongs to the correct client and freelancer
+    if (existingBooking.clientId !== clientId || existingBooking.freelancerId !== freelancerId) {
+      throw new Error('Unauthorized: Booking does not belong to this client/freelancer pair');
+    }
+
+    if (existingBooking.status === status) {
+      throw new Error(`Booking is already in ${status} status`);
+    }
+
+    const booking = await prisma.booking.update({
+      where: {
+        id: bookingId,
+      },
+      data: {
+        status
+      }
     });
 
     return booking;

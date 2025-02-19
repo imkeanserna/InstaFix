@@ -4,7 +4,7 @@ import { IChatResponse, QueryType } from '@repo/types';
 import { MessagesWithPosts } from '@repo/types'
 import { subDays } from 'date-fns';
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 interface AddMessageParams {
   sessionId: string;

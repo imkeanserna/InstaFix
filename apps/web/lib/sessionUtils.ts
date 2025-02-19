@@ -29,3 +29,34 @@ export const getStoredLocation = (): Location | null => {
   }
   return null;
 };
+
+type GetTokenResponse = {
+  success: boolean;
+  data: string;
+  error?: string;
+}
+
+export const getToken = async (): Promise<string> => {
+  try {
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GetTokenResponse = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to get response from chat AI');
+    }
+
+    return result.data;
+  } catch (error) {
+    throw error;
+  }
+}

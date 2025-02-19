@@ -78,7 +78,7 @@ export type PostWithUserInfo = Post & {
   likes: Like[];
 }
 
-type CursorPagination = {
+export type CursorPagination = {
   cursor?: string;
   hasNextPage: boolean;
   endCursor?: string;

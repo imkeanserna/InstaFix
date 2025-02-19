@@ -3,6 +3,7 @@
 import { Button } from "@repo/ui/components/ui/button";
 import { LocationDialog } from "../posts/find/location";
 import { SearchEngine } from "../posts/find/search-engine";
+import { Notification } from "../posts/notification/notification";
 
 export function FindNavbar() {
   return (
@@ -26,6 +27,7 @@ export function FindNavbar() {
         </Button>
       </SearchEngine>
       <Button>Be a Freelancer</Button>
+      <Notification />
     </div>
   );
 }

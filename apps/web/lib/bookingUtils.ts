@@ -85,7 +85,7 @@ export async function getBookings({ postId }: { postId: string }) {
   }
 }
 
-interface BookingResponse {
+type BookingResponse = {
   success: boolean;
   data: {
     isAvailable: boolean;

@@ -9,6 +9,7 @@ import { ChatProvider } from "@/context/ChatProvider";
 import { ChatBotAi } from "@/components/chatbot/chat";
 import { ReactQueryProvider } from "@/context/ReactQueryProvider";
 import { FormDataProvider } from "@/context/FormDataProvider";
+import { WebSocketProvider } from "@/context/WebSocketProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,16 +28,18 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
-            <RecoilContextProvider>
-              <ChatProvider>
-                <ReactQueryProvider>
-                  <FormDataProvider>
-                    {children}
-                  </FormDataProvider>
-                  <ChatBotAi />
-                </ReactQueryProvider>
-              </ChatProvider>
-            </RecoilContextProvider>
+            <WebSocketProvider>
+              <RecoilContextProvider>
+                <ChatProvider>
+                  <ReactQueryProvider>
+                    <FormDataProvider>
+                      {children}
+                    </FormDataProvider>
+                    <ChatBotAi />
+                  </ReactQueryProvider>
+                </ChatProvider>
+              </RecoilContextProvider>
+            </WebSocketProvider>
           </AuthProvider>
           <Toaster richColors />
         </ThemeProvider>

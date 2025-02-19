@@ -113,8 +113,6 @@ export class PostUpdateHandlers {
   static async updateLocation(postId: string, data: UpdatePostData['location']) {
     try {
       let locationId = null;
-      console.log("ADDDDDDDDDDDDDDDDDDDDDDRESSSSSSSSSSSSSSSSSS")
-      console.log(data.address);
 
       if (data.address) {
         const location = await findOrCreateLocation(data);

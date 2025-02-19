@@ -1,10 +1,11 @@
-import { WebSocket } from "ws";
-import { addBooking } from "../action/booking";
+import { addBooking, updateBooking } from "../action/booking";
 import { z } from "zod";
 import { getPostById } from "../action/post";
-import { Post } from "@prisma/client/edge";
+import { BookingEventType, BookingStatus, Post } from "@prisma/client/edge";
 import { AuthenticatedWebSocket } from "..";
 import { DirectMessagingPubSub } from "../pubsub/redisClient";
+import { BookingPayload, MessageType, NotificationType, TypeBookingNotification, TypeEventUpdate } from "@repo/types";
+import { addBookingNotification } from "../action/notification";
 
 const createBookingSchema = z.object({
   date: z.string().datetime(),
@@ -18,32 +19,6 @@ const createBookingSchema = z.object({
 });
 
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
-
-interface BookingPayload {
-  postId: string;
-  date: Date;
-  startDate?: Date;
-  endDate?: Date;
-  description: string;
-  quantity: number;
-}
-
-export class User {
-  public socket: WebSocket;
-  public userId: string;
-
-  constructor(socket: WebSocket, userId: string) {
-    this.socket = socket;
-    this.userId = userId;
-  }
-}
-
-export enum BookingEventType {
-  CREATE = 'CREATE',
-  CANCEL = 'CANCEL',
-  RESCHEDULE = 'RESCHEDULE',
-  CONFIRM = 'CONFIRM',
-}
 
 export interface BookingEvent {
   type: BookingEventType;
@@ -62,21 +37,26 @@ export class BookingManager {
 
     try {
       switch (type as BookingEventType) {
-        case BookingEventType.CREATE:
+        case BookingEventType.CREATED:
           await this.handleAddBooking(user, payload);
           break;
-        case BookingEventType.CANCEL:
+        case BookingEventType.CANCELLED:
+        case BookingEventType.RESCHEDULED:
+        case BookingEventType.CONFIRMED:
+        case BookingEventType.DECLINED:
+          await this.handleEventUpdate(user, {
+            ...payload,
+            bookingEventType: type,
+            status: this.getStatusForEventType(type),
+          })
           break;
-        case BookingEventType.RESCHEDULE:
-          break;
-        case BookingEventType.CONFIRM:
+        case BookingEventType.UPDATED:
           break;
         default:
           throw new Error('Invalid event type');
       }
     } catch (error) {
-      // --TODO: Make a good error handling here!
-      console.error(error);
+      this.messagingService.handleError(error, user.userId);
     }
   }
 
@@ -98,26 +78,95 @@ export class BookingManager {
         data: validatedData,
         post: post,
         userId: user.userId
-      })
+      });
 
-      console.log(result);
+      const notificationRecipient = this.getNotificationRecipient(
+        BookingEventType.CREATED,
+        result.clientId,
+        result.freelancerId
+      )
 
-      if (this.messagingService.isUserConnected(post.userId)) {
-        this.messagingService.sendDirectMessage(post.userId, JSON.stringify({
-          event: BookingEventType.CREATE,
-          data: {
-            ...validatedData
-          }
-        }));
+      const notification: TypeBookingNotification = await addBookingNotification({
+        bookingId: result.id,
+        userId: notificationRecipient,
+        type: BookingEventType.CREATED
+      });
+
+      this.messagingService.notifyUsers(
+        MessageType.NOTIFICATION,
+        NotificationType.BOOKING,
+        notification,
+        notificationRecipient
+      )
+
+      this.messagingService.notifyUsers(
+        MessageType.BOOKING,
+        BookingEventType.CREATED,
+        result,
+        user.userId
+      )
+    } catch (error) {
+      console.error(error);
+      this.messagingService.handleError(error, user.userId);
+    }
+  }
+
+  private async handleEventUpdate(user: AuthenticatedWebSocket, data: TypeEventUpdate): Promise<void> {
+    try {
+      if (!data.bookingId) {
+        throw new Error('Booking id is required');
       }
 
-      this.messagingService.sendDirectMessage(user.userId, JSON.stringify({
-        event: BookingEventType.CREATE,
-        data: result
-      }))
+      if (!data.clientId) {
+        throw new Error('Client id is required');
+      }
+
+      if (!data.freelancerId) {
+        throw new Error('Freelancer id is required');
+      }
+
+      const updatedBooking = await updateBooking({
+        bookingId: data.bookingId,
+        clientId: data.clientId,
+        freelancerId: data.freelancerId,
+        status: data.status
+      });
+
+      // RESCHEDULED - freelancer
+      // CANCELLED - freelancer
+      // CONFIRMED - client
+      // DECLINED - client
+      const notificationRecipient = this.getNotificationRecipient(
+        data.bookingEventType,
+        updatedBooking.clientId,
+        updatedBooking.freelancerId
+      )
+
+      const notification: TypeBookingNotification = await addBookingNotification({
+        bookingId: updatedBooking.id,
+        userId: notificationRecipient,
+        type: data.bookingEventType
+      });
+
+      console.log("NOTIFICATION")
+      console.log(notification)
+
+      this.messagingService.notifyUsers(
+        MessageType.NOTIFICATION,
+        NotificationType.BOOKING,
+        updatedBooking,
+        notificationRecipient
+      );
+
+      this.messagingService.notifyUsers(
+        MessageType.BOOKING,
+        data.bookingEventType,
+        updatedBooking,
+        user.userId
+      );
     } catch (error) {
-      // --TODO: Make a good error handling here!
       console.error(error);
+      this.messagingService.handleError(error, user.userId);
     }
   }
 
@@ -131,5 +180,41 @@ export class BookingManager {
     } catch (error) {
       throw new Error('Invalid post id');
     }
+  }
+
+  private getNotificationRecipient(eventType: BookingEventType, clientId: string, freelancerId: string): string {
+    const recipientMap: Record<BookingEventType, string> = {
+      [BookingEventType.RESCHEDULED]: freelancerId,
+      [BookingEventType.CANCELLED]: freelancerId,
+      [BookingEventType.CONFIRMED]: clientId,
+      [BookingEventType.DECLINED]: clientId,
+      [BookingEventType.CREATED]: freelancerId,
+      [BookingEventType.UPDATED]: freelancerId,
+    };
+
+    const recipientId = recipientMap[eventType];
+    if (!recipientId) {
+      throw new Error(`No notification recipient defined for event type: ${eventType}`);
+    }
+
+    return recipientId;
+  }
+
+  private getStatusForEventType(eventType: BookingEventType): BookingStatus {
+    const statusMap: Record<BookingEventType, BookingStatus> = {
+      [BookingEventType.CANCELLED]: BookingStatus.CANCELLED,
+      [BookingEventType.CONFIRMED]: BookingStatus.CONFIRMED,
+      [BookingEventType.DECLINED]: BookingStatus.DECLINED,
+      [BookingEventType.RESCHEDULED]: BookingStatus.PENDING,
+      [BookingEventType.CREATED]: BookingStatus.PENDING,
+      [BookingEventType.UPDATED]: BookingStatus.PENDING,
+    };
+
+    const status = statusMap[eventType];
+    if (!status) {
+      throw new Error(`No status defined for event type: ${eventType}`);
+    }
+
+    return status;
   }
 }

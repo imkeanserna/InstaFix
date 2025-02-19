@@ -16,23 +16,24 @@ datasource db {
 }
 
 model User {
-  id                 String        @id @default(cuid())
-  email              String        @unique
-  name               String?
-  password           String?
-  image              String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  location           Location?     @relation(fields: [locationId], references: [id])
-  locationId         String?
-  posts              Post[]
-  payments           Payment[]
-  payouts            Payout[]
-  transactions       Transaction[]
-  reviews            Review[]
-  clientBookings     Booking[]     @relation("ClientBookings")
-  freelancerBookings Booking[]     @relation("FreelancerBookings")
-  likes              Like[]
+  id                   String                @id @default(cuid())
+  email                String                @unique
+  name                 String?
+  password             String?
+  image                String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  location             Location?             @relation(fields: [locationId], references: [id])
+  locationId           String?
+  posts                Post[]
+  payments             Payment[]
+  payouts              Payout[]
+  transactions         Transaction[]
+  reviews              Review[]
+  clientBookings       Booking[]             @relation("ClientBookings")
+  freelancerBookings   Booking[]             @relation("FreelancerBookings")
+  likes                Like[]
+  bookingNotifications BookingNotification[]
 }
 
 model Post {
@@ -80,22 +81,23 @@ model Like {
 }
 
 model Booking {
-  id           String        @id @default(cuid())
-  date         DateTime
-  startTime    DateTime?
-  endTime      DateTime?
-  status       BookingStatus @default(PENDING)
-  description  String
-  totalAmount  Float
-  quantity     Int?
-  post         Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId       String
-  client       User          @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
-  clientId     String
-  freelancer   User          @relation("FreelancerBookings", fields: [freelancerId], references: [id], onDelete: Cascade)
-  freelancerId String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id                   String                @id @default(cuid())
+  date                 DateTime
+  startTime            DateTime?
+  endTime              DateTime?
+  status               BookingStatus         @default(PENDING)
+  description          String
+  totalAmount          Float
+  quantity             Int?
+  post                 Post                  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId               String
+  client               User                  @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
+  clientId             String
+  freelancer           User                  @relation("FreelancerBookings", fields: [freelancerId], references: [id], onDelete: Cascade)
+  freelancerId         String
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  bookingNotifications BookingNotification[]
 
   @@unique([date, freelancerId])
   @@index([date, freelancerId])
@@ -114,6 +116,24 @@ model Review {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model BookingNotification {
+  id     String           @id @default(cuid())
+  type   BookingEventType
+  isRead Boolean          @default(false)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([type])
 }
 
 model Media {
@@ -345,4 +365,19 @@ enum BookingStatus {
   CONFIRMED
   COMPLETED
   CANCELLED
+  DECLINED
+}
+
+enum NotificationType {
+  CHAT
+  BOOKING
+}
+
+enum BookingEventType {
+  CREATED
+  UPDATED
+  RESCHEDULED
+  CANCELLED
+  CONFIRMED
+  DECLINED
 }

@@ -1,5 +1,3 @@
-"use client";
-
 import { EngagementType, ServiceLocationType, TargetAudience } from "@prisma/client/edge";
 import { Building, Building2, Clock, Globe, Heart, MessageSquare, RepeatIcon, Settings, UserCheck, Users, Users2 } from "lucide-react";
 

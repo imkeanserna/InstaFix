@@ -11,7 +11,8 @@ if (process.env.NODE_ENV === 'development') {
 const nextConfig = {
   env: {
     NEXT_BACKEND_URL: process.env.NEXT_BACKEND_URL,
-    MAPTILER_API_KEY: process.env.MAPTILER_API_KEY
+    MAPTILER_API_KEY: process.env.MAPTILER_API_KEY,
+    SOCKET_SERVER_URL: process.env.SOCKET_SERVER_URL
     // Add other environment variables here as needed
   },
   images: {
