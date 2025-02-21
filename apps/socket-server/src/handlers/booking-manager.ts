@@ -154,7 +154,7 @@ export class BookingManager {
       this.messagingService.notifyUsers(
         MessageType.NOTIFICATION,
         NotificationType.BOOKING,
-        updatedBooking,
+        notification,
         notificationRecipient
       );
 

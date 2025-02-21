@@ -1,13 +1,16 @@
 "use clients";
 
 import { createBookingSchema } from "@/components/posts/post/bookingForm";
-import { createBooking, getBook } from "@/lib/bookingUtils";
+import { getBook } from "@/lib/bookingUtils";
 import { getPost } from "@/lib/postUtils";
-import { PostWithUserInfo } from "@repo/types";
+import { ErrorPayload, MessageType, NotificationType, PostWithUserInfo } from "@repo/types";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "@repo/ui/components/ui/sonner";
 import { z } from "zod";
+import { useWebSocket } from "./useWebSocket";
+import { WebSocketMessage } from "@/context/WebSocketProvider";
+import { BookingEventType } from "@prisma/client/edge";
 
 export const QuerySchema = z.object({
   freelancerId: z.string({
@@ -46,11 +49,26 @@ export const useBooking = (postId: string) => {
   const [post, setPost] = useState<PostWithUserInfo | null>(null);
   const [bookSuccess, setBookSuccess] = useState(false);
   const [postError, setPostError] = useState<string | null>(null);
+  const { sendMessage, lastMessage, clearMessage } = useWebSocket();
+  const { requestBooking } = useBookingAction(sendMessage);
 
   const checkout = searchParams.get('checkout');
   const description = searchParams.get('description');
   const numberOfItems = searchParams.get('numberOfItems');
   const freelancerId = searchParams.get('freelancerId');
+
+  useBookingMessage({
+    lastMessage,
+    setIsLoading,
+    onBookingCreated: () => {
+      setBookSuccess(true);
+      clearMessage();
+    },
+    onError: (errorPayload) => {
+      toast.error(errorPayload.details || errorPayload.error);
+      clearMessage();
+    }
+  });
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -116,21 +134,16 @@ export const useBooking = (postId: string) => {
         quantity: parseInt(numberOfItems || '1'),
       });
 
-      const response = await createBooking({
-        postId: postId,
+      requestBooking(MessageType.BOOKING, {
+        postId,
         date: bookingData.date,
         description: bookingData.description,
         quantity: bookingData.quantity
-      });
-
-      if (response) {
-        setBookSuccess(true);
-      }
+      })
     } catch (error) {
+      setIsLoading(false);
       toast.error('Failed requesting booking, Please try again');
       router.back();
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -148,3 +161,153 @@ export const useBooking = (postId: string) => {
   };
 };
 
+export function useBookingActions() {
+  const [isDeclineLoading, setIsDeclineLoading] = useState(false);
+  const [isAcceptLoading, setIsAcceptLoading] = useState(false);
+  const { lastMessage, clearMessage } = useWebSocket();
+
+  const resetLoadingStates = useCallback(() => {
+    setIsDeclineLoading(false);
+    setIsAcceptLoading(false);
+  }, []);
+
+  useBookingMessage({
+    lastMessage,
+    setIsLoading: (loading: boolean) => {
+      setIsDeclineLoading(loading);
+      setIsAcceptLoading(loading);
+    },
+    onBookingCreated: () => {
+      resetLoadingStates();
+      clearMessage();
+    },
+    onError: (errorPayload) => {
+      toast.error(errorPayload.details || errorPayload.error);
+      clearMessage();
+    }
+  });
+
+  return {
+    isDeclineLoading,
+    isAcceptLoading,
+    setIsDeclineLoading,
+    setIsAcceptLoading,
+    resetLoadingStates
+  };
+}
+
+interface BookingCreateData {
+  postId: string;
+  date: Date;
+  description: string;
+  quantity: number;
+}
+
+interface BookingUpdateData {
+  bookingId: string;
+  clientId: string;
+  freelancerId: string;
+}
+
+export type BookingActionData = BookingUpdateData & Partial<{ date: Date }>;
+
+export function useBookingAction(sendMessage: Function) {
+  const requestBooking = useCallback(
+    (event: MessageType, data: BookingCreateData) => {
+      const payload = {
+        type: BookingEventType.CREATED,
+        payload: {
+          postId: data.postId,
+          date: data.date,
+          description: data.description,
+          quantity: data.quantity
+        }
+      }
+      sendMessage(event, payload);
+    },
+    [sendMessage]
+  );
+
+  const handleBookingAction = useCallback(
+    (
+      event: MessageType,
+      type: Exclude<BookingEventType, "CREATED">,
+      data: BookingActionData
+    ) => {
+      const payload = {
+        type,
+        payload: {
+          bookingId: data.bookingId,
+          clientId: data.clientId,
+          freelancerId: data.freelancerId,
+          ...(data.date && { date: data.date })
+        }
+      };
+      sendMessage(event, payload);
+    },
+    [sendMessage]
+  );
+
+  return {
+    requestBooking,
+    handleBookingAction
+  };
+}
+
+interface UseBookingMessageProps {
+  lastMessage: WebSocketMessage | null;
+  onBookingCreated?: () => void;
+  onError?: (error: ErrorPayload) => void;
+  setIsLoading?: (loading: boolean) => void;
+}
+
+export function useBookingMessage({
+  lastMessage,
+  onBookingCreated,
+  onError,
+  setIsLoading,
+}: UseBookingMessageProps) {
+  useEffect(() => {
+    if (!lastMessage) return;
+
+    setIsLoading && setIsLoading(false);
+
+    switch (lastMessage.type) {
+      case MessageType.ERROR:
+        const errorPayload = lastMessage.payload as ErrorPayload;
+        toast.error(errorPayload.details || errorPayload.error);
+        onError?.(errorPayload);
+        break;
+
+      case MessageType.BOOKING:
+        switch (lastMessage.action) {
+          case BookingEventType.CREATED:
+            onBookingCreated?.();
+            break;
+          case BookingEventType.CANCELLED:
+            toast.success('Booking cancelled successfully');
+            break;
+          case BookingEventType.RESCHEDULED:
+            toast.success('Booking rescheduled successfully');
+            break;
+          case BookingEventType.CONFIRMED:
+            onBookingCreated?.();
+            break;
+          case BookingEventType.UPDATED:
+            toast.success('Booking updated successfully');
+            break;
+        }
+        break;
+
+      case MessageType.NOTIFICATION:
+        switch (lastMessage.action) {
+          case NotificationType.BOOKING:
+            onBookingCreated?.();
+            break;
+          case NotificationType.CHAT:
+            break;
+        }
+        break;
+    }
+  }, [lastMessage, onBookingCreated, onError, setIsLoading]);
+}

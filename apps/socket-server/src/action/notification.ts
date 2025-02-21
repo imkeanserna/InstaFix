@@ -45,8 +45,16 @@ export async function addBookingNotification({
         booking: {
           select: {
             id: true,
+            date: true,
             description: true,
             status: true,
+            freelancer: {
+              select: {
+                id: true,
+                name: true,
+                image: true
+              }
+            },
             client: {
               select: {
                 id: true,

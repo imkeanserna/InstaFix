@@ -41,8 +41,6 @@ class RealTimeServer {
       // Get token from query parameter
       const { query } = url.parse(info.req.url!, true);
       const token = query.token as string;
-      console.log("TTTTTTTTTTTTTTOKKKKKKKKKEN")
-      console.log(token)
 
       if (!token) {
         return callback(false, 401, "Authentication token missing");
