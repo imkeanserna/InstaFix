@@ -147,13 +147,21 @@ export async function getBookingNotificationsById({
                 }
               }
             },
+            freelancer: {
+              select: {
+                id: true,
+                name: true,
+                image: true
+              }
+            },
             client: {
               select: {
                 id: true,
                 name: true,
                 image: true
               }
-            }
+            },
+            createdAt: true
           }
         },
         createdAt: true

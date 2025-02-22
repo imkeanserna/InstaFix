@@ -15,10 +15,11 @@ import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { useRouter } from "next/navigation";
 
 export function Notifications() {
+  const router = useRouter();
   const { notificationState, addNotification, error, isLoading } = useNotifications();
   const { sendMessage, lastMessage, clearMessage } = useWebSocket();
   const { handleBookingAction } = useBookingAction(sendMessage);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   useBookingMessage({
     lastMessage,
@@ -34,8 +35,13 @@ export function Notifications() {
     }
   });
 
-  if (isLoading || error || !session?.user || !session?.user?.id) {
+  if (isLoading || error || status === 'loading') {
     return <NotificationsSkeleton />;
+  }
+
+  if (!session?.user || !session?.user?.id) {
+    router.back();
+    return null;
   }
 
   return (
@@ -82,7 +88,7 @@ interface StatusMessageProps {
   postTitle: string
 }
 
-const getStatusMessage = ({
+export const getStatusMessage = ({
   status,
   isFreelancer,
   isClient,
@@ -268,7 +274,7 @@ export function NotificationCard({
     setIsDeclineLoading(true);
     try {
       await onDecline(MessageType.BOOKING, BookingEventType.DECLINED, actionData);
-      setBookingStatus('DECLINED');
+      setBookingStatus(BookingStatus.DECLINED);
     } catch (error) {
       console.error('Error declining booking:', error);
       resetLoadingStates();
@@ -280,7 +286,7 @@ export function NotificationCard({
     setIsAcceptLoading(true);
     try {
       await onAccept(MessageType.BOOKING, BookingEventType.CONFIRMED, actionData);
-      setBookingStatus('CONFIRMED');
+      setBookingStatus(BookingStatus.CONFIRMED);
     } catch (error) {
       console.error('Error accepting booking:', error);
       resetLoadingStates();
@@ -302,7 +308,7 @@ export function NotificationCard({
       (e.target.closest('button') || e.target.closest('[data-action-button]'))) {
       return;
     }
-    router.push(`/notifications/${notification.booking.id}`);
+    router.push(`/notifications/${notification.id}`);
   };
 
   return (
@@ -354,6 +360,7 @@ export function NotificationCard({
                 handleAccept={handleAccept}
                 isDeclineLoading={isDeclineLoading}
                 isAcceptLoading={isAcceptLoading}
+                className={"p-6"}
               />
             )}
           </div>
@@ -370,7 +377,9 @@ interface BookingActionsProps {
   handleDecline: ({ actionData, e }: { actionData: BookingActionData, e: React.MouseEvent }) => void;
   handleAccept: ({ actionData, e }: { actionData: BookingActionData, e: React.MouseEvent }) => void;
   isDeclineLoading: boolean;
-  isAcceptLoading: boolean
+  isAcceptLoading: boolean;
+  className?: string;
+  position?: 'left' | 'right' | 'center';
 }
 
 export function BookingActions({
@@ -380,7 +389,9 @@ export function BookingActions({
   handleDecline,
   handleAccept,
   isDeclineLoading,
-  isAcceptLoading
+  isAcceptLoading,
+  className,
+  position = 'left',
 }: BookingActionsProps) {
   const actionData: BookingActionData = {
     bookingId,
@@ -388,15 +399,21 @@ export function BookingActions({
     freelancerId
   };
 
+  const positionClasses = {
+    left: 'justify-start',
+    right: 'justify-end',
+    center: 'justify-center'
+  };
+
   return (
-    <div className="flex items-center gap-3 pt-2">
+    <div className={`flex items-center gap-3 pt-2 ${positionClasses[position]}`}>
       <Button
         variant="outline"
         onClick={(e: React.MouseEvent) => {
           handleDecline({ actionData, e });
         }}
         disabled={isDeclineLoading || isAcceptLoading}
-        className="flex items-center text-gray-900 border border-gray-300 px-5 rounded-xl hover:bg-gray-100 font-medium active:scale-[0.95]"
+        className={`flex items-center text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-100 font-medium active:scale-[0.95] ${className}`}
       >
         {isDeclineLoading ? <DotTypingLoading /> : "Decline"}
       </Button>
@@ -405,7 +422,7 @@ export function BookingActions({
           handleAccept({ actionData, e });
         }}
         disabled={isDeclineLoading || isAcceptLoading}
-        className="flex items-center text-gray-900 border border-gray-300 px-5 rounded-xl bg-yellow-400 hover:bg-yellow-500 font-medium active:scale-[0.95]"
+        className={`flex items-center text-gray-900 border border-gray-300 rounded-xl bg-yellow-400 hover:bg-yellow-500 font-medium active:scale-[0.95] ${className}`}
       >
         {isAcceptLoading ? <DotTypingLoading /> : "Accept"}
       </Button>

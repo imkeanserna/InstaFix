@@ -1,4 +1,4 @@
-import { MessageType, NoficationsResponseWithCursor } from "@repo/types";
+import { MessageType, NoficationsResponseWithCursor, TypeBookingNotificationById } from "@repo/types";
 
 export type GetNotificationsResponse = {
   success: boolean;
@@ -66,6 +66,51 @@ export async function getNotifications({
       },
       nextCursor: undefined
     };
+  }
+}
+
+type GetNotificationResponse = {
+  success: boolean;
+  data: TypeBookingNotificationById | null;
+  error?: string;
+}
+
+export async function getNotification({
+  type,
+  notificationId
+}: {
+  type: MessageType,
+  notificationId: string
+}) {
+  const queryParams = new URLSearchParams();
+  queryParams.append("type", type);
+
+  try {
+    if (!notificationId) {
+      throw new Error('notification id is required');
+    }
+
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/notifications/${notificationId}?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GetNotificationResponse = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to fetch notification');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
 }
 
