@@ -4,7 +4,7 @@ import { useNotificationCard, useNotifications } from "@/hooks/notification/useN
 import { MessageType, NotificationType, TypeBookingNotification } from "@repo/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar";
 import { Button } from "@repo/ui/components/ui/button";
-import { Badge, Bell } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { BookingActionData, useBookingAction, useBookingActions, useBookingMessage } from "@/hooks/useBooking";
 import { BookingEventType, BookingStatus } from "@prisma/client/edge";
@@ -13,6 +13,8 @@ import { useSession } from "next-auth/react";
 import { capitalizeFirstLetter } from "@/lib/notificationUtils";
 import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { useRouter } from "next/navigation";
+import { NotificationIcon } from "../notificationBell";
+import { toast } from "@repo/ui/components/ui/sonner";
 
 export function Notifications() {
   const router = useRouter();
@@ -30,7 +32,6 @@ export function Notifications() {
       clearMessage();
     },
     onError: (error) => {
-      console.error('WebSocket error:', error);
       clearMessage();
     }
   });
@@ -45,24 +46,28 @@ export function Notifications() {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-2">
-          <Bell className="h-5 w-5 text-gray-500" />
-          <h2 className="text-lg font-semibold">Notifications</h2>
-          {notificationState.count > 0 && (
-            <Badge variant="destructive" className="ml-2">
-              {notificationState.count}
-            </Badge>
-          )}
+    <div className="space-y-8 py-8">
+      <div className="flex justify-between items-center px-4 md:px-0">
+        <div className="flex gap-4 items-center">
+          <Button
+            variant="outline"
+            className="rounded-full active:scale-95 px-4 py-6 border-none group"
+            onClick={() => router.back()}
+          >
+            <ChevronLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform duration-200" />
+          </Button>
+          <h1 className="text-3xl font-semibold">Notifications</h1>
         </div>
+        <NotificationIcon
+          unreadCount={notificationState.pagination.unreadCount}
+        />
       </div>
       {notificationState.notifications.length === 0 ? (
         <div className="p-8 text-center text-gray-500">
           No notifications yet
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-2 md:space-y-6">
           {notificationState.notifications.map((notification: TypeBookingNotification) => (
             <NotificationCard
               key={notification.id}
@@ -276,7 +281,7 @@ export function NotificationCard({
       await onDecline(MessageType.BOOKING, BookingEventType.DECLINED, actionData);
       setBookingStatus(BookingStatus.DECLINED);
     } catch (error) {
-      console.error('Error declining booking:', error);
+      toast.error('Error declining booking');
       resetLoadingStates();
     }
   };
@@ -288,7 +293,7 @@ export function NotificationCard({
       await onAccept(MessageType.BOOKING, BookingEventType.CONFIRMED, actionData);
       setBookingStatus(BookingStatus.CONFIRMED);
     } catch (error) {
-      console.error('Error accepting booking:', error);
+      toast.error('Error declining booking');
       resetLoadingStates();
     }
   };
@@ -314,9 +319,9 @@ export function NotificationCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`p-8 hover:bg-gray-50 bg-white shadow-lg rounded-xl transition-colors cursor-pointer 
-        ${!notification.isRead ? `border-l-[10px] border-t 
-        ${bookingStatus === BookingStatus.DECLINED ? 'border-red-500' : 'border-yellow-400'}` : ''}`}>
+      className={`p-4 md:p-8 hover:bg-gray-50 shadow-lg rounded-xl transition-colors cursor-pointer 
+        ${!notification.isRead ? `border-l-[10px] border-t bg-blue-50/50
+        ${bookingStatus === BookingStatus.DECLINED ? 'border-red-500' : 'border-yellow-400'}` : 'bg-white'}`}>
       <div className="flex gap-4">
         <Avatar className="h-12 w-12 shadow-md flex-shrink-0">
           <AvatarImage
@@ -339,15 +344,14 @@ export function NotificationCard({
                 <div className="h-2 w-2 rounded-full bg-blue-500 flex-shrink-0 mt-2" />
               )}
             </div>
-            <div className="text-sm text-gray-500 flex justify-between items-center gap-1.5">
+            <div className="text-xs md:text-sm text-gray-500 flex justify-between items-center gap-1.5">
               <time>{exactTime}</time>
               <time>{timeAgo}</time>
             </div>
           </div>
-
-          <div className="space-y-2">
+          <div className="space-y-1 md:space-y-2">
             {notification.booking.description && (
-              <p className="text-gray-900 bg-gray-100 p-4 rounded-xl">
+              <p className="text-sm md:text-base text-gray-900 bg-gray-100 p-4 rounded-xl">
                 {notification.booking.description}
               </p>
             )}
@@ -443,7 +447,7 @@ export function NotificationsSkeleton() {
       </div>
 
       {/* Notification cards skeleton */}
-      <div className="space-y-6">
+      <div className="space-y-2 md:space-y-6">
         {[1, 2, 3].map((index) => (
           <NotificationCardSkeleton key={index} />
         ))}

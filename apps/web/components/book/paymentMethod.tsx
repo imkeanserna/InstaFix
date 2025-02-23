@@ -107,7 +107,7 @@ export const PaymentOption = ({
 
       {/* Icon */}
       <div className={`
-        p-3 sm:p-4 rounded-xl shadow-md transition-transform
+        p-2 sm:p-4 rounded-xl shadow-md transition-transform
         ${selected ? 'bg-yellow-200' : 'bg-white'}
         sm:static absolute bottom-3 right-3 ms-3
       `}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useNotificationContent } from "@/hooks/notification/useNotificationContent";
-import { BookingStatus, PricingType } from "@prisma/client";
+import { BookingStatus, PricingType } from "@prisma/client/edge";
 import { useRouter } from "next/navigation";
 import { BookingActions, getStatusMessage } from "./notifications";
 import { useSession } from "next-auth/react";
@@ -11,10 +11,9 @@ import { Banknote, ChevronLeft, MapPin, Shield, Star } from "lucide-react";
 import { Divider } from "../post/postContent";
 import { User } from "next-auth";
 import { TypeBookingNotificationById } from "@repo/types";
-import { getFormattedTime, getTimeAgo } from "@/lib/dateFormatters";
+import { calculateRemainingDays, getFormattedTime, getTimeAgo } from "@/lib/dateFormatters";
 import { PaymentOption } from "@/components/book/paymentMethod";
 import { formatPrice } from "@/lib/postUtils";
-import { differenceInDays, format } from "date-fns";
 import { Button } from "@repo/ui/components/ui/button";
 import { capitalizeFirstLetter } from "@/lib/notificationUtils";
 
@@ -53,8 +52,8 @@ export function NotificationContent({ notificationId }: { notificationId: string
 
   return (
     <div className="flex justify-center py-8">
-      <div className="w-6/12">
-        <div className="flex gap-4 items-center pb-8">
+      <div className="w-full px-4 sm:px-0 sm:w-11/12 md:w-10/12 lg:w-6/12">
+        <div className="flex gap-2 md:gap-4 items-center pb-8">
           <Button
             variant="outline"
             className="rounded-full active:scale-95 px-4 py-6 border-none group"
@@ -62,9 +61,9 @@ export function NotificationContent({ notificationId }: { notificationId: string
           >
             <ChevronLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform duration-200" />
           </Button>
-          <h1 className="text-3xl font-medium">{capitalizeFirstLetter(isFreelancer ? notification?.booking?.client?.name! : notification?.booking?.freelancer?.name!)} has sent you a notification</h1>
+          <h1 className="text-xl sm:text-3xl font-medium">{capitalizeFirstLetter(isFreelancer ? notification?.booking?.client?.name! : notification?.booking?.freelancer?.name!)} has sent you a notification</h1>
         </div>
-        <div className="px-4">
+        <div className="px-0 sm:px-4">
           <NotificationHeader
             coverPhoto={notification?.booking?.post?.coverPhoto!}
             title={notification?.booking?.post?.title!}
@@ -75,8 +74,8 @@ export function NotificationContent({ notificationId }: { notificationId: string
             handleCardPostClick={handleCardPostClick}
           />
         </div>
-        <Divider marginY="my-10" />
-        <div className="px-8">
+        <Divider marginY="my-8 sm:my-10" />
+        <div className="px-0 sm:px-8">
           <UserMessage
             bookingStatus={bookingStatus!}
             notification={notification}
@@ -85,8 +84,8 @@ export function NotificationContent({ notificationId }: { notificationId: string
             isClient={isClient}
           />
         </div>
-        <Divider marginY="my-10" />
-        <div className="space-y-6 px-8">
+        <Divider marginY="my-8 sm:my-10" />
+        <div className="space-y-6 px-0 sm:px-8">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">Payment Method</h2>
           </div>
@@ -100,9 +99,9 @@ export function NotificationContent({ notificationId }: { notificationId: string
           </div>
         </div>
         <Divider marginY="my-10" />
-        <div className="px-8">
+        <div className="px-0 sm:px-8">
           <div className="mt-2 space-y-3">
-            <h2 className="text-xl font-semibold text-gray-900">Payment Method</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Price Details</h2>
             <div className="flex justify-between mb-2">
               <p className="underline">Checkout Date</p>
               <p>{new Date(notification?.booking?.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -128,28 +127,34 @@ export function NotificationContent({ notificationId }: { notificationId: string
             </p>
           </div>
         </div>
-        <Divider marginY="my-10" />
-        <div className="px-8">
-          <CancellationPolicy createdAt={notification.booking.createdAt} maxDays={3} />
-        </div>
-        <Divider marginY="my-10" />
-        <div className="space-y-6 bg-white rounded-xl px-8">
-          <div className="flex items-center gap-3">
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">Rules and Regulations</h2>
-              <p className="text-gray-600 text-sm mt-1">
-                We ask every user to remember a few simple things about what makes a great user.
-              </p>
-            </div>
-          </div>
-          <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg inline-block">
-            Note: Rules are designed to ensure a positive experience for both parties. Violation may result in account restrictions.
-          </div>
-        </div>
+        {isFreelancer &&
+          (
+            <>
+              <Divider marginY="my-10" />
+              <div className="px-0 sm:px-8">
+                <CancellationPolicy createdAt={notification.booking.createdAt} maxDays={3} />
+              </div>
+              <Divider marginY="my-10" />
+              <div className="space-y-6 bg-white rounded-xl px-0 sm:px-8">
+                <div className="flex items-center gap-3">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">Rules and Regulations</h2>
+                    <p className="text-gray-600 text-sm mt-1">
+                      We ask every user to remember a few simple things about what makes a great user.
+                    </p>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg inline-block">
+                  Note: Rules are designed to ensure a positive experience for both parties. Violation may result in account restrictions.
+                </div>
+              </div>
+            </>
+          )
+        }
         {bookingStatus === BookingStatus.PENDING && (
           <>
             <Divider marginY="my-10" />
-            <div className="space-y-6 px-8">
+            <div className="space-y-6 px-0 sm:px-8">
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <div className="flex gap-3">
                   <Shield className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
@@ -171,7 +176,7 @@ export function NotificationContent({ notificationId }: { notificationId: string
                 handleAccept={handleAccept}
                 isDeclineLoading={isDeclineLoading}
                 isAcceptLoading={isAcceptLoading}
-                className={"px-12 py-6"}
+                className={"px-12 w-full sm:w-auto py-8 sm:py-6"}
                 position={"right"}
               />
             </div>
@@ -182,14 +187,7 @@ export function NotificationContent({ notificationId }: { notificationId: string
   );
 }
 
-export const NotificationHeader = ({
-  coverPhoto,
-  title,
-  fullAddress,
-  averageRating,
-  noOfReviews,
-  handleCardPostClick,
-}: {
+interface NotificationHeaderProps {
   coverPhoto: string;
   title: string;
   fullAddress: string;
@@ -197,7 +195,16 @@ export const NotificationHeader = ({
   noOfReviews: number;
   postId: string;
   handleCardPostClick: () => void
-}) => (
+}
+
+export const NotificationHeader = ({
+  coverPhoto,
+  title,
+  fullAddress,
+  averageRating,
+  noOfReviews,
+  handleCardPostClick,
+}: NotificationHeaderProps) => (
   <div
     onClick={handleCardPostClick}
     className="flex gap-6 cursor-pointer hover:bg-gray-100 p-4 rounded-2xl"
@@ -207,12 +214,12 @@ export const NotificationHeader = ({
       alt={title}
       width={150}
       height={150}
-      className="rounded-2xl h-32 w-48 object-cover shadow-md border border-gray-500"
+      className="rounded-2xl h-24 w-32 sm:h-32 sm:w-48 object-cover shadow-md border border-gray-500"
     />
     <div className="space-y-2">
-      <h2 className="text-xl font-semibold">{title}</h2>
+      <h2 className="text-lg sm:text-xl font-semibold">{title}</h2>
       <div className="space-y-2">
-        <div className="flex items-center space-x-1 text-xs">
+        <div className="flex items-start space-x-1 text-xs">
           <MapPin className="h-4 w-4 text-gray-900" />
           <p>{fullAddress}</p>
         </div>
@@ -226,18 +233,20 @@ export const NotificationHeader = ({
   </div>
 );
 
-export const UserMessage = ({
-  bookingStatus,
-  notification,
-  isFreelancer,
-  isClient
-}: {
+interface UserMessageProps {
   notification: TypeBookingNotificationById;
   user: User;
   bookingStatus: BookingStatus;
   isFreelancer: boolean;
   isClient: boolean;
-}) => {
+}
+
+export const UserMessage = ({
+  bookingStatus,
+  notification,
+  isFreelancer,
+  isClient
+}: UserMessageProps) => {
   const exactTime = getFormattedTime(new Date(notification.createdAt));
   const timeAgo = getTimeAgo(new Date(notification.createdAt));
   const formattedDate = new Date(notification.booking.date).toLocaleDateString('en-US', {
@@ -277,14 +286,14 @@ export const UserMessage = ({
                 <p className="text-gray-900">{statusMessage}</p>
               </div>
             </div>
-            <div className="text-sm text-gray-500 flex justify-between items-center gap-1.5">
+            <div className="text-xs sm:text-sm text-gray-500 flex justify-between items-center gap-1.5">
               <time>{exactTime}</time>
               <time>{timeAgo}</time>
             </div>
           </div>
           <div className="space-y-2">
             {notification.booking.description && (
-              <p className="text-gray-900 bg-gray-100 p-4 rounded-xl">
+              <p className="text-sm sm:text-base text-gray-900 bg-gray-100 p-4 rounded-xl">
                 {notification.booking.description}
               </p>
             )}
@@ -295,19 +304,11 @@ export const UserMessage = ({
   );
 }
 
-const CancellationPolicy = ({ createdAt, maxDays = 3 }: {
+const CancellationPolicy = ({ createdAt, maxDays }: {
   createdAt: Date;
-  maxDays: number
+  maxDays?: number
 }) => {
-  const calculateRemainingDays = () => {
-    const createdDate = new Date(createdAt);
-    const deadlineDate = new Date(createdDate.getTime() + (maxDays * 24 * 60 * 60 * 1000));
-    const remainingDays = differenceInDays(deadlineDate, new Date());
-    return Math.max(0, remainingDays);
-  };
-
-  const remainingDays = calculateRemainingDays();
-
+  const remainingDays = calculateRemainingDays(createdAt, maxDays);
   const getDaysText = () => {
     if (remainingDays === 0) {
       return "less than a day";
@@ -333,7 +334,7 @@ const CancellationPolicy = ({ createdAt, maxDays = 3 }: {
 export const NotificationContentSkeleton = () => {
   return (
     <div className="flex justify-center py-8 animate-pulse">
-      <div className="w-6/12">
+      <div className="w-full px-4 sm:px-0 sm:w-11/12 md:w-10/12 lg:w-6/12">
         {/* Header */}
         <div className="flex gap-4 items-center pb-8">
           <div className="h-12 w-12 bg-gray-200 rounded-full" />

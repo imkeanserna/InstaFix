@@ -1,4 +1,5 @@
-import { prisma } from '@/server/index';
+import { prisma, PrismaClientOrTx } from '@/server/index';
+import { BookingNotification } from '@prisma/client';
 import { TypeBookingNotification, TypeBookingNotificationById } from "@repo/types";
 
 // export const runtime = 'edge'
@@ -95,10 +96,12 @@ export async function getBookingNotificationCount({
 
 export async function getBookingNotificationsById({
   userId,
-  bookingId
+  bookingId,
+  prisma: tx = prisma
 }: {
   userId: string,
-  bookingId: string
+  bookingId: string,
+  prisma?: PrismaClientOrTx
 }): Promise<TypeBookingNotificationById | null> {
   try {
     if (!userId) {
@@ -109,11 +112,12 @@ export async function getBookingNotificationsById({
       throw new Error('Booking Id is required');
     }
 
-    const notification: TypeBookingNotificationById | null = await prisma.bookingNotification.findUnique({
+    const notification: TypeBookingNotificationById | null = await tx.bookingNotification.findUnique({
       where: {
         id: bookingId,
         userId: userId
-      }, select: {
+      },
+      select: {
         id: true,
         type: true,
         isRead: true,
@@ -169,6 +173,46 @@ export async function getBookingNotificationsById({
     });
 
     return notification;
+  } catch (error) {
+    throw error
+  }
+}
+
+type UpdateBookingNotificationData = Partial<
+  Pick<BookingNotification, 'isRead' | 'type'>
+>;
+
+export async function updateBookingNotification({
+  userId,
+  bookingId,
+  data,
+  prisma: tx = prisma
+}: {
+  userId: string,
+  bookingId: string,
+  data: UpdateBookingNotificationData,
+  prisma?: PrismaClientOrTx
+}) {
+  try {
+    if (!userId) {
+      throw new Error('User Id is required');
+    }
+
+    if (!bookingId) {
+      throw new Error('Booking Id is required');
+    }
+
+    const updateNotification: BookingNotification = await tx.bookingNotification.update({
+      where: {
+        id: bookingId,
+        userId: userId
+      },
+      data: {
+        ...data
+      }
+    });
+
+    return updateNotification;
   } catch (error) {
     throw error
   }

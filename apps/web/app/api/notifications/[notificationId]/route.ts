@@ -4,7 +4,8 @@ import { MessageType, TypeBookingNotificationById } from "@repo/types";
 import { User } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getBookingNotificationsById } from "../../_action/notification/booking";
+import { getBookingNotificationsById, updateBookingNotification } from "../../_action/notification/booking";
+import { prisma } from "@/server";
 
 // export const runtime = 'edge';
 
@@ -44,10 +45,25 @@ export async function GET(
 
     switch (validatedQuery.data.type as MessageType) {
       case MessageType.BOOKING:
-        notification = await getBookingNotificationsById({
-          userId: user.id,
-          bookingId: notificationId
-        });
+        notification = await prisma.$transaction(async (tx) => {
+          const notif: TypeBookingNotificationById | null = await getBookingNotificationsById({
+            userId: user?.id as string,
+            bookingId: notificationId,
+            prisma: tx
+          });
+
+          if (notif && !notif.isRead) {
+            await updateBookingNotification({
+              userId: user?.id as string,
+              bookingId: notificationId,
+              data: {
+                isRead: true
+              },
+              prisma: tx
+            })
+          }
+          return notif;
+        })
         break;
       case MessageType.CHAT:
         break;

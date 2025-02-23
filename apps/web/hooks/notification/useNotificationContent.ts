@@ -4,9 +4,10 @@ import { BookingActionData, useBookingAction, useBookingActions, useBookingMessa
 import { useWebSocket } from "../useWebSocket";
 import { MessageType, NotificationType, TypeBookingNotification, TypeBookingNotificationById } from "@repo/types";
 import { useNotifications } from "./useNotifications";
-import { BookingEventType, BookingStatus } from "@prisma/client";
+import { BookingEventType, BookingStatus } from "@prisma/client/edge";
 import { useEffect, useState } from "react";
 import { getNotification } from "@/lib/notificationUtils";
+import { toast } from "@repo/ui/components/ui/sonner";
 
 export const useNotificationContent = (notificationId: string) => {
   const [notification, setNotification] = useState<TypeBookingNotificationById | null>(null);
@@ -40,7 +41,6 @@ export const useNotificationContent = (notificationId: string) => {
         }
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch notification'));
-        console.error('Error fetching notification:', err);
       } finally {
         setIsLoading(false);
       }
@@ -58,7 +58,6 @@ export const useNotificationContent = (notificationId: string) => {
       clearMessage();
     },
     onError: (error) => {
-      console.error('WebSocket error:', error);
       clearMessage();
     }
   });
@@ -70,7 +69,7 @@ export const useNotificationContent = (notificationId: string) => {
       await handleBookingAction(MessageType.BOOKING, BookingEventType.DECLINED, actionData);
       setBookingStatus(BookingStatus.DECLINED);
     } catch (error) {
-      console.error('Error declining booking:', error);
+      toast.error('Error declining booking');
       resetLoadingStates();
     }
   };
@@ -82,7 +81,7 @@ export const useNotificationContent = (notificationId: string) => {
       await handleBookingAction(MessageType.BOOKING, BookingEventType.CONFIRMED, actionData);
       setBookingStatus(BookingStatus.CONFIRMED);
     } catch (error) {
-      console.error('Error accepting booking:', error);
+      toast.error('Error accepting booking');
       resetLoadingStates();
     }
   };
