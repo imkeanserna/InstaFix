@@ -15,7 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { EngagementType, PricingType, ServicesIncluded, TargetAudience } from "@prisma/client/edge";
 import { getStoredLocation } from "@/lib/sessionUtils";
 
-const messages = [
+export const messages = [
   "Choose the right skills for your project.",
   "Check freelancer profiles and reviews.",
   "Start a conversation to ensure a good fit."
@@ -38,7 +38,7 @@ export function DiaglogCamera() {
   const [currentCamera, setCurrentCamera] = useState<'environment' | 'user'>('environment');
   const {
     processImage,
-    isLoading,
+    isProcessing,
     videoRef
   } = useImageProcessing({
     onSuccess: ({ detected, professions, subCategories }) => {
@@ -251,7 +251,7 @@ export function DiaglogCamera() {
         aria-hidden={!isOpen}
       >
         {/* Main Camera View */}
-        {isLoading && (
+        {isProcessing && (
           <div className="absolute inset-0 pointer-events-none z-30">
             <CubeLoader messages={messages} />
           </div>
@@ -365,7 +365,7 @@ export function DiaglogCamera() {
                 <Button
                   onClick={() => { handleImageProcessing(null, 'camera') }}
                   size="lg"
-                  disabled={isLoading}
+                  disabled={isProcessing}
                   className="rounded-full w-16 h-16 md:w-20 md:h-20 p-0 bg-yellow-500 hover:bg-yellow-400 shadow-lg border-4 border-yellow-400/20 transition-all duration-200 hover:scale-105"
                 >
                   <Camera className="h-6 w-6 md:h-8 md:w-8 text-white" />

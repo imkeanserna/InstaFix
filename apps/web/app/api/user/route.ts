@@ -5,7 +5,7 @@ import { User } from "next-auth";
 import { currentUser } from '@/lib';
 import { z } from 'zod';
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 export const LocationSchema = z.object({
   fullAddress: z.string().min(1, "Full address is required"),

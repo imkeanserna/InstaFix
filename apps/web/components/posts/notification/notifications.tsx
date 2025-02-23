@@ -325,8 +325,8 @@ export function NotificationCard({
       <div className="flex gap-4">
         <Avatar className="h-12 w-12 shadow-md flex-shrink-0">
           <AvatarImage
-            src={isFreelancer ? notification.booking.freelancer.image || '' : notification.booking.client.image || ''}
-            alt={`${isFreelancer ? notification.booking.freelancer.name : notification.booking.client.name}'s avatar`}
+            src={!isFreelancer ? notification.booking.freelancer.image || '' : notification.booking.client.image || ''}
+            alt={`${!isFreelancer ? notification.booking.freelancer.name : notification.booking.client.name}'s avatar`}
             className="object-cover"
           />
           <AvatarFallback className="bg-gradient-to-br from-amber-200 to-yellow-300 text-amber-800 text-2xl font-medium">

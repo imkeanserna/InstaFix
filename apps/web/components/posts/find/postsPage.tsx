@@ -10,9 +10,14 @@ import { Location } from "@/components/ui/locationNavigation";
 import { getStoredLocation } from "@/lib/sessionUtils";
 import { ImageUpload } from "@/components/ui/imageUpload";
 import { PostsGrid } from "./postsCard";
+import { useImageProcessing } from "@/hooks/useImageActions";
+import { CubeLoader } from "@/components/ui/cubeLoading";
+import { messages } from "@/components/camera/diaglogCamera";
 
 export function PostsPage() {
+  const url = useRef(new URLSearchParams());
   const searchParams = useSearchParams();
+  const [errorImage, setErrorImage] = useState<string>("");
   const router = useRouter();
   const pathname = usePathname();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -25,6 +30,32 @@ export function PostsPage() {
     category: null,
     subcategory: null,
     searchParams: ''
+  });
+
+  const {
+    processImage,
+    isProcessing,
+  } = useImageProcessing({
+    onSuccess: ({ detected, professions, subCategories }) => {
+      if (subCategories?.length) {
+        url.current.set('category', Array.from(new Set(subCategories?.map((item) => item.categoryId))).join(','));
+        url.current.set('subcategory', subCategories?.map((item) => item.id).join(','));
+      }
+
+      if (professions && professions.length > 0) {
+        url.current.set('professions', professions.join(','));
+      }
+
+      if (detected) {
+        url.current.set('detected', detected);
+      }
+
+      router.push(`/find/camera?${url.current.toString()}`);
+    },
+    externalErrorSetter: setErrorImage,
+    onError: async (error) => {
+      setErrorImage(error);
+    }
   });
 
   const isCameraRoute = pathname === '/find/camera';
@@ -180,7 +211,7 @@ export function PostsPage() {
               initialState={getInitialState()}
               onFilterChange={updateUrlParams}
             />
-            <ImageUpload />
+            <ImageUpload processImage={processImage} />
           </div>
 
           {/* Main content area & Desktop filters */}
@@ -200,7 +231,7 @@ export function PostsPage() {
                 initialState={getInitialState()}
                 onFilterChange={updateUrlParams}
               />
-              <ImageUpload />
+              <ImageUpload processImage={processImage} />
             </div>
           </div>
         </div>
@@ -216,6 +247,11 @@ export function PostsPage() {
           onLoadMore={fetchNextPage}
         />
       </div>
+      {isProcessing && (
+        <div className="absolute inset-0 pointer-events-none z-30">
+          <CubeLoader messages={messages} />
+        </div>
+      )}
     </div>
   );
 }

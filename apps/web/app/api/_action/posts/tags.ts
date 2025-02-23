@@ -1,6 +1,6 @@
 import { prisma } from '@/server/index';
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 export async function updatePostWithTags(tags: string[], postId: string) {
   try {

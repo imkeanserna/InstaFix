@@ -14,7 +14,7 @@ export function CubeLoader({ messages }: { messages: string[] }) {
   }, [messages.length]);
 
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center bg-black/80 backdrop-blur-sm relative">
+    <div className="w-full h-full flex flex-col justify-center items-center bg-black/80 backdrop-blur-sm fixed">
       <div className="boxes">
         <div className="box">
           <div></div>

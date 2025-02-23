@@ -132,10 +132,6 @@ export class BookingManager {
         status: data.status
       });
 
-      // RESCHEDULED - freelancer
-      // CANCELLED - freelancer
-      // CONFIRMED - client
-      // DECLINED - client
       const notificationRecipient = this.getNotificationRecipient(
         data.bookingEventType,
         updatedBooking.clientId,
@@ -147,9 +143,6 @@ export class BookingManager {
         userId: notificationRecipient,
         type: data.bookingEventType
       });
-
-      console.log("NOTIFICATION")
-      console.log(notification)
 
       this.messagingService.notifyUsers(
         MessageType.NOTIFICATION,

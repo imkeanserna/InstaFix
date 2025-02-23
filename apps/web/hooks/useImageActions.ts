@@ -18,7 +18,7 @@ interface UseImageProcessingOptions {
 
 export const useImageProcessing = (options: UseImageProcessingOptions = {}) => {
   const [internalError, setInternalError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const handleError = (errorMessage: string) => {
@@ -31,7 +31,7 @@ export const useImageProcessing = (options: UseImageProcessingOptions = {}) => {
   };
 
   const processImage = async (imageData: Blob | null, source: 'camera' | 'upload') => {
-    setIsLoading(true);
+    setIsProcessing(true);
     setInternalError("");
     if (options.externalErrorSetter) {
       options.externalErrorSetter("");
@@ -50,13 +50,13 @@ export const useImageProcessing = (options: UseImageProcessingOptions = {}) => {
       const errorMessage = error.message || 'An unknown error occurred';
       handleError(errorMessage);
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
   return {
     processImage,
-    isLoading,
+    isProcessing,
     error: internalError,
     videoRef
   };

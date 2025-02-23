@@ -8,7 +8,7 @@ import { ChatSession } from "@prisma/client/edge";
 
 const { auth } = NextAuth(authConfig);
 
-export const runtime = 'experimental-edge';
+// export const runtime = 'experimental-edge';
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;

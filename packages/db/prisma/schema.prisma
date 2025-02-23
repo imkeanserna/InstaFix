@@ -99,7 +99,6 @@ model Booking {
   updatedAt            DateTime              @updatedAt
   bookingNotifications BookingNotification[]
 
-  @@unique([date, freelancerId])
   @@index([date, freelancerId])
   @@index([clientId])
   @@index([postId])

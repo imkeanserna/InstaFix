@@ -1,7 +1,7 @@
 import { prisma } from '@/server/index';
 import { PostLocation, PostWithUserInfo } from '@repo/types';
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 export function getLocationBasedQuery(
   location: { latitude: number; longitude: number; radiusInKm: number },

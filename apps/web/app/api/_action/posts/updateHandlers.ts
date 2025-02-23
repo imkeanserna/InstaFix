@@ -4,7 +4,7 @@ import { findOrCreateLocation } from './location';
 import { deleteFilesFromR2, getCurrentMediaUrls, uploadMultipleFiles } from '../media/mediaUpload';
 import { Media } from '@prisma/client/edge';
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 export class PostUpdateHandlers {
   static async updateTags(postId: string, data: UpdatePostData['tags']) {

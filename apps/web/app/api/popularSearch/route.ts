@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/server/index';
 import { PopularSearch } from "@prisma/client/edge";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 export async function GET(request: NextRequest) {
   try {

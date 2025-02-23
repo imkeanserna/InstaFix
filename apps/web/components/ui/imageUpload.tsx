@@ -1,22 +1,20 @@
 'use client';
 
 import { Button } from "@repo/ui/components/ui/button";
+import { toast } from "@repo/ui/components/ui/sonner";
 import { Upload } from "lucide-react";
 
-export function ImageUpload() {
+export function ImageUpload({
+  processImage
+}: {
+  processImage: (imageData: Blob | null, source: 'camera' | 'upload') => Promise<void>;
+}) {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-
     if (file) {
-      const response = await fetch(`${process.env.NEXT_BASE_URL}/api/object-detection`, {
-        method: 'POST',
-        body: file
-      });
-
-      const result = await response.json();
-      console.log(result);
+      processImage(file, 'upload');
     } else {
-      console.log("No file selected");
+      toast.error("No image selected");
     }
   };
 

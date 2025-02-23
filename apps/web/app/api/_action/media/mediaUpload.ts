@@ -4,7 +4,7 @@ import { getR2Client, getR2PublicUrl } from './r2-client';
 import { MediaType } from '@prisma/client';
 import { prisma } from '@/server/index';
 
-export const runtime = 'edge'
+// export const runtime = 'edge'
 
 interface UploadConfig {
   maxFileSizeInMB?: number;
