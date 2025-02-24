@@ -15,6 +15,17 @@ import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { useRouter } from "next/navigation";
 import { NotificationIcon } from "../notificationBell";
 import { toast } from "@repo/ui/components/ui/sonner";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@repo/ui/components/ui/dialog";
 
 export function Notifications() {
   const router = useRouter();
@@ -397,6 +408,7 @@ export function BookingActions({
   className,
   position = 'left',
 }: BookingActionsProps) {
+  const [activeDialog, setActiveDialog] = useState<'accept' | 'decline' | null>(null);
   const actionData: BookingActionData = {
     bookingId,
     clientId,
@@ -409,27 +421,89 @@ export function BookingActions({
     center: 'justify-center'
   };
 
+  // Define dialog configurations to reduce repetition
+  const dialogs = {
+    decline: {
+      title: "Are You Sure You Want to Decline?",
+      description: "Are you sure you want to decline this booking request? This action cannot be undone.",
+      buttonText: "Confirm Decline",
+      buttonVariant: "destructive" as const,
+      buttonClass: "",
+      triggerClass: "text-gray-900 border border-gray-300 hover:bg-gray-100",
+      action: (e: React.MouseEvent) => {
+        setActiveDialog('decline');
+        handleDecline({ actionData, e });
+      },
+      isLoading: isDeclineLoading
+    },
+    accept: {
+      title: "Are You Sure You Want to Accept?",
+      description: "Please confirm if you'd like to accept this booking request.",
+      buttonText: "Confirm Accept",
+      buttonVariant: "default" as const,
+      buttonClass: "bg-yellow-400 hover:bg-yellow-500 text-gray-900",
+      triggerClass: "text-gray-900 border border-gray-300 bg-yellow-400 hover:bg-yellow-500",
+      action: (e: React.MouseEvent) => {
+        setActiveDialog('accept');
+        handleAccept({ actionData, e });
+      },
+      isLoading: isAcceptLoading
+    }
+  };
+
+  // Reusable function to render each dialog
+  const renderActionDialog = (type: 'accept' | 'decline') => {
+    const config = dialogs[type];
+
+    return (
+      <Dialog onOpenChange={(open) => !open && setActiveDialog(null)}>
+        <DialogTrigger asChild>
+          <Button
+            variant={type === 'decline' ? 'outline' : 'default'}
+            disabled={isDeclineLoading || isAcceptLoading}
+            className={`flex items-center border rounded-xl font-medium active:scale-[0.95] ${config.triggerClass} ${className}`}
+          >
+            {type === 'decline' ? 'Decline' : 'Accept'}
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-xl p-10">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{config.title}</DialogTitle>
+            <DialogDescription>
+              {config.description}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex mt-4">
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={activeDialog === type && config.isLoading}
+                className="px-6 py-6 w-full sm:w-auto rounded-xl"
+              >
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              variant={config.buttonVariant}
+              onClick={config.action}
+              disabled={config.isLoading}
+              className={`px-6 py-6 w-full sm:w-auto rounded-xl ${config.buttonClass}`}
+            >
+              {activeDialog === type && config.isLoading ? <DotTypingLoading /> : config.buttonText}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   return (
-    <div className={`flex items-center gap-3 pt-2 ${positionClasses[position]}`}>
-      <Button
-        variant="outline"
-        onClick={(e: React.MouseEvent) => {
-          handleDecline({ actionData, e });
-        }}
-        disabled={isDeclineLoading || isAcceptLoading}
-        className={`flex items-center text-gray-900 border border-gray-300 rounded-xl hover:bg-gray-100 font-medium active:scale-[0.95] ${className}`}
-      >
-        {isDeclineLoading ? <DotTypingLoading /> : "Decline"}
-      </Button>
-      <Button
-        onClick={(e: React.MouseEvent) => {
-          handleAccept({ actionData, e });
-        }}
-        disabled={isDeclineLoading || isAcceptLoading}
-        className={`flex items-center text-gray-900 border border-gray-300 rounded-xl bg-yellow-400 hover:bg-yellow-500 font-medium active:scale-[0.95] ${className}`}
-      >
-        {isAcceptLoading ? <DotTypingLoading /> : "Accept"}
-      </Button>
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className={`flex items-center gap-3 pt-2 ${positionClasses[position]}`}>
+      {renderActionDialog('decline')}
+      {renderActionDialog('accept')}
     </div>
   );
 }
