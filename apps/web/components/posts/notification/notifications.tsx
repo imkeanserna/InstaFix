@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avat
 import { Button } from "@repo/ui/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { BookingActionData, useBookingAction, useBookingActions, useBookingMessage } from "@/hooks/useBooking";
+import { BookingActionData, useBookingMessage } from "@/hooks/useBooking";
 import { BookingEventType, BookingStatus } from "@prisma/client/edge";
 import { User } from "next-auth";
 import { useSession } from "next-auth/react";
@@ -14,8 +14,6 @@ import { capitalizeFirstLetter } from "@/lib/notificationUtils";
 import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { useRouter } from "next/navigation";
 import { NotificationIcon } from "../notificationBell";
-import { toast } from "@repo/ui/components/ui/sonner";
-import { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -31,7 +29,6 @@ export function Notifications() {
   const router = useRouter();
   const { notificationState, addNotification, error, isLoading } = useNotifications();
   const { sendMessage, lastMessage, clearMessage } = useWebSocket();
-  const { handleBookingAction } = useBookingAction(sendMessage);
   const { data: session, status } = useSession();
 
   useBookingMessage({
@@ -83,8 +80,6 @@ export function Notifications() {
             <NotificationCard
               key={notification.id}
               notification={notification}
-              onAccept={handleBookingAction}
-              onDecline={handleBookingAction}
               user={session?.user as User}
             />
           ))}
@@ -247,67 +242,24 @@ export const getStatusBadge = (status: BookingStatus) => {
 
 interface NotificationCardProps {
   notification: TypeBookingNotification;
-  onDecline: (
-    event: MessageType,
-    type: Exclude<BookingEventType, "CREATED">,
-    data: BookingActionData
-  ) => void;
-  onAccept: (
-    event: MessageType,
-    type: Exclude<BookingEventType, "CREATED">,
-    data: BookingActionData
-  ) => void;
   user: User
 }
 
 export function NotificationCard({
   notification,
-  onDecline,
-  onAccept,
   user
 }: NotificationCardProps) {
   const {
     bookingStatus,
-    setBookingStatus,
     formattedDate,
     isFreelancer,
+    isActionLoading,
+    handleAction,
     isClient,
     exactTime,
     timeAgo
   } = useNotificationCard(notification, user);
   const router = useRouter();
-
-  const {
-    isDeclineLoading,
-    isAcceptLoading,
-    setIsDeclineLoading,
-    setIsAcceptLoading,
-    resetLoadingStates
-  } = useBookingActions();
-
-  const handleDecline = async ({ actionData, e }: { actionData: BookingActionData, e: React.MouseEvent }) => {
-    e.stopPropagation();
-    setIsDeclineLoading(true);
-    try {
-      await onDecline(MessageType.BOOKING, BookingEventType.DECLINED, actionData);
-      setBookingStatus(BookingStatus.DECLINED);
-    } catch (error) {
-      toast.error('Error declining booking');
-      resetLoadingStates();
-    }
-  };
-
-  const handleAccept = async ({ actionData, e }: { actionData: BookingActionData, e: React.MouseEvent }) => {
-    e.stopPropagation();
-    setIsAcceptLoading(true);
-    try {
-      await onAccept(MessageType.BOOKING, BookingEventType.CONFIRMED, actionData);
-      setBookingStatus(BookingStatus.CONFIRMED);
-    } catch (error) {
-      toast.error('Error declining booking');
-      resetLoadingStates();
-    }
-  };
 
   const statusMessage = getStatusMessage({
     status: bookingStatus,
@@ -367,16 +319,26 @@ export function NotificationCard({
               </p>
             )}
             {bookingStatus === BookingStatus.PENDING && isFreelancer && (
-              <BookingActions
-                bookingId={notification.booking.id}
-                clientId={notification.booking.client.id}
-                freelancerId={user?.id as string}
-                handleDecline={handleDecline}
-                handleAccept={handleAccept}
-                isDeclineLoading={isDeclineLoading}
-                isAcceptLoading={isAcceptLoading}
-                className={"p-6"}
-              />
+              <div className="flex items-center justify-start gap-2">
+                <BookingActionButton
+                  bookingId={notification.booking.id}
+                  clientId={notification.booking.client.id}
+                  freelancerId={notification.booking.freelancer.id}
+                  handleAction={handleAction}
+                  isActionLoading={isActionLoading}
+                  className={"p-6"}
+                  bookingEventType={BookingEventType.DECLINED}
+                />
+                <BookingActionButton
+                  bookingId={notification.booking.id}
+                  clientId={notification.booking.client.id}
+                  freelancerId={notification.booking.freelancer.id}
+                  handleAction={handleAction}
+                  isActionLoading={isActionLoading}
+                  className={"p-6"}
+                  bookingEventType={BookingEventType.CONFIRMED}
+                />
+              </div>
             )}
           </div>
         </div>
@@ -385,125 +347,159 @@ export function NotificationCard({
   );
 }
 
-interface BookingActionsProps {
+interface BookingActionsButtonProps {
   bookingId: string;
   clientId: string;
   freelancerId: string;
-  handleDecline: ({ actionData, e }: { actionData: BookingActionData, e: React.MouseEvent }) => void;
-  handleAccept: ({ actionData, e }: { actionData: BookingActionData, e: React.MouseEvent }) => void;
-  isDeclineLoading: boolean;
-  isAcceptLoading: boolean;
+  handleAction: ({
+    actionData,
+    bookingEventType,
+    e }:
+    {
+      actionData: BookingActionData,
+      bookingEventType: Exclude<BookingEventType, 'CREATED'>,
+      e: React.MouseEvent
+    }) => void;
+  isActionLoading: boolean;
   className?: string;
-  position?: 'left' | 'right' | 'center';
+  bookingEventType: Exclude<BookingEventType, 'CREATED'>;
+  isDisabled?: boolean
 }
 
-export function BookingActions({
+interface DialogConfig {
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonVariant: 'default' | 'destructive';
+  buttonClass: string;
+  triggerClass: string;
+  triggerText: string;
+}
+
+export function BookingActionButton({
   bookingId,
   clientId,
   freelancerId,
-  handleDecline,
-  handleAccept,
-  isDeclineLoading,
-  isAcceptLoading,
+  handleAction,
+  isActionLoading,
   className,
-  position = 'left',
-}: BookingActionsProps) {
-  const [activeDialog, setActiveDialog] = useState<'accept' | 'decline' | null>(null);
+  bookingEventType,
+  isDisabled
+}: BookingActionsButtonProps) {
   const actionData: BookingActionData = {
     bookingId,
     clientId,
     freelancerId
   };
 
-  const positionClasses = {
-    left: 'justify-start',
-    right: 'justify-end',
-    center: 'justify-center'
+  const getDialogConfig = (type: Exclude<BookingEventType, 'CREATED'>): DialogConfig => {
+    const configs: Record<Exclude<BookingEventType, 'CREATED'>, DialogConfig> = {
+      UPDATED: {
+        title: "Are You Sure You Want to Update?",
+        description: "Please confirm if you'd like to update this booking.",
+        buttonText: "Confirm Update",
+        buttonVariant: "default",
+        buttonClass: "bg-blue-400 hover:bg-blue-500 text-gray-900",
+        triggerClass: "text-gray-900 border border-gray-300 bg-blue-400 hover:bg-blue-500",
+        triggerText: "Update"
+      },
+      RESCHEDULED: {
+        title: "Are You Sure You Want to Reschedule?",
+        description: "Please confirm if you'd like to reschedule this booking.",
+        buttonText: "Confirm Reschedule",
+        buttonVariant: "default",
+        buttonClass: "bg-purple-400 hover:bg-purple-500 text-gray-900",
+        triggerClass: "text-gray-900 border border-gray-300 bg-purple-400 hover:bg-purple-500",
+        triggerText: "Reschedule"
+      },
+      CANCELLED: {
+        title: "Are You Sure You Want to Cancel?",
+        description: "Are you sure you want to cancel this booking? This action cannot be undone.",
+        buttonText: "Confirm Cancellation",
+        buttonVariant: "destructive",
+        buttonClass: "bg-red-500 hover:bg-red-600",
+        triggerClass: "text-white border border-gray-300 bg-red-600 hover:bg-red-700",
+        triggerText: "Cancel"
+      },
+      COMPLETED: {
+        title: "Mark as Completed?",
+        description: "Are you sure you want to mark this booking as completed?",
+        buttonText: "Confirm Completion",
+        buttonVariant: "default",
+        buttonClass: "bg-green-500 hover:bg-green-600 text-white",
+        triggerClass: "text-white border border-gray-300 bg-green-500 hover:bg-green-600",
+        triggerText: "Complete"
+      },
+      CONFIRMED: {
+        title: "Confirm This Booking?",
+        description: "Are you sure you want to confirm this booking?",
+        buttonText: "Confirm Booking",
+        buttonVariant: "default",
+        buttonClass: "text-gray-900 border border-gray-300 bg-yellow-400 hover:bg-yellow-500",
+        triggerClass: "text-gray-900 border border-gray-300 bg-yellow-400 hover:bg-yellow-500",
+        triggerText: "Accept"
+      },
+      DECLINED: {
+        title: "Are You Sure You Want to Decline?",
+        description: "Are you sure you want to decline this booking request? This action cannot be undone.",
+        buttonText: "Confirm Decline",
+        buttonVariant: "destructive",
+        buttonClass: "",
+        triggerClass: "text-gray-900 border border-gray-300 hover:bg-gray-100",
+        triggerText: "Decline"
+      }
+    };
+
+    return configs[type];
   };
 
-  // Define dialog configurations to reduce repetition
-  const dialogs = {
-    decline: {
-      title: "Are You Sure You Want to Decline?",
-      description: "Are you sure you want to decline this booking request? This action cannot be undone.",
-      buttonText: "Confirm Decline",
-      buttonVariant: "destructive" as const,
-      buttonClass: "",
-      triggerClass: "text-gray-900 border border-gray-300 hover:bg-gray-100",
-      action: (e: React.MouseEvent) => {
-        setActiveDialog('decline');
-        handleDecline({ actionData, e });
-      },
-      isLoading: isDeclineLoading
-    },
-    accept: {
-      title: "Are You Sure You Want to Accept?",
-      description: "Please confirm if you'd like to accept this booking request.",
-      buttonText: "Confirm Accept",
-      buttonVariant: "default" as const,
-      buttonClass: "bg-yellow-400 hover:bg-yellow-500 text-gray-900",
-      triggerClass: "text-gray-900 border border-gray-300 bg-yellow-400 hover:bg-yellow-500",
-      action: (e: React.MouseEvent) => {
-        setActiveDialog('accept');
-        handleAccept({ actionData, e });
-      },
-      isLoading: isAcceptLoading
-    }
-  };
+  const config = getDialogConfig(bookingEventType);
 
-  // Reusable function to render each dialog
-  const renderActionDialog = (type: 'accept' | 'decline') => {
-    const config = dialogs[type];
-
-    return (
-      <Dialog onOpenChange={(open) => !open && setActiveDialog(null)}>
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className={`flex items-center gap-3 pt-2`}>
+      <Dialog>
         <DialogTrigger asChild>
           <Button
-            variant={type === 'decline' ? 'outline' : 'default'}
-            disabled={isDeclineLoading || isAcceptLoading}
+            variant={bookingEventType === 'DECLINED' ? 'outline' : 'default'}
+            disabled={isActionLoading || isDisabled}
             className={`flex items-center border rounded-xl font-medium active:scale-[0.95] ${config.triggerClass} ${className}`}
           >
-            {type === 'decline' ? 'Decline' : 'Accept'}
+            {config.triggerText}
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-xl p-10">
+        <DialogContent className="max-w-xl p-10 rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-2xl">{config.title}</DialogTitle>
             <DialogDescription>
               {config.description}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex mt-4">
+          <DialogFooter className="flex mt-4 gap-2 md:gap-0">
             <DialogClose asChild>
               <Button
                 type="button"
                 variant="outline"
-                disabled={activeDialog === type && config.isLoading}
-                className="px-6 py-6 w-full sm:w-auto rounded-xl"
+                disabled={isActionLoading}
+                className="md:px-6 py-8 md:py-6 w-full sm:w-auto rounded-xl"
               >
                 Cancel
               </Button>
             </DialogClose>
             <Button
               variant={config.buttonVariant}
-              onClick={config.action}
-              disabled={config.isLoading}
-              className={`px-6 py-6 w-full sm:w-auto rounded-xl ${config.buttonClass}`}
+              onClick={(e: React.MouseEvent) => {
+                handleAction({ actionData, bookingEventType, e });
+              }}
+              disabled={isActionLoading}
+              className={`md:px-6 py-8 md:py-6 w-full sm:w-auto rounded-xl ${config.buttonClass}`}
             >
-              {activeDialog === type && config.isLoading ? <DotTypingLoading /> : config.buttonText}
+              {isActionLoading ? <DotTypingLoading /> : config.buttonText}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    );
-  };
-
-  return (
-    <div
-      onClick={(e) => e.stopPropagation()}
-      className={`flex items-center gap-3 pt-2 ${positionClasses[position]}`}>
-      {renderActionDialog('decline')}
-      {renderActionDialog('accept')}
     </div>
   );
 }

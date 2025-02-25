@@ -2,6 +2,7 @@ import { Booking, BookingStatus, Post } from '@prisma/client/edge';
 import { prisma } from '../db/index';
 import { startOfDay, endOfDay } from "date-fns";
 import { CreateBookingInput } from '../handlers/booking-manager';
+import { validateBookingCancellation } from '@repo/types';
 
 // export const runtime = 'edge'
 
@@ -21,19 +22,23 @@ export async function addBooking({
       // Check for existing booking with pessimistic locking
       const existingBooking = await tx.booking.findFirst({
         where: {
-          freelancerId: post.userId,
-          date: {
-            gte: startOfDay(bookingDate),
-            lte: endOfDay(bookingDate),
-          },
-          status: {
-            in: ['PENDING', 'CONFIRMED'],
-          },
+          AND: [
+            {
+              freelancerId: post.userId,
+              date: {
+                gte: startOfDay(bookingDate),
+                lte: endOfDay(bookingDate),
+              },
+              status: {
+                in: ['PENDING', 'CONFIRMED']
+              }
+            }
+          ]
         },
       });
 
       if (existingBooking) {
-        throw new Error('Date already booked');
+        throw new Error('Date already has an active booking');
       }
 
       // Calculate total amount based on pricing type
@@ -96,6 +101,22 @@ export async function updateBooking({
 
     if (existingBooking.status === status) {
       throw new Error(`Booking is already in ${status} status`);
+    }
+
+    if (status === BookingStatus.CANCELLED) {
+      const validation = validateBookingCancellation({
+        booking: {
+          id: bookingId,
+          clientId,
+          date: existingBooking.date,
+          createdAt: existingBooking.createdAt
+        },
+        userId: clientId
+      });
+
+      if (!validation.canCancel && validation.message) {
+        throw new Error(validation.message);
+      }
     }
 
     const booking = await prisma.booking.update({

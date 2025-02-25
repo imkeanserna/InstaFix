@@ -5,3 +5,4 @@ export * from './src/postTypes';
 export * from './src/searchTypes'
 export * from './src/bookingTypes'
 export * from './src/notificationTypes'
+export * from './src/helper/booking'

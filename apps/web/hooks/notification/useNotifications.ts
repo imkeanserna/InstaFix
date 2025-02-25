@@ -2,10 +2,13 @@
 
 import { getFormattedTime, getTimeAgo } from "@/lib/dateFormatters";
 import { getNotifications } from "@/lib/notificationUtils";
-import { BookingStatus } from "@prisma/client/edge";
-import { MessageType, NotificationState, TypeBookingNotification } from "@repo/types";
+import { BookingEventType, BookingStatus } from "@prisma/client/edge";
+import { getStatusForEventType, MessageType, NotificationState, TypeBookingNotification } from "@repo/types";
 import { User } from "next-auth";
 import { useEffect, useState } from "react";
+import { BookingActionData, useBookingAction, useBookingActions } from "../useBooking";
+import { useWebSocket } from "../useWebSocket";
+import { toast } from "@repo/ui/components/ui/sonner";
 
 const NOTIFICATION_KEY = 'Instafix-notifications';
 
@@ -159,17 +162,46 @@ export const useNotificationCard = (notification: TypeBookingNotification, user:
     day: 'numeric',
     year: 'numeric'
   });
+  const { sendMessage } = useWebSocket();
+  const { handleBookingAction } = useBookingAction(sendMessage);
+  const {
+    isActionLoading,
+    setIsActionLoading,
+    resetLoadingStates
+  } = useBookingActions();
 
   const isFreelancer = user.id === notification.booking.freelancer.id;
   const isClient = user.id === notification.booking.client.id;
   const exactTime = getFormattedTime(new Date(notification.createdAt));
   const timeAgo = getTimeAgo(new Date(notification.createdAt));
 
+  const handleAction = async ({
+    actionData,
+    bookingEventType,
+    e
+  }: {
+    actionData: BookingActionData,
+    bookingEventType: Exclude<BookingEventType, "CREATED">,
+    e: React.MouseEvent
+  }) => {
+    e.stopPropagation();
+    setIsActionLoading(true);
+    try {
+      handleBookingAction(MessageType.BOOKING, bookingEventType, actionData);
+      setBookingStatus(getStatusForEventType(bookingEventType));
+    } catch (error) {
+      toast.error('Error action booking');
+      resetLoadingStates();
+    }
+  };
+
   return {
     bookingStatus,
     setBookingStatus,
     formattedDate,
     isFreelancer,
+    isActionLoading,
+    handleAction,
     isClient,
     exactTime,
     timeAgo

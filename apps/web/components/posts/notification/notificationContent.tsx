@@ -1,16 +1,16 @@
 "use client";
 
 import { useNotificationContent } from "@/hooks/notification/useNotificationContent";
-import { BookingStatus, PricingType } from "@prisma/client/edge";
+import { BookingEventType, BookingStatus, PricingType } from "@prisma/client/edge";
 import { useRouter } from "next/navigation";
-import { BookingActions, getStatusMessage } from "./notifications";
+import { BookingActionButton, getStatusMessage } from "./notifications";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar";
 import { Banknote, ChevronLeft, MapPin, Shield, Star } from "lucide-react";
 import { Divider } from "../post/postContent";
 import { User } from "next-auth";
-import { TypeBookingNotificationById } from "@repo/types";
+import { TypeBookingNotificationById, validateBookingCancellation } from "@repo/types";
 import { calculateRemainingDays, getFormattedTime, getTimeAgo } from "@/lib/dateFormatters";
 import { PaymentOption } from "@/components/book/paymentMethod";
 import { formatPrice } from "@/lib/postUtils";
@@ -26,10 +26,8 @@ export function NotificationContent({ notificationId }: { notificationId: string
     bookingStatus,
     isLoading,
     error,
-    isDeclineLoading,
-    isAcceptLoading,
-    handleDecline,
-    handleAccept
+    isActionLoading,
+    handleAction
   } = useNotificationContent(notificationId);
 
   if (isLoading || error || !notification || status === 'loading') {
@@ -49,6 +47,16 @@ export function NotificationContent({ notificationId }: { notificationId: string
       router.push(`/find/${notification.booking.freelancer.name}/${notification.booking.post.title}/${notification?.booking?.post?.id}`);
     }
   }
+
+  const validation = validateBookingCancellation({
+    booking: {
+      id: notification.booking.id,
+      clientId: notification.booking.client.id,
+      date: notification.booking.date,
+      createdAt: notification.booking.createdAt
+    },
+    userId: notification.booking.client.id
+  });
 
   return (
     <div className="flex justify-center py-8">
@@ -151,10 +159,10 @@ export function NotificationContent({ notificationId }: { notificationId: string
             </>
           )
         }
-        {bookingStatus === BookingStatus.PENDING && (
+        {bookingStatus !== BookingStatus.COMPLETED && (
           <>
             <Divider marginY="my-10" />
-            <div className="space-y-6 px-0 sm:px-8">
+            <div className="space-y-6 px-0 sm:px-8 flex-col justify-center">
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <div className="flex gap-3">
                   <Shield className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
@@ -168,17 +176,61 @@ export function NotificationContent({ notificationId }: { notificationId: string
                   </p>
                 </div>
               </div>
-              <BookingActions
-                bookingId={notification.booking.id}
-                clientId={notification.booking.client.id}
-                freelancerId={session?.user?.id}
-                handleDecline={handleDecline}
-                handleAccept={handleAccept}
-                isDeclineLoading={isDeclineLoading}
-                isAcceptLoading={isAcceptLoading}
-                className={"px-12 w-full sm:w-auto py-8 sm:py-6"}
-                position={"right"}
-              />
+
+              <div className="flex items-center justify-end gap-2">
+                {bookingStatus === BookingStatus.PENDING && (
+                  <>
+                    <BookingActionButton
+                      bookingId={notification.booking.id}
+                      clientId={notification.booking.client.id}
+                      freelancerId={notification.booking.freelancer.id}
+                      handleAction={handleAction}
+                      isActionLoading={isActionLoading}
+                      className={"px-12 w-full sm:w-auto py-8 sm:py-6"}
+                      bookingEventType={BookingEventType.DECLINED}
+                    />
+                    <BookingActionButton
+                      bookingId={notification.booking.id}
+                      clientId={notification.booking.client.id}
+                      freelancerId={notification.booking.freelancer.id}
+                      handleAction={handleAction}
+                      isActionLoading={isActionLoading}
+                      className={"px-12 w-full sm:w-auto py-8 sm:py-6"}
+                      bookingEventType={BookingEventType.CONFIRMED}
+                    />
+                  </>
+                )}
+
+                {bookingStatus === BookingStatus.CONFIRMED && isFreelancer && (
+                  <BookingActionButton
+                    bookingId={notification.booking.id}
+                    clientId={notification.booking.client.id}
+                    freelancerId={notification.booking.freelancer.id}
+                    handleAction={handleAction}
+                    isActionLoading={isActionLoading}
+                    className={"px-12 w-full sm:w-auto py-8 sm:py-6"}
+                    bookingEventType={BookingEventType.COMPLETED}
+                  />
+                )}
+
+                {bookingStatus === BookingStatus.CONFIRMED && isClient && (
+                  <div className="flex flex-col justify-end items-end gap-2">
+                    <BookingActionButton
+                      bookingId={notification.booking.id}
+                      clientId={notification.booking.client.id}
+                      freelancerId={notification.booking.freelancer.id}
+                      handleAction={handleAction}
+                      isActionLoading={isActionLoading}
+                      className={"px-12 w-full sm:w-auto py-8 sm:py-6"}
+                      bookingEventType={BookingEventType.CANCELLED}
+                      isDisabled={!validation.canCancel}
+                    />
+                    {!validation.canCancel && validation.message && (
+                      <p className="text-xs text-gray-500 italic">Cancellation is no longer available for this booking.</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}

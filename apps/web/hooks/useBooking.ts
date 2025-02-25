@@ -162,20 +162,17 @@ export const useBooking = (postId: string) => {
 };
 
 export function useBookingActions() {
-  const [isDeclineLoading, setIsDeclineLoading] = useState(false);
-  const [isAcceptLoading, setIsAcceptLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   const { lastMessage, clearMessage } = useWebSocket();
 
   const resetLoadingStates = useCallback(() => {
-    setIsDeclineLoading(false);
-    setIsAcceptLoading(false);
+    setIsActionLoading(false);
   }, []);
 
   useBookingMessage({
     lastMessage,
     setIsLoading: (loading: boolean) => {
-      setIsDeclineLoading(loading);
-      setIsAcceptLoading(loading);
+      setIsActionLoading(loading);
     },
     onBookingCreated: () => {
       resetLoadingStates();
@@ -188,10 +185,8 @@ export function useBookingActions() {
   });
 
   return {
-    isDeclineLoading,
-    isAcceptLoading,
-    setIsDeclineLoading,
-    setIsAcceptLoading,
+    isActionLoading,
+    setIsActionLoading,
     resetLoadingStates
   };
 }
@@ -285,16 +280,14 @@ export function useBookingMessage({
             onBookingCreated?.();
             break;
           case BookingEventType.CANCELLED:
-            toast.success('Booking cancelled successfully');
+            onBookingCreated?.();
             break;
           case BookingEventType.RESCHEDULED:
-            toast.success('Booking rescheduled successfully');
             break;
           case BookingEventType.CONFIRMED:
             onBookingCreated?.();
             break;
           case BookingEventType.UPDATED:
-            toast.success('Booking updated successfully');
             break;
         }
         break;

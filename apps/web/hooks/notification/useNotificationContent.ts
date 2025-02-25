@@ -2,7 +2,7 @@
 
 import { BookingActionData, useBookingAction, useBookingActions, useBookingMessage } from "../useBooking";
 import { useWebSocket } from "../useWebSocket";
-import { MessageType, NotificationType, TypeBookingNotification, TypeBookingNotificationById } from "@repo/types";
+import { getStatusForEventType, MessageType, NotificationType, TypeBookingNotification, TypeBookingNotificationById } from "@repo/types";
 import { useNotifications } from "./useNotifications";
 import { BookingEventType, BookingStatus } from "@prisma/client/edge";
 import { useEffect, useState } from "react";
@@ -14,19 +14,15 @@ export const useNotificationContent = (notificationId: string) => {
   const [bookingStatus, setBookingStatus] = useState<BookingStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-
   const { sendMessage, lastMessage, clearMessage } = useWebSocket();
   const { handleBookingAction } = useBookingAction(sendMessage);
   const { addNotification } = useNotifications();
   const {
-    isDeclineLoading,
-    isAcceptLoading,
-    setIsDeclineLoading,
-    setIsAcceptLoading,
+    isActionLoading,
+    setIsActionLoading,
     resetLoadingStates
   } = useBookingActions();
 
-  // Fetch notification data
   useEffect(() => {
     const fetchNotification = async () => {
       if (!notificationId) return;
@@ -62,26 +58,22 @@ export const useNotificationContent = (notificationId: string) => {
     }
   });
 
-  const handleDecline = async ({ actionData, e }: { actionData: BookingActionData, e: React.MouseEvent }) => {
+  const handleAction = async ({
+    actionData,
+    bookingEventType,
+    e
+  }: {
+    actionData: BookingActionData,
+    bookingEventType: Exclude<BookingEventType, "CREATED">,
+    e: React.MouseEvent
+  }) => {
     e.stopPropagation();
-    setIsDeclineLoading(true);
+    setIsActionLoading(true);
     try {
-      await handleBookingAction(MessageType.BOOKING, BookingEventType.DECLINED, actionData);
-      setBookingStatus(BookingStatus.DECLINED);
+      handleBookingAction(MessageType.BOOKING, bookingEventType, actionData);
+      setBookingStatus(getStatusForEventType(bookingEventType));
     } catch (error) {
-      toast.error('Error declining booking');
-      resetLoadingStates();
-    }
-  };
-
-  const handleAccept = async ({ actionData, e }: { actionData: BookingActionData, e: React.MouseEvent }) => {
-    e.stopPropagation();
-    setIsAcceptLoading(true);
-    try {
-      await handleBookingAction(MessageType.BOOKING, BookingEventType.CONFIRMED, actionData);
-      setBookingStatus(BookingStatus.CONFIRMED);
-    } catch (error) {
-      toast.error('Error accepting booking');
+      toast.error('Error action booking');
       resetLoadingStates();
     }
   };
@@ -91,9 +83,7 @@ export const useNotificationContent = (notificationId: string) => {
     bookingStatus,
     isLoading,
     error,
-    isDeclineLoading,
-    isAcceptLoading,
-    handleDecline,
-    handleAccept
+    isActionLoading,
+    handleAction
   };
 }

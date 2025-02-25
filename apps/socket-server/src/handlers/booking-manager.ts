@@ -1,10 +1,10 @@
 import { addBooking, updateBooking } from "../action/booking";
 import { z } from "zod";
 import { getPostById } from "../action/post";
-import { BookingEventType, BookingStatus, Post } from "@prisma/client/edge";
+import { BookingEventType, Post } from "@prisma/client/edge";
 import { AuthenticatedWebSocket } from "..";
 import { DirectMessagingPubSub } from "../pubsub/redisClient";
-import { BookingPayload, MessageType, NotificationType, TypeBookingNotification, TypeEventUpdate } from "@repo/types";
+import { BookingPayload, getNotificationRecipient, getStatusForEventType, MessageType, NotificationType, TypeBookingNotification, TypeEventUpdate } from "@repo/types";
 import { addBookingNotification } from "../action/notification";
 
 const createBookingSchema = z.object({
@@ -44,10 +44,11 @@ export class BookingManager {
         case BookingEventType.RESCHEDULED:
         case BookingEventType.CONFIRMED:
         case BookingEventType.DECLINED:
+        case BookingEventType.COMPLETED:
           await this.handleEventUpdate(user, {
             ...payload,
             bookingEventType: type,
-            status: this.getStatusForEventType(type),
+            status: getStatusForEventType(type),
           })
           break;
         case BookingEventType.UPDATED:
@@ -80,7 +81,7 @@ export class BookingManager {
         userId: user.userId
       });
 
-      const notificationRecipient = this.getNotificationRecipient(
+      const notificationRecipient = getNotificationRecipient(
         BookingEventType.CREATED,
         result.clientId,
         result.freelancerId
@@ -132,7 +133,7 @@ export class BookingManager {
         status: data.status
       });
 
-      const notificationRecipient = this.getNotificationRecipient(
+      const notificationRecipient = getNotificationRecipient(
         data.bookingEventType,
         updatedBooking.clientId,
         updatedBooking.freelancerId
@@ -173,41 +174,5 @@ export class BookingManager {
     } catch (error) {
       throw new Error('Invalid post id');
     }
-  }
-
-  private getNotificationRecipient(eventType: BookingEventType, clientId: string, freelancerId: string): string {
-    const recipientMap: Record<BookingEventType, string> = {
-      [BookingEventType.RESCHEDULED]: freelancerId,
-      [BookingEventType.CANCELLED]: freelancerId,
-      [BookingEventType.CONFIRMED]: clientId,
-      [BookingEventType.DECLINED]: clientId,
-      [BookingEventType.CREATED]: freelancerId,
-      [BookingEventType.UPDATED]: freelancerId,
-    };
-
-    const recipientId = recipientMap[eventType];
-    if (!recipientId) {
-      throw new Error(`No notification recipient defined for event type: ${eventType}`);
-    }
-
-    return recipientId;
-  }
-
-  private getStatusForEventType(eventType: BookingEventType): BookingStatus {
-    const statusMap: Record<BookingEventType, BookingStatus> = {
-      [BookingEventType.CANCELLED]: BookingStatus.CANCELLED,
-      [BookingEventType.CONFIRMED]: BookingStatus.CONFIRMED,
-      [BookingEventType.DECLINED]: BookingStatus.DECLINED,
-      [BookingEventType.RESCHEDULED]: BookingStatus.PENDING,
-      [BookingEventType.CREATED]: BookingStatus.PENDING,
-      [BookingEventType.UPDATED]: BookingStatus.PENDING,
-    };
-
-    const status = statusMap[eventType];
-    if (!status) {
-      throw new Error(`No status defined for event type: ${eventType}`);
-    }
-
-    return status;
   }
 }

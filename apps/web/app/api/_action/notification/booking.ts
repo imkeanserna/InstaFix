@@ -1,6 +1,7 @@
 import { prisma, PrismaClientOrTx } from '@/server/index';
 import { BookingNotification } from '@prisma/client';
 import { TypeBookingNotification, TypeBookingNotificationById } from "@repo/types";
+import { sortNotificationsByPriority } from '../helper/bookingUtils';
 
 // export const runtime = 'edge'
 
@@ -67,7 +68,8 @@ export async function getBookingNotifications({
         createdAt: 'desc'
       }
     });
-    return notifications
+
+    return sortNotificationsByPriority(notifications);
   } catch (error) {
     throw error
   }
