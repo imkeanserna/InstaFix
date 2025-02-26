@@ -98,6 +98,7 @@ model Booking {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   bookingNotifications BookingNotification[]
+  review               Review?
 
   @@index([date, freelancerId])
   @@index([clientId])
@@ -109,10 +110,12 @@ model Review {
   id        String   @id @default(cuid())
   rating    Float    @default(0.0)
   comment   String?
-  userId    String   @unique
+  userId    String
   postId    String
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

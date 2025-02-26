@@ -38,7 +38,7 @@ const bookingNotificationSelect = {
 
 export type TypeBookingNotification = Prisma.BookingNotificationGetPayload<{
   select: typeof bookingNotificationSelect
-}>;
+}> & { canReview: boolean };
 
 const bookingNotificationById = {
   id: true,
@@ -96,7 +96,7 @@ const bookingNotificationById = {
 
 export type TypeBookingNotificationById = Prisma.BookingNotificationGetPayload<{
   select: typeof bookingNotificationById
-}>;
+}> & { canReview: boolean };
 
 export type NotificationCursorPagination = CursorPagination & {
   unreadCount: number;

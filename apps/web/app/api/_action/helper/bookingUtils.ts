@@ -1,3 +1,4 @@
+import { BookingStatus } from "@prisma/client/edge";
 import { TypeBookingNotification } from "@repo/types";
 
 export function sortNotificationsByPriority(notifications: TypeBookingNotification[]): TypeBookingNotification[] {
@@ -47,4 +48,18 @@ function getPriorityScore(notification: TypeBookingNotification, threeDaysAgo: D
   } else {
     return priorities.OTHER;
   }
+}
+
+export function canReviewNotification({
+  clientId,
+  userId,
+  status,
+  reviewId
+}: {
+  clientId: string,
+  userId: string,
+  status: string,
+  reviewId: string | undefined
+}): boolean {
+  return clientId === userId && status === BookingStatus.COMPLETED && reviewId === undefined;
 }

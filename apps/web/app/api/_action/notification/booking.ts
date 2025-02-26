@@ -1,7 +1,7 @@
 import { prisma, PrismaClientOrTx } from '@/server/index';
-import { BookingNotification } from '@prisma/client';
+import { BookingNotification } from '@prisma/client/edge';
 import { TypeBookingNotification, TypeBookingNotificationById } from "@repo/types";
-import { sortNotificationsByPriority } from '../helper/bookingUtils';
+import { canReviewNotification, sortNotificationsByPriority } from '../helper/bookingUtils';
 
 // export const runtime = 'edge'
 
@@ -19,7 +19,7 @@ export async function getBookingNotifications({
       throw new Error('User Id is required');
     }
 
-    const notifications: TypeBookingNotification[] = await prisma.bookingNotification.findMany({
+    const notifications = await prisma.bookingNotification.findMany({
       take: take + 1,
       where: {
         userId: userId
@@ -59,7 +59,8 @@ export async function getBookingNotifications({
                 id: true,
                 title: true
               }
-            }
+            },
+            review: true
           }
         },
         createdAt: true
@@ -69,7 +70,21 @@ export async function getBookingNotifications({
       }
     });
 
-    return sortNotificationsByPriority(notifications);
+    const notificationsWithReviewStatus: TypeBookingNotification[] = notifications.map(notification => {
+      const canReview = canReviewNotification({
+        clientId: notification.booking.client.id,
+        userId,
+        status: notification.booking.status,
+        reviewId: notification.booking.review?.id
+      });
+
+      return {
+        ...notification,
+        canReview
+      };
+    });
+
+    return sortNotificationsByPriority(notificationsWithReviewStatus);
   } catch (error) {
     throw error
   }
@@ -114,7 +129,7 @@ export async function getBookingNotificationsById({
       throw new Error('Booking Id is required');
     }
 
-    const notification: TypeBookingNotificationById | null = await tx.bookingNotification.findUnique({
+    const notification = await tx.bookingNotification.findUnique({
       where: {
         id: bookingId,
         userId: userId
@@ -167,6 +182,11 @@ export async function getBookingNotificationsById({
                 image: true
               }
             },
+            review: {
+              select: {
+                id: true
+              }
+            },
             createdAt: true
           }
         },
@@ -174,7 +194,21 @@ export async function getBookingNotificationsById({
       }
     });
 
-    return notification;
+    if (!notification) {
+      return null;
+    }
+
+    const canReview = canReviewNotification({
+      clientId: notification.booking.client.id,
+      userId,
+      status: notification.booking.status,
+      reviewId: notification.booking.review?.id
+    });
+
+    return {
+      ...notification,
+      canReview
+    };
   } catch (error) {
     throw error
   }

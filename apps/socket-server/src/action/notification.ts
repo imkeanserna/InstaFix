@@ -1,6 +1,5 @@
 import { BookingEventType } from '@prisma/client/edge';
 import { prisma } from '../db/index';
-import { TypeBookingNotification } from '@repo/types';
 
 // export const runtime = 'edge'
 
@@ -32,7 +31,7 @@ export async function addBookingNotification({
   }
 
   try {
-    const notification: TypeBookingNotification = await prisma.bookingNotification.create({
+    const notification = await prisma.bookingNotification.create({
       data: {
         userId: userId,
         type: type,
@@ -67,6 +66,11 @@ export async function addBookingNotification({
                 id: true,
                 title: true
               }
+            },
+            review: {
+              select: {
+                id: true
+              }
             }
           }
         },
@@ -74,7 +78,14 @@ export async function addBookingNotification({
       }
     });
 
-    return notification;
+    const canReview: boolean = notification.booking.client.id === userId &&
+      notification.booking.status === 'COMPLETED' &&
+      notification.booking.review === null;
+
+    return {
+      ...notification,
+      canReview
+    };
   } catch (error) {
     console.error(error);
     throw error;
