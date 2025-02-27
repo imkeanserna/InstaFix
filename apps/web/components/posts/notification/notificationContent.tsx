@@ -16,10 +16,15 @@ import { PaymentOption } from "@/components/book/paymentMethod";
 import { formatPrice } from "@/lib/postUtils";
 import { Button } from "@repo/ui/components/ui/button";
 import { capitalizeFirstLetter } from "@/lib/notificationUtils";
+import React, { useState } from "react";
+import { ReviewDrawerWrapper, ReviewModal } from "../review/reviewModalDrawer";
+import { useMediaQuery } from "@/hooks/useMedia";
 
 export function NotificationContent({ notificationId }: { notificationId: string }) {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [showReviewModal, setShowReviewModal] = useState(true);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const {
     notification,
@@ -60,6 +65,41 @@ export function NotificationContent({ notificationId }: { notificationId: string
 
   return (
     <div className="flex justify-center py-8">
+      {!isMobile
+        ?
+        <ReviewModal
+          freelancerName={notification.booking.freelancer.name!}
+          freelancerImage={notification.booking.freelancer.image!}
+          titlePost={notification.booking.post.title!}
+          subCategory={notification.booking.post.tags[0].subcategory.name}
+          serviceRating={notification.booking.post.averageRating!}
+          noOfReviews={notification.booking.post.reviews.length}
+          coverPhoto={notification.booking.post.coverPhoto!}
+          canReview={notification.canReview}
+          postId={notification.booking.post.id}
+          bookingId={notification.booking.id}
+          isOpen={notification.canReview && showReviewModal}
+          onClose={() => {
+            setShowReviewModal(false)
+          }}
+        />
+        :
+        <ReviewDrawerWrapper
+          freelancerName={notification.booking.freelancer.name!}
+          freelancerImage={notification.booking.freelancer.image!}
+          titlePost={notification.booking.post.title!}
+          subCategory={notification.booking.post.tags[0].subcategory.name}
+          serviceRating={notification.booking.post.averageRating!}
+          noOfReviews={notification.booking.post.reviews.length}
+          coverPhoto={notification.booking.post.coverPhoto!}
+          canReview={notification.canReview}
+          postId={notification.booking.post.id}
+          bookingId={notification.booking.id}
+          onClose={() => {
+            setShowReviewModal(false)
+          }}
+        />
+      }
       <div className="w-full px-4 sm:px-0 sm:w-11/12 md:w-10/12 lg:w-6/12">
         <div className="flex gap-2 md:gap-4 items-center pb-8">
           <Button

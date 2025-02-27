@@ -156,6 +156,16 @@ export async function getBookingNotificationsById({
                 customDetails: true,
                 packageDetails: true,
                 coverPhoto: true,
+                tags: {
+                  select: {
+                    subcategory: {
+                      select: {
+                        id: true,
+                        name: true
+                      }
+                    }
+                  }
+                },
                 reviews: {
                   select: { id: true }
                 },

@@ -1,3 +1,4 @@
+import { Review } from "@prisma/client/edge";
 import { ReviewsResponseWithCursor } from "@repo/types";
 
 export type GetReviewsResponse = {
@@ -59,5 +60,62 @@ export async function getReviews({ postId, cursor, take }: {
       data: [],
       nextCursor: undefined
     };
+  }
+}
+
+export type AddReviewResponse = {
+  success: boolean;
+  data: Review;
+  error?: string;
+}
+
+export async function addReview({
+  postId,
+  bookingId,
+  rating,
+  comment
+}: {
+  postId: string;
+  bookingId: string;
+  rating: number;
+  comment: string;
+}) {
+  try {
+    if (!postId) {
+      throw new Error('post id is required');
+    }
+
+    if (!bookingId) {
+      throw new Error('booking id is required');
+    }
+
+    const queryParams = new URLSearchParams();
+    queryParams.append("bookingId", String(bookingId));
+
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}/reviews?${queryParams.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        rating,
+        comment
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to creating post');
+    }
+
+    const result: AddReviewResponse = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to create review');
+    }
+
+    return result.data;
+  } catch (error) {
+    console.log(error)
+    throw error;
   }
 }

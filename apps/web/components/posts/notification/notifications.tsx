@@ -28,7 +28,7 @@ import {
 export function Notifications() {
   const router = useRouter();
   const { notificationState, addNotification, error, isLoading } = useNotifications();
-  const { sendMessage, lastMessage, clearMessage } = useWebSocket();
+  const { lastMessage, clearMessage } = useWebSocket();
   const { data: session, status } = useSession();
 
   useBookingMessage({
@@ -285,6 +285,9 @@ export function NotificationCard({
       className={`p-4 md:p-8 hover:bg-gray-50 shadow-lg rounded-xl transition-colors cursor-pointer 
         ${!notification.isRead ? `border-l-[10px] border-t bg-blue-50/50
         ${bookingStatus === BookingStatus.DECLINED ? 'border-red-500' : 'border-yellow-400'}` : 'bg-white'}`}>
+      {notification.canReview && (
+        <p className="text-[10px] text-yellow-500 text-end py-1 md:py-0">Just click to add review!</p>
+      )}
       <div className="flex gap-4">
         <Avatar className="h-12 w-12 shadow-md flex-shrink-0">
           <AvatarImage

@@ -7,18 +7,21 @@ export async function addReview({
   userId,
   postId,
   rating,
+  bookingId,
   comment
 }: {
   userId: string;
   postId: string;
   rating: number;
+  bookingId: string;
   comment: string;
 }) {
   try {
     const review = await prisma.review.findUnique({
       where: {
         postId: postId,
-        userId: userId
+        userId: userId,
+        bookingId: bookingId
       }
     });
 
@@ -31,13 +34,14 @@ export async function addReview({
         userId: userId,
         postId: postId,
         rating: rating,
-        comment: comment
+        comment: comment,
+        bookingId: bookingId
       }
     });
 
     if (newReview) {
       const averageRating = await calculateAverageRating(postId);
-      const post = await prisma.post.update({
+      await prisma.post.update({
         where: {
           id: postId
         },

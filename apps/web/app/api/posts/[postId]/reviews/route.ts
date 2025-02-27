@@ -20,7 +20,7 @@ const ReviewSchema = z.object({
     required_error: "Comment is required",
     invalid_type_error: "Comment must be a string"
   }).min(1, "Comment cannot be empty")
-    .max(1000, "Comment cannot exceed 1000 characters")
+    .max(640, "Comment cannot exceed 640 characters")
 });
 
 export async function POST(
@@ -29,7 +29,6 @@ export async function POST(
 ) {
   try {
     const postId = params?.postId;
-
     if (!postId) {
       return errorResponse('post id is required', undefined, 400);
     }
@@ -40,7 +39,14 @@ export async function POST(
     }
 
     const body = await request.json();
+    const { searchParams } = new URL(request.url);
     const validatedBody = ReviewSchema.safeParse(body);
+    const bookingId = searchParams.get('bookingId');
+
+    if (!bookingId) {
+      return errorResponse('booking id is required', undefined, 400);
+    }
+
     if (!validatedBody.success) {
       return errorResponse(
         'Invalid request body',
@@ -66,7 +72,8 @@ export async function POST(
       userId: user.id,
       postId: post.id,
       rating,
-      comment
+      comment,
+      bookingId
     });
 
     return NextResponse.json({
