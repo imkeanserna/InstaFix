@@ -243,7 +243,7 @@ export function ReviewContent({
           <div className="space-y-3">
             <div className="flex justify-between">
               <p className="text-xs text-gray-500">Share your feedback</p>
-              <p className="text-xs text-gray-500">{comment.length}/240</p>
+              <p className="text-xs text-gray-500">{comment.length}/640</p>
             </div>
             <textarea
               placeholder="Tell us about your experience with Kean..."

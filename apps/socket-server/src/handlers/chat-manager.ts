@@ -1,19 +1,25 @@
-import { BookingEventType, ChatEventType } from "@prisma/client/edge";
+import { ChatEventType } from "@prisma/client/edge";
 import { AuthenticatedWebSocket } from "..";
 import { DirectMessagingPubSub } from "../pubsub/redisClient";
 import { prisma } from "../db";
-import { MessageType, NotificationType } from "@repo/types";
+import {
+  DeleteMessagePayload,
+  deleteMessageSchema,
+  MessageType,
+  ReadStatusPayload,
+  readStatusSchema,
+  SendMessagePayload,
+  sendMessageSchema,
+  StartConversationPayload,
+  startConversationSchema,
+  TypingStatusPayload,
+  typingStatusSchema,
+} from "@repo/types";
 import { getOrCreateConversation } from "../action/chat";
 
 export interface ChatEvent {
   type: ChatEventType;
   payload: any;
-}
-
-type SendMessagePayload = {
-  conversationId: string;
-  body?: string;
-  image?: string;
 }
 
 export class ChatManager {
@@ -27,40 +33,22 @@ export class ChatManager {
     const { type, payload } = message;
 
     try {
-      switch (type as ChatEventType) {
+      switch (type as Exclude<ChatEventType, "DELIVERED">) {
         case ChatEventType.START_CONVERSATION:
-          const conversationId: string = await getOrCreateConversation({
-            initiatorId: user.userId,
-            recipientId: payload.recipientId
-          });
-          this.messagingService.notifyUsers(
-            MessageType.CHAT,
-            ChatEventType.CONVERSATION_CREATED,
-            { conversationId },
-            user.userId
-          );
-          this.messagingService.notifyUsers(
-            MessageType.CHAT,
-            ChatEventType.CONVERSATION_CREATED,
-            { conversationId },
-            payload.recipientId
-          );
+          await this.handleStartConversation(user, payload as StartConversationPayload);
           break;
         case ChatEventType.SENT:
-          await this.handleSendMessage(user, payload);
-          break;
-        case ChatEventType.DELIVERED:
-          // await this.handleDeliveryStatus(user, payload);
+          await this.handleSendMessage(user, payload as SendMessagePayload);
           break;
         case ChatEventType.READ:
-          // await this.handleReadStatus(user, payload);
+          await this.handleReadStatus(user, payload as ReadStatusPayload);
           break;
         case ChatEventType.TYPING:
         case ChatEventType.STOPPED_TYPING:
-          // await this.handleTypingStatus(user, { ...payload, status: type });
+          await this.handleTypingStatus(user, payload as TypingStatusPayload);
           break;
         case ChatEventType.DELETED:
-          // await this.handleDeleteMessage(user, payload);
+          await this.handleDeleteMessage(user, payload as DeleteMessagePayload);
           break;
         default:
           throw new Error('Invalid message event type');
@@ -73,45 +61,23 @@ export class ChatManager {
 
   private async handleSendMessage(user: AuthenticatedWebSocket, data: SendMessagePayload) {
     try {
-      const conversationId = data.conversationId;
-      if (!conversationId) {
-        throw new Error('Conversation ID is required');
+      const result = sendMessageSchema.safeParse(data);
+      if (!result.success) {
+        throw new Error(`Invalid message format: ${result.error.message}`);
       }
+      const { conversationId, body, image } = result.data;
 
-      const participant = await prisma.participant.findFirst({
-        where: {
-          userId: user.userId,
-          conversationId: conversationId,
-          leftAt: null // Ensure user hasn't left the conversation
-        },
-        select: {
-          conversation: {
-            select: {
-              participants: {
-                select: {
-                  user: {
-                    select: {
-                      id: true,
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
-
-      if (!participant) {
-        throw new Error('User is not authorized to send messages to this conversation');
-      }
+      const { recipient } = await this.validateConversationAccess(
+        conversationId,
+        user.userId
+      );
 
       const message = await prisma.chatMessage.create({
         data: {
-          body: data.body,
-          image: data.image,
+          body,
+          image,
           senderId: user.userId,
-          conversationId: data.conversationId
+          conversationId
         },
         include: {
           sender: {
@@ -124,28 +90,20 @@ export class ChatManager {
         }
       });
 
-      const recipient = participant.conversation.participants
-        .find((p) => p.user.id !== user.userId);
-
-      if (!recipient) {
-        throw new Error('Recipient not found');
-      }
-
       await prisma.conversation.update({
         where: {
-          id: data.conversationId
+          id: conversationId
         },
         data: {
           lastMessageAt: new Date()
         }
       });
 
-      // --TODO: add chat notification
       this.messagingService.notifyUsers(
         MessageType.CHAT,
         ChatEventType.SENT,
         message,
-        recipient?.user.id
+        recipient
       );
 
       this.messagingService.notifyUsers(
@@ -157,6 +115,260 @@ export class ChatManager {
     } catch (error) {
       console.error(error);
       this.messagingService.handleError(error, user.userId);
+    }
+  }
+
+  private async handleStartConversation(user: AuthenticatedWebSocket, data: StartConversationPayload) {
+    try {
+      const result = startConversationSchema.safeParse(data);
+      if (!result.success) {
+        throw new Error(`Invalid message format: ${result.error.message}`);
+      }
+      const { recipientId } = result.data;
+
+      const conversationId: string = await getOrCreateConversation({
+        initiatorId: user.userId,
+        recipientId
+      });
+
+      this.messagingService.notifyUsers(
+        MessageType.CHAT,
+        ChatEventType.CONVERSATION_CREATED,
+        { conversationId },
+        user.userId
+      );
+
+      this.messagingService.notifyUsers(
+        MessageType.CHAT,
+        ChatEventType.CONVERSATION_CREATED,
+        { conversationId },
+        recipientId
+      );
+    } catch (error) {
+      console.error(error);
+      this.messagingService.handleError(error, user.userId);
+    }
+  }
+
+  private async handleTypingStatus(user: AuthenticatedWebSocket, data: TypingStatusPayload) {
+    try {
+      const result = typingStatusSchema.safeParse(data);
+      if (!result.success) {
+        throw new Error(`Invalid message format: ${result.error.message}`);
+      }
+      const { conversationId, status } = result.data;
+
+      const { recipient } = await this.validateConversationAccess(
+        conversationId,
+        user.userId
+      );
+
+      const typingStatus = {
+        conversationId,
+        userId: user.userId,
+        status,
+        timestamp: new Date()
+      };
+
+      this.messagingService.notifyUsers(
+        MessageType.CHAT,
+        status,
+        typingStatus,
+        recipient
+      );
+    } catch (error) {
+      console.error(error);
+      this.messagingService.handleError(error, user.userId);
+    }
+  }
+
+  private async handleReadStatus(user: AuthenticatedWebSocket, data: ReadStatusPayload) {
+    try {
+      const result = readStatusSchema.safeParse(data);
+      if (!result.success) {
+        throw new Error(`Invalid message format: ${result.error.message}`);
+      }
+      const { conversationId } = result.data;
+
+      const { recipient } = await this.validateConversationAccess(
+        conversationId,
+        user.userId
+      );
+
+      // Update messages as read in the database
+      await prisma.chatMessage.updateMany({
+        where: {
+          conversationId,
+          senderId: { not: user.userId },
+          isRead: false
+        },
+        data: {
+          isRead: true
+        }
+      });
+
+      // Update participant status to indicate they've seen the latest messages
+      await prisma.participant.updateMany({
+        where: {
+          conversationId,
+          userId: user.userId,
+          hasSeenLatest: false
+        },
+        data: {
+          hasSeenLatest: true
+        }
+      });
+
+      const updatedMessages = await prisma.chatMessage.findMany({
+        where: {
+          conversationId,
+          senderId: { not: user.userId },
+          isRead: true
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        take: 20
+      });
+
+      const readStatus = {
+        conversationId,
+        userId: user.userId,
+        messageIds: updatedMessages.map(msg => msg.id),
+        timestamp: new Date()
+      };
+
+      this.messagingService.notifyUsers(
+        MessageType.CHAT,
+        ChatEventType.READ,
+        readStatus,
+        recipient
+      );
+    } catch (error) {
+      console.error(error);
+      this.messagingService.handleError(error, user.userId);
+    }
+  }
+
+  private async handleDeleteMessage(user: AuthenticatedWebSocket, data: DeleteMessagePayload) {
+    try {
+      const result = deleteMessageSchema.safeParse(data);
+      if (!result.success) {
+        throw new Error(`Invalid message format: ${result.error.message}`);
+      }
+      const { conversationId, messageId } = result.data;
+
+      const { recipient } = await this.validateConversationAccess(
+        conversationId,
+        user.userId
+      );
+
+      // Check the message exists and belongs to the conversation
+      const message = await prisma.chatMessage.findFirst({
+        where: {
+          id: messageId,
+          conversationId
+        },
+        include: {
+          deletedForUsers: {
+            where: {
+              userId: user.userId
+            }
+          }
+        }
+      });
+
+      if (!message) {
+        throw new Error('Message not found in this conversation');
+      }
+
+      // Check the user is the sender (users should only delete their own messages)
+      if (message.senderId !== user.userId) {
+        throw new Error('You can only delete messages you have sent');
+      }
+
+      // Check the message is already deleted by this user
+      if (message.deletedForUsers.length > 0) {
+        throw new Error('This message has already been deleted');
+      }
+
+      await prisma.deletedMessage.create({
+        data: {
+          messageId: message.id,
+          userId: user.userId
+        }
+      });
+
+      const deleteStatus = {
+        conversationId: message.conversationId,
+        messageId: message.id,
+        deletedBy: user.userId,
+        deletedAt: new Date()
+      };
+
+      this.messagingService.notifyUsers(
+        MessageType.CHAT,
+        ChatEventType.DELETED,
+        deleteStatus,
+        user.userId
+      );
+
+      this.messagingService.notifyUsers(
+        MessageType.CHAT,
+        ChatEventType.DELETED,
+        deleteStatus,
+        recipient
+      );
+    } catch (error) {
+      console.error(error);
+      this.messagingService.handleError(error, user.userId);
+    }
+  }
+
+  private async validateConversationAccess(
+    conversationId: string,
+    userId: string
+  ): Promise<{
+    recipient: string;
+  }> {
+    const participant = await prisma.participant.findFirst({
+      where: {
+        userId,
+        conversationId,
+        leftAt: null // Ensure user hasn't left the conversation
+      },
+      select: {
+        conversation: {
+          select: {
+            participants: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!participant) {
+      throw new Error('User is not authorized to send messages to this conversation');
+    }
+
+    const recipient = participant.conversation.participants
+      .find((p) => p.user.id !== userId);
+
+    if (!recipient) {
+      throw new Error('User is not authorized to send messages to this conversation');
+    }
+
+    return {
+      recipient: recipient.user.id
     }
   }
 }

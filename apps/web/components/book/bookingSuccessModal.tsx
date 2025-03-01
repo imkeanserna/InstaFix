@@ -3,6 +3,7 @@
 import { Button } from "@repo/ui/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@repo/ui/components/ui/dialog";
 import { Calendar, Check, PartyPopper, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function BookingSuccessModal({
   isOpen,
@@ -13,6 +14,8 @@ export function BookingSuccessModal({
   onClose: () => void
   postTitle?: string
 }) {
+  const router = useRouter();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md w-[95%] mx-auto !rounded-[24px] p-4 sm:p-6 border-0">
@@ -54,10 +57,12 @@ export function BookingSuccessModal({
         </div>
         <div className="flex flex-col gap-2 mt-2 sm:mt-4">
           <Button
-            onClick={() => { }}
+            onClick={() => {
+              router.push('/notifications');
+            }}
             className="w-full py-7 rounded-lg active:scale-[.97] bg-yellow-500 text-white hover:bg-yellow-400 hover:border hover:border-gray-900 hover:text-gray-900 text-sm"
           >
-            View Your Bookings
+            View Your Notifications
           </Button>
           <Button
             variant="outline"

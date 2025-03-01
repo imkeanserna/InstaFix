@@ -21,7 +21,6 @@ export function usePostData(postId: string) {
     enabled: Boolean(postId),
     staleTime: 1000 * 60 * 2,
     gcTime: 1000 * 60 * 5,
-    refetchInterval: 1000 * 60 * 2,
     refetchOnMount: true,
     refetchOnWindowFocus: true,
   });

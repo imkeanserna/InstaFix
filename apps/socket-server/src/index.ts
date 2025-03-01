@@ -6,6 +6,7 @@ import url from 'url';
 import { FRONTEND_URL, JWT_SECRET, SERVER_PORT } from "./config/config";
 import { DirectMessagingPubSub } from "./pubsub/redisClient";
 import { MessageType } from "@repo/types";
+import { ChatManager } from "./handlers/chat-manager";
 
 export interface AuthenticatedWebSocket extends WebSocket {
   userId: string;
@@ -15,6 +16,7 @@ class RealTimeServer {
   private server: ReturnType<typeof createServer>;
   private wss: WebSocketServer;
   private bookingManager: BookingManager;
+  private chatManager: ChatManager;
   private messagingService: DirectMessagingPubSub;
 
   constructor() {
@@ -24,6 +26,7 @@ class RealTimeServer {
       verifyClient: this.verifyClient.bind(this)
     });
     this.bookingManager = new BookingManager();
+    this.chatManager = new ChatManager();
     this.messagingService = DirectMessagingPubSub.getInstance();
   }
 
@@ -76,7 +79,7 @@ class RealTimeServer {
             await this.bookingManager.handleBookingEvent(ws, data);
             break;
           case MessageType.CHAT:
-            // Handle chat events
+            await this.chatManager.handleChatEvent(ws, data);
             break;
           default:
             console.log(`Unknown event: ${event}`);
