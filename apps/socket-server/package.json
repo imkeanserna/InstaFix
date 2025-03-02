@@ -21,8 +21,10 @@
   "dependencies": {
     "@repo/db": "workspace:*",
     "@repo/types": "workspace:*",
+    "@types/bcryptjs": "^2.4.6",
     "@types/ioredis": "^5.0.0",
     "@upstash/redis": "^1.34.4",
+    "bcryptjs": "^2.4.3",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "ioredis": "^5.5.0",

@@ -40,7 +40,7 @@ export async function getOrCreateConversation({
     });
 
     if (existingConversation) {
-      return existingConversation.id;
+      return { conversationId: existingConversation.id, isNew: false };
     }
 
     const [initiator, recipient] = await Promise.all([
@@ -120,7 +120,7 @@ export async function getOrCreateConversation({
       }
     });
 
-    return newConversation.id;
+    return { conversationId: newConversation.id, isNew: true };
   } catch (error) {
     throw error;
   }

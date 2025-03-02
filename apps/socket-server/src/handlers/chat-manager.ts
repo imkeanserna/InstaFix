@@ -16,11 +16,15 @@ import {
   typingStatusSchema,
 } from "@repo/types";
 import { getOrCreateConversation } from "../action/chat";
+import { getOrCreateSystemUser } from "../action/system";
 
 export interface ChatEvent {
   type: ChatEventType;
   payload: any;
 }
+
+export const BOOKING_CONFIRMATION_MESSAGE =
+  'The booking has been successfully confirmed! You may now communicate with the other party to discuss the project details.';
 
 export class ChatManager {
   private messagingService: DirectMessagingPubSub;
@@ -126,23 +130,100 @@ export class ChatManager {
       }
       const { recipientId } = result.data;
 
-      const conversationId: string = await getOrCreateConversation({
+      const { conversationId, isNew } = await getOrCreateConversation({
         initiatorId: user.userId,
         recipientId
       });
 
+      if (isNew) {
+        this.messagingService.notifyUsers(
+          MessageType.CHAT,
+          ChatEventType.CONVERSATION_CREATED,
+          { conversationId },
+          user.userId
+        );
+
+        this.messagingService.notifyUsers(
+          MessageType.CHAT,
+          ChatEventType.CONVERSATION_CREATED,
+          { conversationId },
+          recipientId
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      this.messagingService.handleError(error, user.userId);
+    }
+  }
+
+  public async createInitialConversation(user: AuthenticatedWebSocket, booking: {
+    id: string;
+    freelancerId: string;
+    clientId: string;
+  }) {
+    try {
+      const { conversationId, isNew } = await getOrCreateConversation({
+        initiatorId: booking.freelancerId,
+        recipientId: booking.clientId
+      });
+
+      const systemUser = await getOrCreateSystemUser();
+
+      const message = prisma.chatMessage.create({
+        data: {
+          conversationId,
+          senderId: systemUser.id,
+          body: BOOKING_CONFIRMATION_MESSAGE,
+          bookingId: booking.id,
+          isSystemMessage: true,
+          isRead: false
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              image: true
+            }
+          }
+        }
+      })
+
+      // Update conversation's lastMessageAt
+      prisma.conversation.update({
+        where: { id: conversationId },
+        data: { lastMessageAt: new Date() }
+      })
+
+      // Only notify about conversation creation if it's new
+      if (isNew) {
+        this.messagingService.notifyUsers(
+          MessageType.CHAT,
+          ChatEventType.CONVERSATION_CREATED,
+          { conversationId, bookingId: booking.id },
+          booking.clientId
+        );
+
+        this.messagingService.notifyUsers(
+          MessageType.CHAT,
+          ChatEventType.CONVERSATION_CREATED,
+          { conversationId, bookingId: booking.id },
+          booking.freelancerId
+        );
+      }
+
       this.messagingService.notifyUsers(
         MessageType.CHAT,
-        ChatEventType.CONVERSATION_CREATED,
-        { conversationId },
-        user.userId
+        ChatEventType.SENT,
+        message,
+        booking.clientId
       );
 
       this.messagingService.notifyUsers(
         MessageType.CHAT,
-        ChatEventType.CONVERSATION_CREATED,
-        { conversationId },
-        recipientId
+        ChatEventType.SENT,
+        message,
+        booking.freelancerId
       );
     } catch (error) {
       console.error(error);

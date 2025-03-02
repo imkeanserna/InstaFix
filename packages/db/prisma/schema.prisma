@@ -34,6 +34,9 @@ model User {
   freelancerBookings   Booking[]             @relation("FreelancerBookings")
   likes                Like[]
   bookingNotifications BookingNotification[]
+  participants         Participant[]
+  chatMessages         ChatMessage[]
+  deletedMessages      DeletedMessage[]
 }
 
 model Post {
@@ -98,6 +101,7 @@ model Booking {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   bookingNotifications BookingNotification[]
+  chatMessages         ChatMessage[]
   review               Review?
 
   @@index([date, freelancerId])
@@ -230,6 +234,62 @@ model MessagePost {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, postId])
+}
+
+model Conversation {
+  id            String        @id @default(cuid())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  lastMessageAt DateTime      @default(now())
+  chatMessages  ChatMessage[]
+  participants  Participant[]
+}
+
+model Participant {
+  id             String       @id @default(cuid())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  hasSeenLatest  Boolean      @default(false)
+  joinedAt       DateTime     @default(now())
+  leftAt         DateTime?
+
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model ChatMessage {
+  id              String           @id @default(cuid())
+  body            String?
+  image           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  isRead          Boolean          @default(false)
+  sender          User             @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId        String
+  conversation    Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId  String
+  booking         Booking?         @relation(fields: [bookingId], references: [id])
+  bookingId       String?
+  isSystemMessage Boolean          @default(false)
+  deletedForUsers DeletedMessage[]
+
+  @@index([senderId])
+  @@index([conversationId])
+  @@index([bookingId])
+}
+
+model DeletedMessage {
+  id          String      @id @default(cuid())
+  chatMessage ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId   String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  deletedAt   DateTime    @default(now())
+
+  @@index([messageId])
+  @@index([userId])
 }
 
 model Payment {
@@ -383,4 +443,15 @@ enum BookingEventType {
   COMPLETED
   CONFIRMED
   DECLINED
+}
+
+enum ChatEventType {
+  SENT
+  DELIVERED
+  READ
+  TYPING
+  STOPPED_TYPING
+  DELETED
+  START_CONVERSATION
+  CONVERSATION_CREATED
 }

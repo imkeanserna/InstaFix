@@ -1,11 +1,12 @@
 import { addBooking, updateBooking } from "../action/booking";
 import { z } from "zod";
 import { getPostById } from "../action/post";
-import { BookingEventType, Post } from "@prisma/client/edge";
+import { BookingEventType, BookingStatus, Post } from "@prisma/client/edge";
 import { AuthenticatedWebSocket } from "..";
 import { DirectMessagingPubSub } from "../pubsub/redisClient";
 import { BookingPayload, getNotificationRecipient, getStatusForEventType, MessageType, NotificationType, TypeBookingNotification, TypeEventUpdate } from "@repo/types";
 import { addBookingNotification } from "../action/notification";
+import { ChatManager } from "./chat-manager";
 
 const createBookingSchema = z.object({
   date: z.string().datetime(),
@@ -27,9 +28,11 @@ export interface BookingEvent {
 
 export class BookingManager {
   private messagingService: DirectMessagingPubSub;
+  private chatManager: ChatManager;
 
   constructor() {
     this.messagingService = DirectMessagingPubSub.getInstance();
+    this.chatManager = new ChatManager;
   }
 
   public async handleBookingEvent(user: AuthenticatedWebSocket, message: BookingEvent): Promise<void> {
@@ -158,6 +161,14 @@ export class BookingManager {
         updatedBooking,
         user.userId
       );
+
+      if (data.status === BookingStatus.CONFIRMED) {
+        await this.chatManager.createInitialConversation(user, {
+          id: data.bookingId,
+          clientId: data.clientId,
+          freelancerId: data.freelancerId
+        });
+      }
     } catch (error) {
       console.error(error);
       this.messagingService.handleError(error, user.userId);
