@@ -35,6 +35,7 @@ export interface ConversationWithRelations extends Conversation {
   _count: {
     chatMessages: number;
   };
+  unreadCount: number;
 }
 
 export interface GetConversationsResult {

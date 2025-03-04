@@ -58,7 +58,7 @@ export async function getMessages({
         }
       },
       orderBy: {
-        createdAt: 'desc' // Most recent messages first
+        createdAt: 'asc' // Most recent messages first
       },
       take: take + 1, // Take one extra to determine if there are more items
       ...(cursor

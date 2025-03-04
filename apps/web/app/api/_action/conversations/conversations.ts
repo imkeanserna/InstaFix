@@ -63,13 +63,37 @@ export async function getConversations({
         : {})
     });
 
-    // Check if there are more conversations
-    const hasNextPage = conversations.length > take;
+    // Get unread message counts for each conversation
+    const conversationsWithUnreadCounts = await Promise.all(
+      conversations.map(async (conversation) => {
+        const unreadCount = await prisma.chatMessage.count({
+          where: {
+            conversationId: conversation.id,
+            senderId: {
+              not: userId // Messages not sent by the current user
+            },
+            isRead: false, // Unread messages
+            deletedForUsers: {
+              none: {
+                userId // Not deleted for this user
+              }
+            }
+          }
+        });
 
+        return {
+          ...conversation,
+          unreadCount
+        };
+      })
+    );
+
+    // Check if there are more conversations
+    const hasNextPage = conversationsWithUnreadCounts.length > take;
     // If we fetched more than requested, remove the extra item
     const paginatedConversations = hasNextPage
-      ? conversations.slice(0, take)
-      : conversations;
+      ? conversationsWithUnreadCounts.slice(0, take)
+      : conversationsWithUnreadCounts;
 
     // Get the end cursor from the last item
     const endCursor = paginatedConversations.length > 0

@@ -11,6 +11,10 @@ import {
 import { Button } from "@repo/ui/components/ui/button";
 import { ChevronRight, X } from 'lucide-react';
 
+export const truncateText = (text: string, maxLength: number) => {
+  return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+};
+
 export default function ExpandableDescription({ title, description, maxLength = 400 }: {
   title: string
   description: string
@@ -18,9 +22,7 @@ export default function ExpandableDescription({ title, description, maxLength = 
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isLongDescription = description.length > maxLength;
-  const truncatedDescription = isLongDescription
-    ? `${description.slice(0, maxLength)}...`
-    : description;
+  const truncatedDescription = truncateText(description, maxLength);
 
   return (
     <div className="w-full space-y-4">

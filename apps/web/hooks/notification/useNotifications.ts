@@ -10,41 +10,19 @@ import { BookingActionData, useBookingAction, useBookingActions } from "../useBo
 import { useWebSocket } from "../useWebSocket";
 import { toast } from "@repo/ui/components/ui/sonner";
 
-const NOTIFICATION_KEY = 'Instafix-notifications';
-
 export const useNotifications = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notificationState, setNotificationState] = useState<NotificationState>(() => {
-    // Initialize from localStorage if available
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(NOTIFICATION_KEY);
-      return saved ? JSON.parse(saved) : {
-        count: 0,
-        lastReadTimestamp: Date.now(),
-        notifications: [],
-        pagination: {
-          hasNextPage: false,
-          endCursor: undefined,
-          unreadCount: 0
-        }
-      };
+  const [notificationState, setNotificationState] = useState<NotificationState>({
+    count: 0,
+    lastReadTimestamp: Date.now(),
+    notifications: [],
+    pagination: {
+      hasNextPage: false,
+      endCursor: undefined,
+      unreadCount: 0
     }
-    return {
-      count: 0,
-      lastReadTimestamp: Date.now(),
-      notifications: [],
-      pagination: {
-        hasNextPage: false,
-        endCursor: undefined,
-        unreadCount: 0
-      }
-    };
   });
-
-  useEffect(() => {
-    localStorage.setItem(NOTIFICATION_KEY, JSON.stringify(notificationState));
-  }, [notificationState]);
 
   useEffect(() => {
     fetchNotifications(MessageType.BOOKING);
