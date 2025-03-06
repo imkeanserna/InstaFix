@@ -323,6 +323,13 @@ export class ChatManager {
         MessageType.CHAT,
         ChatEventType.READ,
         readStatus,
+        user.userId
+      );
+
+      this.messagingService.notifyUsers(
+        MessageType.CHAT,
+        ChatEventType.READ,
+        readStatus,
         recipient
       );
     } catch (error) {

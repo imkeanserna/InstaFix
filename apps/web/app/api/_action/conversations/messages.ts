@@ -23,23 +23,66 @@ export async function getMessages({
       throw new Error('Conversation Id is required');
     }
 
-    // Verify user is a participant in this conversation
-    const participant = await prisma.participant.findFirst({
-      where: {
-        userId,
-        conversationId
+    const conversationWithParticipants = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        participants: {
+          where: {
+            NOT: {
+              userId
+            }
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                createdAt: true
+              }
+            }
+          }
+        },
+        _count: {
+          select: {
+            participants: {
+              where: {
+                userId
+              }
+            }
+          }
+        }
       }
     });
 
-    if (!participant) {
+    // Check if the current user is a participant
+    if (conversationWithParticipants?._count.participants === 0) {
       throw new Error('User is not a participant in this conversation');
     }
 
+    // Calculate unread count
+    const unreadCount = await prisma.chatMessage.count({
+      where: {
+        conversationId,
+        isRead: false,
+        senderId: {
+          not: userId
+        },
+        NOT: {
+          deletedForUsers: {
+            some: {
+              userId
+            }
+          }
+        }
+      }
+    });
+
     // Get messages for this conversation
+    // Exclude messages that the user has deleted
     const messages: ChatMessageWithSender[] = await prisma.chatMessage.findMany({
       where: {
         conversationId,
-        // Exclude messages that the user has deleted
         NOT: {
           deletedForUsers: {
             some: {
@@ -58,15 +101,15 @@ export async function getMessages({
         }
       },
       orderBy: {
-        createdAt: 'asc' // Most recent messages first
+        createdAt: 'asc'
       },
-      take: take + 1, // Take one extra to determine if there are more items
+      take: take + 1,
       ...(cursor
         ? {
           cursor: {
             id: cursor
           },
-          skip: 1 // Skip the cursor item
+          skip: 1
         }
         : {})
     });
@@ -86,10 +129,12 @@ export async function getMessages({
 
     return {
       messages: paginatedMessages,
+      participants: conversationWithParticipants?.participants.map(p => p.user) || [],
       pagination: {
         hasNextPage,
         endCursor
-      }
+      },
+      unreadCount
     };
   } catch (error) {
     throw error;

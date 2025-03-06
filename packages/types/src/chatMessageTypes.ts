@@ -27,7 +27,7 @@ export type DeleteMessagePayload = {
   conversationId: string;
 }
 
-export interface ConversationWithRelations extends Conversation {
+export interface ConversationWithParticipants extends Conversation {
   chatMessages: ChatMessage[];
   participants: (Participant & {
     user: User;
@@ -35,6 +35,9 @@ export interface ConversationWithRelations extends Conversation {
   _count: {
     chatMessages: number;
   };
+}
+
+export interface ConversationWithRelations extends ConversationWithParticipants {
   unreadCount: number;
 }
 
@@ -55,5 +58,12 @@ export interface ChatMessageWithSender extends Omit<ChatMessage, 'sender'> {
 
 export interface GetMessagesResult {
   messages: ChatMessageWithSender[];
+  participants: {
+    id: string;
+    name?: string | null;
+    image?: string | null;
+    createdAt: Date;
+  }[];
+  unreadCount: number;
   pagination: CursorPagination;
 }

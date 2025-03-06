@@ -129,6 +129,8 @@ export async function getMessages({
     return {
       data: {
         messages: [],
+        participants: [],
+        unreadCount: 0,
         pagination: {
           hasNextPage: false,
         }

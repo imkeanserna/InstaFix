@@ -2,7 +2,10 @@
 
 import { getConversations } from "@/lib/chatUtils";
 import { ConversationWithRelations, CursorPagination } from "@repo/types";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ReadStatusResult, useChatEventHandler } from "./useMessages";
+import { useWebSocket } from "../useWebSocket";
+import { toast } from "@repo/ui/components/ui/sonner";
 
 export type ConversationsState = {
   conversations: ConversationWithRelations[];
@@ -19,18 +22,28 @@ export const useConversations = () => {
       endCursor: undefined
     }
   });
+  const { lastMessage, clearMessage } = useWebSocket();
 
-  useEffect(() => {
-    fetchConversations();
-  }, []);
+  useChatEventHandler({
+    lastMessage,
+    onReadStatusUpdate: (result: ReadStatusResult) => {
+      updateConversationUnreadCount(result.conversationId, result.messageIds);
+      clearMessage();
+    },
+    onError: (errorPayload) => {
+      toast.error(errorPayload.details || errorPayload.error);
+      clearMessage();
+    }
+  })
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       const result = await getConversations({
         take: 10
       });
+
       setConversationState({
         conversations: result.data.conversations,
         pagination: result.data.pagination
@@ -40,11 +53,14 @@ export const useConversations = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadMore = async () => {
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
+
+  const loadMore = useCallback(async () => {
     if (!conversationState.pagination.hasNextPage || isLoading) return;
-
     try {
       setIsLoading(true);
       setError(null);
@@ -62,36 +78,51 @@ export const useConversations = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [conversationState.pagination.hasNextPage, conversationState.pagination.endCursor, isLoading]);
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     fetchConversations();
-  };
+  }, [fetchConversations]);
 
-  const addConversation = (conversation: ConversationWithRelations) => {
+  const addConversation = useCallback((conversation: ConversationWithRelations) => {
     setConversationState(prev => ({
       ...prev,
       conversations: [conversation, ...prev.conversations]
     }));
-  };
+  }, []);
 
-  const updateConversation = (updatedConversation: ConversationWithRelations) => {
+  const updateConversation = useCallback((updatedConversation: ConversationWithRelations) => {
     setConversationState(prev => ({
       ...prev,
       conversations: prev.conversations.map(conv =>
         conv.id === updatedConversation.id ? updatedConversation : conv
       )
     }));
-  };
+  }, []);
 
-  const removeConversation = (conversationId: string) => {
+  const updateConversationUnreadCount = useCallback((conversationId: string, readMessageIds: string[]) => {
+    setConversationState(prev => ({
+      ...prev,
+      conversations: prev.conversations.map(conv => {
+        if (conv.id === conversationId) {
+          return {
+            ...conv,
+            unreadCount: Math.max(0, conv.unreadCount - readMessageIds.length)
+          };
+        }
+        return conv;
+      })
+    }));
+  }, []);
+
+  const removeConversation = useCallback((conversationId: string) => {
     setConversationState(prev => ({
       ...prev,
       conversations: prev.conversations.filter(conv => conv.id !== conversationId)
     }));
-  };
+  }, []);
 
-  return {
+  return useMemo(() => ({
     conversationState,
     isLoading,
     error,
@@ -99,7 +130,18 @@ export const useConversations = () => {
     refresh,
     addConversation,
     updateConversation,
+    updateConversationUnreadCount,
     removeConversation,
     hasMore: conversationState.pagination.hasNextPage
-  };
+  }), [
+    conversationState,
+    isLoading,
+    error,
+    loadMore,
+    refresh,
+    addConversation,
+    updateConversation,
+    updateConversationUnreadCount,
+    removeConversation
+  ]);
 };

@@ -42,7 +42,7 @@ export async function GET(
       );
     }
 
-    const { messages, pagination }: GetMessagesResult = await getMessages({
+    const { messages, pagination, participants, unreadCount }: GetMessagesResult = await getMessages({
       conversationId,
       userId: user.id,
       cursor: validatedQuery.data.cursor,
@@ -53,6 +53,8 @@ export async function GET(
       success: true,
       data: {
         messages,
+        participants,
+        unreadCount,
         pagination
       }
     })

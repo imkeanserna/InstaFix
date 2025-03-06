@@ -1,5 +1,5 @@
 import { prisma } from '@/server/index';
-import { ConversationWithRelations } from '@repo/types';
+import { ConversationWithParticipants, ConversationWithRelations } from '@repo/types';
 
 // export const runtime = 'edge'
 
@@ -18,7 +18,7 @@ export async function getConversations({
     }
 
     // Find conversations where the user is a participant
-    const conversations: ConversationWithRelations[] = await prisma.conversation.findMany({
+    const conversations: ConversationWithParticipants[] = await prisma.conversation.findMany({
       where: {
         participants: {
           some: {
@@ -64,7 +64,7 @@ export async function getConversations({
     });
 
     // Get unread message counts for each conversation
-    const conversationsWithUnreadCounts = await Promise.all(
+    const conversationsWithUnreadCounts: ConversationWithRelations[] = await Promise.all(
       conversations.map(async (conversation) => {
         const unreadCount = await prisma.chatMessage.count({
           where: {

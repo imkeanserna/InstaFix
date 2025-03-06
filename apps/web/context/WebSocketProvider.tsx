@@ -1,7 +1,7 @@
 "use client";
 
 import { getToken } from "@/lib/sessionUtils";
-import { BookingEventType } from "@prisma/client/edge";
+import { BookingEventType, ChatEventType } from "@prisma/client/edge";
 import { MessageType, NotificationType } from "@repo/types";
 import { useSession } from "next-auth/react";
 import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
@@ -10,7 +10,7 @@ const WS_TOKEN_KEY = 'ws_token';
 
 export interface WebSocketMessage<T = any> {
   type: MessageType;
-  action: BookingEventType | NotificationType;
+  action: BookingEventType | NotificationType | ChatEventType;
   payload: T;
 }
 
