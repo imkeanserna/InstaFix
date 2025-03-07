@@ -101,7 +101,7 @@ export async function getMessages({
         }
       },
       orderBy: {
-        createdAt: 'asc'
+        createdAt: 'desc'
       },
       take: take + 1,
       ...(cursor
@@ -122,13 +122,19 @@ export async function getMessages({
       ? messages.slice(0, take)
       : messages;
 
+
+    // Sort messages from oldest to newest for display
+    const sortedMessages = [...paginatedMessages].sort((a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+
     // Get the end cursor from the last item
     const endCursor = paginatedMessages.length > 0
       ? paginatedMessages[paginatedMessages.length - 1].id
       : undefined;
 
     return {
-      messages: paginatedMessages,
+      messages: sortedMessages,
       participants: conversationWithParticipants?.participants.map(p => p.user) || [],
       pagination: {
         hasNextPage,
