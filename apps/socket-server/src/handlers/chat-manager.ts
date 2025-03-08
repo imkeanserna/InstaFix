@@ -3,6 +3,7 @@ import { AuthenticatedWebSocket } from "..";
 import { DirectMessagingPubSub } from "../pubsub/redisClient";
 import { prisma } from "../db";
 import {
+  ChatMessageWithSender,
   DeleteMessagePayload,
   deleteMessageSchema,
   MessageType,
@@ -76,7 +77,7 @@ export class ChatManager {
         user.userId
       );
 
-      const message = await prisma.chatMessage.create({
+      const message: ChatMessageWithSender = await prisma.chatMessage.create({
         data: {
           body,
           image,

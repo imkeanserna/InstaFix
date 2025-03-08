@@ -1,54 +1,97 @@
 "use client";
 
-import { useConversations } from "@/hooks/chat/useConversations";
+import { ConversationsState } from "@/hooks/chat/useConversations";
 import { ConversationWithRelations } from "@repo/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { truncateText } from "../posts/post/expandibleDescription";
 import { useRecoilState } from "recoil";
 import { selectedConversationState } from "@repo/store";
-import { Button } from "@repo/ui/components/ui/button";
+import { useCallback, useEffect, useRef } from "react";
+import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more";
 
-export function Conversations() {
-  const router = useRouter();
-  const { conversationState, refresh, error, isLoading } = useConversations();
-  const { data: session, status } = useSession();
+export function Conversations({
+  conversationState,
+  loadMore,
+  hasMore,
+  isLoadingMore
+}: {
+  conversationState: ConversationsState;
+  loadMore: () => void;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+}) {
   const [selectedConversationId, setSelectedConversationId] = useRecoilState(selectedConversationState);
 
-  if (isLoading || status === 'loading') {
-    return <div>Loading...</div>;
-  }
+  // Ref for the sentinel element (for infinite scrolling)
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  if (!session?.user || !session?.user?.id) {
-    router.back();
-    return null;
-  }
+  // Intersection observer for infinite scrolling
+  const setupObserver = useCallback(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
 
-  if (error) {
-    return <ConversationErrorBoundary error={error} refresh={refresh} />
-  }
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+  }, [hasMore, isLoadingMore, loadMore]);
+
+  // Connect observer when component mounts or when dependencies change
+  useEffect(() => {
+    setupObserver();
+
+    // Cleanup observer on unmount
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [setupObserver, conversationState.conversations.length]);
 
   const handleConversationClick = (conversationId: string) => {
     setSelectedConversationId(conversationId);
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-y-auto">
       {conversationState.conversations.length === 0 ? (
-        <div>No Conversations</div>
+        <div className="text-center p-4">No Conversations</div>
       ) :
         (
-          <div>
-            {conversationState.conversations.map((conversation: ConversationWithRelations) => (
-              <ConversationCard
-                key={conversation.id}
-                conversation={conversation}
-                onSelect={handleConversationClick}
-                selected={selectedConversationId === conversation.id}
-              />
-            ))}
-          </div>
+          <>
+            <div className="space-y-2">
+              {conversationState.conversations.map((conversation) => (
+                <ConversationCard
+                  key={conversation.id}
+                  conversation={conversation}
+                  onSelect={handleConversationClick}
+                  selected={selectedConversationId === conversation.id}
+                />
+              ))}
+            </div>
+            <div
+              ref={loadMoreRef}
+              className="h-10 w-full flex justify-center items-center py-6"
+            >
+              {isLoadingMore ? (
+                <LoadingSpinnerMore className="w-6 h-6" />
+              ) : hasMore ? (
+                <div className="h-4"></div>
+              ) : (
+                <div className="text-sm text-gray-500">No more conversations</div>
+              )}
+            </div>
+          </>
         )}
     </div>);
 }
@@ -72,7 +115,7 @@ export function ConversationCard({
     <div
       onClick={handleClick}
       className={`
-        flex gap-5 w-full p-3  cursor-pointer hover:bg-gray-50 
+        flex gap-5 w-full py-3 ps-6 cursor-pointer hover:bg-gray-50 
         ${selected ? 'bg-gray-100 border-yellow-400 border-r-4' : 'border-b border-b-gray-200'}`
       }>
       <div className="relative">
@@ -103,28 +146,6 @@ export function ConversationCard({
           <p className="w-[350px]">{truncateText(conversation.chatMessages[0].body!, 50)}</p>
           <p className="lowercase">{timeSent.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</p>
         </div>
-      </div>
-    </div>
-  );
-}
-
-export function ConversationErrorBoundary({
-  error,
-  refresh
-}: {
-  error: string,
-  refresh: () => void
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center h-full p-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to Load Messages</h3>
-      <p className="text-gray-500 text-center mb-4">
-        {error || "There was an error loading the conversation."}
-      </p>
-      <div className="flex space-x-4">
-        <Button onClick={() => refresh()} variant="outline">
-          Try Again
-        </Button>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 "use client";
 
-export const LoadingSpinnerMore = () => (
-  <div className="animate-spin rounded-full h-4 w-4 border-2 border-violet-500 border-t-transparent" />
+export const LoadingSpinnerMore = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <div className={`animate-spin rounded-full border-2 border-yellow-500 border-t-transparent ${className}`} />
 );

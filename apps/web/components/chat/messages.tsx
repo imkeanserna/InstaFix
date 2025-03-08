@@ -1,56 +1,301 @@
 "use client";
 
-import { useMessages } from "@/hooks/chat/useMessages";
+import { useMessages, useMessagesActions, } from "@/hooks/chat/useMessages";
 import { chatFormattedTime, formatMessageDate, getFormattedTime } from "@/lib/dateFormatters";
-import { ChatMessageWithSender } from "@repo/types";
+import { ChatMessageWithSender, MessageType, sendMessageSchema } from "@repo/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useCallback, useEffect, useRef } from "react";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
+import { useMessageTextarea } from "@/hooks/chat/useMessageTextarea";
+import { CheckIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "@repo/ui/components/ui/sonner";
+import { ConversationErrorBoundary } from "./chatContent";
+import { Button } from "@repo/ui/components/ui/button";
+import { User } from "next-auth";
 
-export function Messages({ conversationId }: { conversationId: string }) {
-  const router = useRouter();
-  const { messagesState, addMessage, error, isLoading } = useMessages(conversationId);
-  const { data: session, status } = useSession();
+export function Messages({
+  conversationId,
+  user
+}: {
+  conversationId: string;
+  user: User | undefined;
+}) {
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const loadTriggerRef = useRef<HTMLDivElement>(null);
+  const {
+    messagesState,
+    addMessage,
+    refresh,
+    loadMore,
+    hasMore,
+    error,
+    isLoading,
+    isTyping,
+    isLoadingMore,
+    isNewMessage,
+    resetNewMessageFlag
+  } = useMessages(conversationId);
+  const { sendMessage } = useWebSocket();
+  const { sendTextMessage, sendTypingStatus } = useMessagesActions(sendMessage);
+
+  const {
+    messageText,
+    textareaRef,
+    handleTextChange,
+    clearMessageText,
+    stopTyping
+  } = useMessageTextarea({
+    conversationId,
+    user: user,
+    sendTypingStatus
+  });
+
+  // Smooth scroll to bottom
+  const scrollToBottom = useCallback(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesState.messages.length > 0) {
+      scrollToBottom();
+    }
+    resetNewMessageFlag();
+  }, [scrollToBottom, isNewMessage]);
+
+  // Function to load more messages with scroll position maintenance
+  const handleLoadMore = useCallback(async () => {
+    if (isLoadingMore || !hasMore) return;
+
+    // Store current scroll height before loading more messages
+    const currentHeight = messagesContainerRef.current?.scrollHeight || 0;
+
+    await loadMore();
+
+    // After messages are loaded, adjust scroll position
+    requestAnimationFrame(() => {
+      if (messagesContainerRef.current) {
+        const newHeight = messagesContainerRef.current.scrollHeight;
+        messagesContainerRef.current.scrollTop = newHeight - currentHeight;
+      }
+    });
+  }, [hasMore, isLoadingMore, loadMore]);
+
+  // Set up intersection observer for infinite scrolling
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          handleLoadMore();
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (loadTriggerRef.current) {
+      observer.observe(loadTriggerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, isLoadingMore, handleLoadMore]);
+
+  const handleSendMessage = useCallback(() => {
+    if (!messageText.trim() || !user || user?.id === undefined) return;
+
+    try {
+      // Validate message data
+      const validatedData = sendMessageSchema.parse({
+        conversationId,
+        body: messageText.trim(),
+      });
+
+      // Create a new message object
+      const newMessage: ChatMessageWithSender = {
+        id: crypto.randomUUID(),
+        conversationId: validatedData.conversationId,
+        senderId: user?.id,
+        body: validatedData.body || null,
+        image: validatedData.image || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isRead: false,
+        bookingId: null,
+        isSystemMessage: false,
+        sender: {
+          id: user?.id,
+          name: user?.name,
+          image: user?.image,
+        }
+      };
+
+      stopTyping();
+      addMessage(newMessage);
+      sendTextMessage(MessageType.CHAT, {
+        conversationId: validatedData.conversationId,
+        body: validatedData.body,
+        image: validatedData.image,
+      });
+      clearMessageText();
+
+      // Scroll to bottom after sending a message
+      setTimeout(scrollToBottom, 0);
+    } catch (error) {
+      toast.error((error as Error).message || 'Failed to send message');
+    }
+  }, [
+    messageText,
+    conversationId,
+    user,
+    addMessage,
+    sendTextMessage,
+    stopTyping,
+    clearMessageText,
+    scrollToBottom
+  ]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   if (!conversationId) {
-    router.back();
     return null;
   }
 
-  if (isLoading || error || status === 'loading') {
-    return <div>Loading...</div>;
+  if (isLoading || messagesState.participants.length === 0) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex gap-4 border-b shadow-sm border-b-gray-200 px-6 py-4">
+          <div className="h-14 w-14 rounded-xl bg-gray-200 animate-pulse"></div>
+          <div className="space-y-3 pt-2">
+            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          <MessageSkeletonGroup />
+        </div>
+
+        <div className="px-8 py-4 bg-white">
+          <div className="flex items-end gap-2 relative">
+            <div className="flex-1 h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+            <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  if (!session?.user || !session?.user?.id) {
-    router.back();
-    return null;
+  if (error) {
+    return <ConversationErrorBoundary error={error} refresh={refresh} />
   }
-
-  console.log(messagesState);
 
   const groupedMessages = groupMessagesByDate(messagesState.messages);
 
   return (
-    <div>
-      <div className="w-full space-y-1 p-6">
+    <div className="flex flex-col h-full">
+      <div className="flex gap-4 border-b shadow-sm border-b-gray-200 px-6 py-4">
+        <Avatar className="h-14 w-14 shadow-md flex-shrink-0 rounded-xl">
+          <AvatarImage
+            src={messagesState.participants[0].image!}
+            alt={`${messagesState.participants[0].name}'s avatar`}
+            className="object-cover"
+          />
+          <AvatarFallback className="bg-gradient-to-br from-amber-200 to-yellow-300 text-amber-800 text-2xl font-medium">
+            {messagesState.participants[0].name}
+          </AvatarFallback>
+          <div className="absolute inset-0 rounded-xl"></div>
+        </Avatar>
+        <div className="space-y-1">
+          <p className="capitalize text-sm font-medium">{messagesState.participants[0].name}</p>
+          <div className="flex gap-2 justify-center items-center">
+            <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
+            <p className="text-xs text-gray-600">Joined {chatFormattedTime(new Date(messagesState.participants[0].createdAt))}</p>
+          </div>
+        </div>
+      </div>
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-8 py-4 space-y-1">
+        {/* Loading trigger at the top */}
+        <div ref={loadTriggerRef} className="mb-2">
+          {isLoadingMore && hasMore && (
+            <div className="py-2 space-y-3">
+              <MessageSkeleton includeImage={true} />
+              <MessageSkeleton isCurrentUser={true} />
+            </div>
+          )}
+        </div>
+
+        {/* No more messages indicator */}
+        {!hasMore && (
+          <div className="text-center text-sm text-gray-500 py-2">No more messages to load</div>
+        )}
+
         {Object.entries(groupedMessages).map(([date, messages]) => (
           <React.Fragment key={date}>
             <DateSeparator date={date} />
-            {messages.map((message: ChatMessageWithSender, index: number) =>
-              message.isSystemMessage ? (
-                <SystemMessage key={message.id} message={message} />
-              ) : (
-                <MessageBubble
+            <AnimatePresence initial={false}>
+              {messages.map((message: ChatMessageWithSender, index: number) => (
+                <motion.div
                   key={message.id}
-                  message={message}
-                  isCurrentUser={message.senderId === session?.user?.id}
-                  previousMessage={index > 0 ? messages[index - 1] : undefined}
-                />
-              )
-            )}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {message.isSystemMessage ? (
+                    <SystemMessage message={message} />
+                  ) : (
+                    <MessageBubble
+                      message={message}
+                      isCurrentUser={message.senderId === user?.id}
+                      nextMessage={index < messages.length - 1 ? messages[index + 1] : undefined}
+                    />
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </React.Fragment>
         ))}
+      </div>
+      {/* Message input area */}
+      <div className="px-8 bg-white mb-4">
+        <div className="border border-gray-200 p-2 rounded-xl focus-within:ring-2 focus-within:ring-yellow-500 focus-within:border-transparent">
+          <div className="flex items-center gap-2 relative">
+            <textarea
+              ref={textareaRef}
+              value={messageText}
+              onChange={handleTextChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message..."
+              className="flex-1 resize-none min-h-[40px] max-h-[120px] py-2 px-3 focus:outline-none rounded-lg"
+              rows={1}
+            />
+            <Button
+              onClick={handleSendMessage}
+              disabled={!messageText.trim()}
+              className="bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg py-2 px-5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 active:scale-[0.98]"
+            >
+              <p className="text-sm text-gray-700">Send</p>
+              <div className="rotate-45">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-black" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                </svg>
+              </div>
+            </Button>
+          </div>
+        </div>
+      </div>
+      <div className="pt-2 ms-4">
+        {isTyping && <TypingIndicator name={messagesState.participants[0].name!} />}
       </div>
     </div>
   );
@@ -59,28 +304,47 @@ export function Messages({ conversationId }: { conversationId: string }) {
 interface MessageBubbleProps {
   message: ChatMessageWithSender;
   isCurrentUser: boolean;
-  previousMessage?: ChatMessageWithSender;
+  nextMessage?: ChatMessageWithSender;
 }
 
 function MessageBubble({
   message,
   isCurrentUser,
-  previousMessage
+  nextMessage  // Add this prop to see if this is the last message in a group
 }: MessageBubbleProps) {
-  // Function to check if messages are close in time (e.g., within 5 minutes)
-  const isMessageCloseInTime = (currentMessage: ChatMessageWithSender, prevMessage?: ChatMessageWithSender) => {
-    if (!prevMessage) return false;
-
-    const timeDiff = new Date(currentMessage.createdAt).getTime() -
-      new Date(prevMessage.createdAt).getTime();
-
-    // Consider messages close if within 5 minutes (300,000 milliseconds)
-    return timeDiff < 300000 &&
-      currentMessage.senderId === prevMessage.senderId;
+  // Determine if messages are close in time (within 3 minutes)
+  const isCloseInTime = (msg1: ChatMessageWithSender, msg2?: ChatMessageWithSender) => {
+    if (!msg2) return false;
+    const timeDiff = Math.abs(
+      new Date(msg1.createdAt).getTime() - new Date(msg2.createdAt).getTime()
+    );
+    return timeDiff < 3 * 60 * 1000 && // 3 minutes
+      msg1.senderId === msg2.senderId;
   };
 
-  // Determine if timestamp should be shown
-  const shouldShowTimestamp = !isMessageCloseInTime(message, previousMessage);
+  const isLastInTimeGroup = !nextMessage || !isCloseInTime(message, nextMessage);
+
+  // Only show timestamp if this is the last message in a time group
+  const shouldShowTimestamp = isLastInTimeGroup;
+
+  // Render read status indicator for current user's messages
+  const renderReadStatus = () => {
+    if (!isCurrentUser) return null;
+
+    return (
+      <div className="flex items-center justify-end text-xs text-gray-500 mt-1 mr-1">
+        {message.isRead ? (
+          <div className="w-4 h-4 bg-orange-200 rounded-full flex justify-center items-center font-bold">
+            <CheckIcon className="h-3 w-3 text-gray-900" strokeWidth={4} />
+          </div>
+        ) : (
+          <div className="w-4 h-4 bg-gray-200 rounded-full flex justify-center items-center font-bold">
+            <CheckIcon className="h-3 w-3 text-gray-300" strokeWidth={4} />
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className={`flex flex-col gap-1 items-start ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
@@ -93,15 +357,19 @@ function MessageBubble({
       `}>
         {message.body && <p>{message.body}</p>}
       </div>
-
-      {shouldShowTimestamp && (
-        <div className={`text-xs text-gray-500 my-2 ${isCurrentUser ? 'self-end' : 'self-start'}`}>
-          {new Date(message.createdAt).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
-        </div>
-      )}
+      <div className={`flex gap-2 items-center ${isCurrentUser ? 'self-end' : 'self-start'}`}>
+        {shouldShowTimestamp && (
+          <>
+            <div className="text-xs text-gray-500 my-2">
+              {new Date(message.createdAt).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
+            {renderReadStatus()}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -118,7 +386,7 @@ function DateSeparator({ date }: { date: string }) {
 
 function SystemMessage({ message }: { message: ChatMessageWithSender }) {
   return (
-    <div className="flex flex-col gap-3 justify-center items-center p-4">
+    <div className="flex flex-col gap-3 justify-center items-center py-4">
       <div className="flex items-center gap-6 w-full">
         <div className="flex-1 h-[1px] bg-gray-300 rounded-full"></div>
         <p className="text-xs text-gray-500 whitespace-nowrap">{getFormattedTime(new Date(message.createdAt))}</p>
@@ -142,3 +410,70 @@ function groupMessagesByDate(messages: ChatMessageWithSender[]) {
     return acc;
   }, {} as Record<string, ChatMessageWithSender[]>);
 }
+
+export function TypingIndicator({ name }: { name: string }) {
+  return (
+    <div className="flex gap-2">
+      <DotTypingLoading />
+      <div className="animate-pulse flex gap-1">
+        <p className="text-sm text-gray-900 font-bold">{name}</p>
+        <p className="text-sm text-gray-600 font-semibold "> is typing...</p>
+      </div>
+    </div>
+  );
+}
+
+interface MessageSkeletonProps {
+  isCurrentUser?: boolean;
+  includeImage?: boolean;
+  isLast?: boolean;
+}
+
+export const MessageSkeleton = ({
+  isCurrentUser = false,
+  includeImage = false,
+  isLast = false
+}: MessageSkeletonProps) => {
+  return (
+    <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-2 ${!isLast ? 'mb-4' : ''}`}>
+      <div
+        className={`
+          flex flex-col gap-1
+          ${isCurrentUser
+            ? 'items-end'
+            : 'items-start'}
+        `}
+      >
+        <div
+          className={`
+            rounded-xl p-3 
+            ${isCurrentUser
+              ? 'bg-gray-200 rounded-br-none'
+              : 'bg-gray-200 rounded-bl-none'}
+            animate-pulse
+            ${includeImage ? 'w-52' : 'w-64'}
+            ${includeImage ? 'h-64' : 'h-12'}
+          `}
+        ></div>
+        <div className="flex items-center gap-1">
+          <div className={`
+            ${isCurrentUser
+              ? 'bg-gray-200 rounded-br-none'
+              : 'bg-gray-200 rounded-bl-none'}
+              h-12 w-40 bg-gray-200 rounded-xl animate-pulse`}></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const MessageSkeletonGroup = () => {
+  return (
+    <div className="space-y-4 px-6 py-4">
+      <MessageSkeleton isCurrentUser={true} />
+      <MessageSkeleton includeImage={true} />
+      <MessageSkeleton isCurrentUser={true} />
+      <MessageSkeleton isCurrentUser={true} />
+    </div>
+  );
+};

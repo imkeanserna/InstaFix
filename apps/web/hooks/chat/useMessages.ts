@@ -21,7 +21,10 @@ import { useWebSocket } from "../useWebSocket";
 
 export const useMessages = (conversationId: string) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isNewMessage, setIsNewMessage] = useState(false);
   const [messagesState, setMessagesState] = useState<GetMessagesResult>({
     messages: [],
     participants: [],
@@ -33,7 +36,36 @@ export const useMessages = (conversationId: string) => {
   });
 
   const { sendMessage } = useWebSocket();
+  const { lastMessage, clearMessage } = useWebSocket();
   const { sendReadStatus } = useMessagesActions(sendMessage);
+
+  useChatEventHandler({
+    lastMessage,
+    onSendMessage(sendMessage: ChatMessageWithSender) {
+      setIsNewMessage(true);
+      addMessage(sendMessage);
+      clearMessage();
+    },
+    onTypingStatus(typingStatus: TypingStatusResult) {
+      if (typingStatus.status === "TYPING" as TypingStatus && typingStatus.conversationId === conversationId) {
+        setIsTyping(true);
+      } else if (typingStatus.status === "STOPPED_TYPING" as TypingStatus && typingStatus.conversationId === conversationId) {
+        setIsTyping(false);
+      }
+      sendReadStatus(MessageType.CHAT, { conversationId });
+      clearMessage();
+    },
+    onReadStatusUpdate: (readStatus: ReadStatusResult) => {
+      if (readStatus.conversationId === conversationId) {
+        markMessagesAsRead();
+      }
+      clearMessage();
+    },
+    onError: (errorPayload) => {
+      toast.error(errorPayload.details || errorPayload.error);
+      clearMessage();
+    }
+  });
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -48,7 +80,7 @@ export const useMessages = (conversationId: string) => {
         pagination: result.data.pagination,
       });
 
-      if (result.data.unreadCount > 0) {
+      if (conversationId && result.data.unreadCount > 0) {
         sendReadStatus(MessageType.CHAT, { conversationId });
       }
     } catch (err) {
@@ -59,13 +91,15 @@ export const useMessages = (conversationId: string) => {
   }, [conversationId]);
 
   useEffect(() => {
-    if (conversationId) fetchMessages();
+    if (conversationId) {
+      fetchMessages();
+    }
   }, [conversationId, fetchMessages]);
 
   const loadMore = useCallback(async () => {
     if (!messagesState.pagination.hasNextPage || isLoading) return;
     try {
-      setIsLoading(true);
+      setIsLoadingMore(true);
       setError(null);
       const result = await getMessages({
         conversationId,
@@ -73,7 +107,7 @@ export const useMessages = (conversationId: string) => {
         take: 20,
       });
       setMessagesState((prev) => ({
-        messages: [...prev.messages, ...result.data.messages],
+        messages: [...result.data.messages, ...prev.messages],
         participants: result.data.participants,
         unreadCount: result.data.unreadCount,
         pagination: result.data.pagination,
@@ -81,7 +115,7 @@ export const useMessages = (conversationId: string) => {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load more messages");
     } finally {
-      setIsLoading(false);
+      setIsLoadingMore(false);
     }
   }, [
     conversationId,
@@ -97,7 +131,7 @@ export const useMessages = (conversationId: string) => {
   const addMessage = useCallback((message: ChatMessageWithSender) => {
     setMessagesState((prev) => ({
       ...prev,
-      messages: [message, ...prev.messages],
+      messages: [...prev.messages, message],
     }));
   }, []);
 
@@ -117,25 +151,51 @@ export const useMessages = (conversationId: string) => {
     }));
   }, []);
 
+  const markMessagesAsRead = useCallback(() => {
+    setMessagesState((prev) => {
+      const updatedMessages = prev.messages.map(msg => {
+        return { ...msg, isRead: true };
+      });
+
+      return {
+        ...prev,
+        messages: updatedMessages,
+        unreadCount: 0
+      };
+    });
+  }, []);
+
+  const resetNewMessageFlag = useCallback(() => {
+    setIsNewMessage(false);
+  }, []);
+
   return useMemo(() => ({
     messagesState,
     isLoading,
+    isLoadingMore,
+    isTyping,
+    isNewMessage,
     error,
     loadMore,
     refresh,
     addMessage,
     updateMessage,
     removeMessage,
+    resetNewMessageFlag,
     hasMore: messagesState.pagination.hasNextPage
   }), [
     messagesState,
     isLoading,
+    isLoadingMore,
+    isTyping,
+    isNewMessage,
     error,
     loadMore,
     refresh,
     addMessage,
     updateMessage,
-    removeMessage
+    removeMessage,
+    resetNewMessageFlag
   ]);
 }
 
@@ -195,20 +255,6 @@ export function useMessagesActions(sendMessage: Function) {
     [sendMessage]
   );
 
-  const sendStoppedTypingStatus = useCallback(
-    (event: MessageType, data: TypingStatusPayload) => {
-      const payload = {
-        type: ChatEventType.STOPPED_TYPING,
-        payload: {
-          conversationId: data.conversationId,
-          status: data.status as TypingStatus,
-        }
-      }
-      sendMessage(event, payload);
-    },
-    [sendMessage]
-  );
-
   const deleteMessage = useCallback(
     (event: MessageType, data: DeleteMessagePayload) => {
       const payload = {
@@ -228,7 +274,6 @@ export function useMessagesActions(sendMessage: Function) {
     startConversation,
     sendTextMessage,
     sendTypingStatus,
-    sendStoppedTypingStatus,
     deleteMessage
   }
 }
@@ -239,6 +284,13 @@ export type ReadStatusResult = {
   messageIds: string[];
   timestamp?: Date;
 }
+
+export type TypingStatusResult = {
+  conversationId: string;
+  userId: string;
+  status: TypingStatus;
+  timestamp: Date;
+};
 
 export function useChatEventHandler({
   lastMessage,
@@ -253,8 +305,8 @@ export function useChatEventHandler({
   lastMessage: WebSocketMessage | null;
   onReadStatusUpdate?: (readStatus: ReadStatusResult) => void;
   onStartConversation?: (startConversation: StartConversationPayload) => void;
-  onSendMessage?: (sendMessage: SendMessagePayload) => void;
-  onTypingStatus?: (typingStatus: TypingStatusPayload) => void;
+  onSendMessage?: (sendMessage: ChatMessageWithSender) => void;
+  onTypingStatus?: (typingStatus: TypingStatusResult) => void;
   onDeleteMessage?: (deleteMessage: DeleteMessagePayload) => void;
   onError?: (error: ErrorPayload) => void;
   setIsLoading?: (loading: boolean) => void;
@@ -282,11 +334,12 @@ export function useChatEventHandler({
             onStartConversation?.(startConversationPayload);
             break;
           case ChatEventType.SENT:
-            const sendMessagePayload = lastMessage.payload as SendMessagePayload;
+            const sendMessagePayload = lastMessage.payload as ChatMessageWithSender;
             onSendMessage?.(sendMessagePayload);
             break;
+          case ChatEventType.STOPPED_TYPING:
           case ChatEventType.TYPING:
-            const typingStatusPayload = lastMessage.payload as TypingStatusPayload;
+            const typingStatusPayload = lastMessage.payload as TypingStatusResult;
             onTypingStatus?.(typingStatusPayload);
             break;
           case ChatEventType.DELETED:

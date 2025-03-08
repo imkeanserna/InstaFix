@@ -1,11 +1,16 @@
 "use client";
 
 import { getConversations } from "@/lib/chatUtils";
-import { ConversationWithRelations, CursorPagination } from "@repo/types";
+import {
+  ConversationWithRelations,
+  CursorPagination,
+  ChatMessageWithSender
+} from "@repo/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ReadStatusResult, useChatEventHandler } from "./useMessages";
 import { useWebSocket } from "../useWebSocket";
 import { toast } from "@repo/ui/components/ui/sonner";
+import { useSession } from "next-auth/react";
 
 export type ConversationsState = {
   conversations: ConversationWithRelations[];
@@ -14,7 +19,9 @@ export type ConversationsState = {
 
 export const useConversations = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
   const [conversationState, setConversationState] = useState<ConversationsState>({
     conversations: [],
     pagination: {
@@ -26,15 +33,44 @@ export const useConversations = () => {
 
   useChatEventHandler({
     lastMessage,
-    onReadStatusUpdate: (result: ReadStatusResult) => {
-      updateConversationUnreadCount(result.conversationId, result.messageIds);
+    onReadStatusUpdate: (readStatus: ReadStatusResult) => {
+      updateConversationUnreadCount(readStatus.conversationId, readStatus.messageIds);
+      clearMessage();
+    },
+    onSendMessage(sendMessage: ChatMessageWithSender) {
+      setConversationState((prev: ConversationsState) => {
+        // Update the specific conversation
+        const updatedConversations = prev.conversations.map(conv => {
+          if (conv.id === sendMessage.conversationId) {
+            return {
+              ...conv,
+              lastMessageAt: sendMessage.createdAt,
+              chatMessages: [sendMessage, ...(conv.chatMessages || [])],
+              unreadCount: sendMessage.senderId !== session?.user?.id ? (conv.unreadCount || 0) + 1 : conv.unreadCount,
+              lastMessage: sendMessage
+            };
+          }
+          return conv;
+        });
+
+        // Then sort conversations by lastMessageAt (newest first)
+        const sortedConversations = [...updatedConversations].sort((a, b) =>
+          new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+        );
+
+        return {
+          ...prev,
+          conversations: sortedConversations
+        };
+      });
+
       clearMessage();
     },
     onError: (errorPayload) => {
       toast.error(errorPayload.details || errorPayload.error);
       clearMessage();
     }
-  })
+  });
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -62,11 +98,11 @@ export const useConversations = () => {
   const loadMore = useCallback(async () => {
     if (!conversationState.pagination.hasNextPage || isLoading) return;
     try {
-      setIsLoading(true);
+      setIsLoadingMore(true);
       setError(null);
       const result = await getConversations({
         cursor: conversationState.pagination.endCursor,
-        take: 10
+        take: 15
       });
 
       setConversationState(prev => ({
@@ -76,7 +112,7 @@ export const useConversations = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load more conversations');
     } finally {
-      setIsLoading(false);
+      setIsLoadingMore(false);
     }
   }, [conversationState.pagination.hasNextPage, conversationState.pagination.endCursor, isLoading]);
 
@@ -125,6 +161,7 @@ export const useConversations = () => {
   return useMemo(() => ({
     conversationState,
     isLoading,
+    isLoadingMore,
     error,
     loadMore,
     refresh,
@@ -136,6 +173,7 @@ export const useConversations = () => {
   }), [
     conversationState,
     isLoading,
+    isLoadingMore,
     error,
     loadMore,
     refresh,
