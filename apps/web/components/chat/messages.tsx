@@ -4,16 +4,20 @@ import { useMessages, useMessagesActions, } from "@/hooks/chat/useMessages";
 import { chatFormattedTime, formatMessageDate, getFormattedTime } from "@/lib/dateFormatters";
 import { ChatMessageWithSender, MessageType, sendMessageSchema } from "@repo/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { useMessageTextarea } from "@/hooks/chat/useMessageTextarea";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@repo/ui/components/ui/sonner";
 import { ConversationErrorBoundary } from "./chatContent";
 import { Button } from "@repo/ui/components/ui/button";
 import { User } from "next-auth";
+import Image from "next/image";
+import { Media } from "@prisma/client/edge";
+import { SingleImageModal } from "../posts/post/postGallery";
+import { fileToBase64 } from "@/lib/uploadFiles";
 
 export function Messages({
   conversationId,
@@ -39,11 +43,19 @@ export function Messages({
   } = useMessages(conversationId);
   const { sendMessage } = useWebSocket();
   const { sendTextMessage, sendTypingStatus } = useMessagesActions(sendMessage);
+  const [selectedFileImage, setSelectedFileImage] = useState<Media | null>(null);
 
   const {
     messageText,
     textareaRef,
+    fileInputRef,
+    selectedImage,
+    imagePreview,
+    fileError,
     handleTextChange,
+    handleImageSelect,
+    triggerImageSelect,
+    removeSelectedImage,
     clearMessageText,
     stopTyping
   } = useMessageTextarea({
@@ -69,6 +81,14 @@ export function Messages({
     }
     resetNewMessageFlag();
   }, [scrollToBottom, isNewMessage]);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedFileImage(null);
+  }, []);
+
+  const handleSetSelectedImage = useCallback((image: string) => {
+    setSelectedFileImage({ url: image } as Media);
+  }, []);
 
   // Function to load more messages with scroll position maintenance
   const handleLoadMore = useCallback(async () => {
@@ -106,14 +126,19 @@ export function Messages({
     return () => observer.disconnect();
   }, [hasMore, isLoadingMore, handleLoadMore]);
 
-  const handleSendMessage = useCallback(() => {
-    if (!messageText.trim() || !user || user?.id === undefined) return;
+  const handleSendMessage = useCallback(async () => {
+    if ((!messageText.trim() && !selectedImage) || !user || user?.id === undefined) return;
 
     try {
-      // Validate message data
+      let imageBase64 = undefined;
+      if (selectedImage) {
+        imageBase64 = await fileToBase64(selectedImage);
+      }
+
       const validatedData = sendMessageSchema.parse({
         conversationId,
-        body: messageText.trim(),
+        body: messageText.trim() || undefined,
+        files: imageBase64 ? [imageBase64] : undefined,
       });
 
       // Create a new message object
@@ -122,7 +147,7 @@ export function Messages({
         conversationId: validatedData.conversationId,
         senderId: user?.id,
         body: validatedData.body || null,
-        image: validatedData.image || null,
+        image: imageBase64 || null,
         createdAt: new Date(),
         updatedAt: new Date(),
         isRead: false,
@@ -140,9 +165,10 @@ export function Messages({
       sendTextMessage(MessageType.CHAT, {
         conversationId: validatedData.conversationId,
         body: validatedData.body,
-        image: validatedData.image,
+        files: selectedImage ? [selectedImage] : undefined,
       });
       clearMessageText();
+      removeSelectedImage();
 
       // Scroll to bottom after sending a message
       setTimeout(scrollToBottom, 0);
@@ -151,12 +177,14 @@ export function Messages({
     }
   }, [
     messageText,
+    selectedImage,
     conversationId,
     user,
     addMessage,
     sendTextMessage,
     stopTyping,
     clearMessageText,
+    removeSelectedImage,
     scrollToBottom
   ]);
 
@@ -258,6 +286,7 @@ export function Messages({
                       message={message}
                       isCurrentUser={message.senderId === user?.id}
                       nextMessage={index < messages.length - 1 ? messages[index + 1] : undefined}
+                      setSelectedImage={handleSetSelectedImage}
                     />
                   )}
                 </motion.div>
@@ -267,9 +296,41 @@ export function Messages({
         ))}
       </div>
       {/* Message input area */}
-      <div className="px-8 bg-white mb-4">
+      <div className="px-8 bg-white mb-2">
         <div className="border border-gray-200 p-2 rounded-xl focus-within:ring-2 focus-within:ring-yellow-500 focus-within:border-transparent">
-          <div className="flex items-center gap-2 relative">
+          {fileError && (
+            <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-lg text-sm">
+              {fileError}
+            </div>
+          )}
+          {imagePreview && (
+            <div className="relative mb-2 inline-block">
+              <Image
+                src={imagePreview}
+                alt={`Selected`}
+                width={60}
+                height={20}
+                className="h-20 rounded-lg object-cover"
+              />
+              <button
+                onClick={removeSelectedImage}
+                className="absolute -top-2 -right-2 bg-gray-800 rounded-full p-1 text-white"
+                title="Remove image"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          )}
+          <div className="flex items-end justify-end gap-1 relative">
+            <Button
+              onClick={triggerImageSelect}
+              className="text-gray-500 bg-yellow-100 hover:bg-yellow-200 px-3 py-2 rounded-xl active:scale-95"
+              title="Add image"
+            >
+              <ImageIcon className="h-5 w-5" />
+            </Button>
             <textarea
               ref={textareaRef}
               value={messageText}
@@ -279,9 +340,16 @@ export function Messages({
               className="flex-1 resize-none min-h-[40px] max-h-[120px] py-2 px-3 focus:outline-none rounded-lg"
               rows={1}
             />
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageSelect}
+              accept="image/*"
+              className="hidden"
+            />
             <Button
               onClick={handleSendMessage}
-              disabled={!messageText.trim()}
+              disabled={!messageText.trim() && !selectedImage}
               className="bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg py-2 px-5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 active:scale-[0.98]"
             >
               <p className="text-sm text-gray-700">Send</p>
@@ -294,9 +362,16 @@ export function Messages({
           </div>
         </div>
       </div>
-      <div className="pt-2 ms-4">
+      <div className="ps-10 pb-4">
         {isTyping && <TypingIndicator name={messagesState.participants[0].name!} />}
       </div>
+      {selectedFileImage && (
+        <SingleImageModal
+          image={selectedFileImage}
+          isOpen={true}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }
@@ -305,12 +380,14 @@ interface MessageBubbleProps {
   message: ChatMessageWithSender;
   isCurrentUser: boolean;
   nextMessage?: ChatMessageWithSender;
+  setSelectedImage: (image: string) => void;
 }
 
 function MessageBubble({
   message,
   isCurrentUser,
-  nextMessage  // Add this prop to see if this is the last message in a group
+  nextMessage,
+  setSelectedImage
 }: MessageBubbleProps) {
   // Determine if messages are close in time (within 3 minutes)
   const isCloseInTime = (msg1: ChatMessageWithSender, msg2?: ChatMessageWithSender) => {
@@ -322,9 +399,8 @@ function MessageBubble({
       msg1.senderId === msg2.senderId;
   };
 
+  // Show timestamp if this is the last message in a time group
   const isLastInTimeGroup = !nextMessage || !isCloseInTime(message, nextMessage);
-
-  // Only show timestamp if this is the last message in a time group
   const shouldShowTimestamp = isLastInTimeGroup;
 
   // Render read status indicator for current user's messages
@@ -349,12 +425,29 @@ function MessageBubble({
   return (
     <div className={`flex flex-col gap-1 items-start ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`
-        max-w-[70%] p-4 text-sm rounded-xl shadow-md 
+        max-w-[70%] text-sm rounded-xl shadow-md 
+        ${message.image ? 'py-1 px-3' : 'p-4'}
         ${isCurrentUser
           ? 'bg-orange-200 text-gray-900 self-end rounded-br-none'
           : 'bg-blue-500 text-white rounded-bl-none'
         }
       `}>
+        {/* Message image content */}
+        {message.image && (
+          <div
+            onClick={() => setSelectedImage(message.image!)}
+            className={`relative mb-${message.body ? "2" : "0"} -mx-2 cursor-pointer hover:opacity-[0.97]`}
+          >
+            <Image
+              src={message.image}
+              alt={`Message attachment ${message.sender.name!}`}
+              width={150}
+              height={150}
+              className="rounded-xl h-auto w-64 object-cover max-h-64"
+            />
+            <div className="absolute inset-0 rounded-xl"></div>
+          </div>
+        )}
         {message.body && <p>{message.body}</p>}
       </div>
       <div className={`flex gap-2 items-center ${isCurrentUser ? 'self-end' : 'self-start'}`}>

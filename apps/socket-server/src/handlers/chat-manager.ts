@@ -66,11 +66,17 @@ export class ChatManager {
 
   private async handleSendMessage(user: AuthenticatedWebSocket, data: SendMessagePayload) {
     try {
-      const result = sendMessageSchema.safeParse(data);
+      const result = sendMessageSchema.safeParse({
+        conversationId: data.conversationId,
+        body: data.body,
+        files: (data.files && data.files?.length > 0) ? [data.files[0]?.url] : undefined,
+      });
+
       if (!result.success) {
         throw new Error(`Invalid message format: ${result.error.message}`);
       }
-      const { conversationId, body, image } = result.data;
+
+      const { conversationId, body } = result.data;
 
       const { recipient } = await this.validateConversationAccess(
         conversationId,
@@ -80,7 +86,7 @@ export class ChatManager {
       const message: ChatMessageWithSender = await prisma.chatMessage.create({
         data: {
           body,
-          image,
+          image: data.files && data.files?.length > 0 ? data.files[0]?.url : undefined,
           senderId: user.userId,
           conversationId
         },

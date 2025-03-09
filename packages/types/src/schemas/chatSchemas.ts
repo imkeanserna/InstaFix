@@ -3,9 +3,11 @@ import { z } from "zod";
 export const sendMessageSchema = z.object({
   conversationId: z.string().uuid().or(z.string().cuid()),
   body: z.string().min(1).optional(),
-  image: z.string().url().optional(),
-}).refine(data => data.body || data.image, {
-  message: "Either body or image must be provided"
+  files: z.array(z.string()).optional()
+}).refine(data => {
+  return (data.files && data.files.length > 0) ? true : data.body !== undefined;
+}, {
+  message: "Either body, image, or files must be provided"
 });
 
 export const startConversationSchema = z.object({

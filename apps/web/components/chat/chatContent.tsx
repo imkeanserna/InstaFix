@@ -56,6 +56,7 @@ export function ChatContent() {
               loadMore={loadMore}
               hasMore={hasMore}
               isLoadingMore={isLoadingMore}
+              user={session.user}
             />
           </div>
         </div>

@@ -210,7 +210,7 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
 
 DesktopGrid.displayName = "DesktopGrid";
 
-const SingleImageModal = ({
+export const SingleImageModal = ({
   image,
   isOpen,
   onClose

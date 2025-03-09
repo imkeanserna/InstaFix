@@ -9,8 +9,8 @@ import {
   ErrorPayload,
   GetMessagesResult,
   MessageType,
+  PostMedia,
   ReadStatusPayload,
-  SendMessagePayload,
   StartConversationPayload,
   TypingStatus,
   TypingStatusPayload
@@ -18,6 +18,7 @@ import {
 import { toast } from "@repo/ui/components/ui/sonner";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWebSocket } from "../useWebSocket";
+import { uploadFiles } from "@/lib/uploadFiles";
 
 export const useMessages = (conversationId: string) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -200,6 +201,7 @@ export const useMessages = (conversationId: string) => {
 }
 
 export function useMessagesActions(sendMessage: Function) {
+  const { isConnected } = useWebSocket();
   const sendReadStatus = useCallback(
     (event: MessageType, data: ReadStatusPayload) => {
       const payload = {
@@ -227,18 +229,29 @@ export function useMessagesActions(sendMessage: Function) {
   );
 
   const sendTextMessage = useCallback(
-    (event: MessageType, data: SendMessagePayload) => {
+    async (event: MessageType, data: {
+      conversationId: string;
+      body?: string;
+      files?: File[];
+    }) => {
+      let fileUrls: PostMedia[] = [];
+
+      if (data.files && data.files?.length > 0 && isConnected) {
+        const result = await uploadFiles(data.files);
+        fileUrls = result.files;
+      }
+
       const payload = {
         type: ChatEventType.SENT,
         payload: {
           conversationId: data.conversationId,
           body: data.body,
-          image: data.image,
+          files: fileUrls
         }
       }
       sendMessage(event, payload);
     },
-    [sendMessage]
+    [sendMessage, isConnected]
   );
 
   const sendTypingStatus = useCallback(

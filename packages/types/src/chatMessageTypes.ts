@@ -1,10 +1,10 @@
 import { ChatEventType, ChatMessage, Conversation, Participant, User } from "@prisma/client/edge";
-import { CursorPagination } from "./postTypes";
+import { CursorPagination, PostMedia } from "./postTypes";
 
 export type SendMessagePayload = {
   conversationId: string;
   body?: string;
-  image?: string;
+  files?: PostMedia[];
 }
 
 export type StartConversationPayload = {

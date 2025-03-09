@@ -2,9 +2,6 @@ import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { PostMedia } from '@repo/types';
 import { getR2Client, getR2PublicUrl } from './r2-client';
 import { MediaType } from '@prisma/client';
-import { prisma } from '@/server/index';
-
-// export const runtime = 'edge'
 
 interface UploadConfig {
   maxFileSizeInMB?: number;
@@ -133,19 +130,6 @@ async function deleteFileFromR2(fileName: string): Promise<void> {
     // Don't throw here - we want to continue even if some deletions fail
     // continue only if there's an error
   }
-}
-
-export async function getCurrentMediaUrls(postId: string): Promise<string[]> {
-  const post = await prisma.post.findUnique({
-    where: { id: postId },
-    include: {
-      media: {
-        select: { url: true }
-      }
-    }
-  });
-
-  return post?.media.map(media => media.url) || [];
 }
 
 function getFileNameFromUrl(url: string): string {

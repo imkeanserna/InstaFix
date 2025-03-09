@@ -8,17 +8,20 @@ import { useRecoilState } from "recoil";
 import { selectedConversationState } from "@repo/store";
 import { useCallback, useEffect, useRef } from "react";
 import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more";
+import { User } from "next-auth";
 
 export function Conversations({
   conversationState,
   loadMore,
   hasMore,
-  isLoadingMore
+  isLoadingMore,
+  user
 }: {
   conversationState: ConversationsState;
   loadMore: () => void;
   hasMore: boolean;
   isLoadingMore: boolean;
+  user: User;
 }) {
   const [selectedConversationId, setSelectedConversationId] = useRecoilState(selectedConversationState);
 
@@ -49,7 +52,6 @@ export function Conversations({
   // Connect observer when component mounts or when dependencies change
   useEffect(() => {
     setupObserver();
-
     // Cleanup observer on unmount
     return () => {
       if (observerRef.current) {
@@ -76,6 +78,7 @@ export function Conversations({
                   conversation={conversation}
                   onSelect={handleConversationClick}
                   selected={selectedConversationId === conversation.id}
+                  user={user}
                 />
               ))}
             </div>
@@ -99,11 +102,13 @@ export function Conversations({
 export function ConversationCard({
   conversation,
   onSelect,
-  selected
+  selected,
+  user
 }: {
   conversation: ConversationWithRelations;
   onSelect: (id: string) => void;
   selected: boolean;
+  user: User;
 }) {
   const timeSent = new Date(conversation.chatMessages[0].createdAt);
 
@@ -143,10 +148,14 @@ export function ConversationCard({
           }
         </div>
         <div className="text-sm flex gap-3 justify-between text-gray-500">
-          <p className="w-[350px]">{truncateText(conversation.chatMessages[0].body!, 50)}</p>
+          {conversation.chatMessages[0].image ? (
+            <p className="w-[350px]">{`${conversation.chatMessages[0].senderId === user?.id ? 'You' : conversation.participants[0].user.name} sent an image`}</p>
+          ) : (
+            <p className="w-[350px]">{truncateText(conversation.chatMessages[0].body!, 50)}</p>
+          )}
           <p className="lowercase">{timeSent.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</p>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

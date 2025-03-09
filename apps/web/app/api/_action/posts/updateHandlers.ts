@@ -1,8 +1,9 @@
 import { prisma } from '@/server/index';
 import { PostMedia, UpdatePostData } from '@repo/types';
 import { findOrCreateLocation } from './location';
-import { deleteFilesFromR2, getCurrentMediaUrls, uploadMultipleFiles } from '../media/mediaUpload';
+import { deleteFilesFromR2, uploadMultipleFiles } from '@repo/services/src/storage/mediaUpload';
 import { Media } from '@prisma/client/edge';
+import { getCurrentMediaUrls } from '../media/media';
 
 // export const runtime = 'edge'
 
