@@ -6,9 +6,55 @@ import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avat
 import { truncateText } from "../posts/post/expandibleDescription";
 import { useRecoilState } from "recoil";
 import { selectedConversationState } from "@repo/store";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more";
 import { User } from "next-auth";
+import { useDebounce } from "@/hooks/useDebounce";
+import { Dialog, DialogTrigger } from "@repo/ui/components/ui/dialog";
+import { Users as UsersIcon } from "lucide-react";
+import ButtonCommingSoon from "../ui/buttonCommingSoon";
+
+export function ConversationContent({
+  conversationState,
+  loadMore,
+  hasMore,
+  isLoadingMore,
+  user
+}: {
+  conversationState: ConversationsState;
+  loadMore: () => void;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  user: User;
+}) {
+  return (
+    <div className="flex flex-col">
+      <div className="space-y-6 py-6 border-b px-6 border-b-gray-200 shadow-sm">
+        <div className="flex justify-between items-center">
+          <p className="text-xl font-medium">Contacts</p>
+          {conversationState.conversations.length > 0 &&
+            <div className="text-gray-500 flex justify-center items-center gap-1">
+              <UsersIcon className="w-4 h-4" />
+              <p className="font-bold">{conversationState.conversations.length}</p>
+            </div>
+          }
+        </div>
+        <SearchEngineConversation>
+          <ButtonCommingSoon />
+        </SearchEngineConversation>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <Conversations
+          conversationState={conversationState}
+          loadMore={loadMore}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          user={user}
+        />
+      </div>
+    </div>
+  );
+}
 
 export function Conversations({
   conversationState,
@@ -157,5 +203,23 @@ export function ConversationCard({
         </div>
       </div>
     </div >
+  );
+}
+
+function SearchEngineConversation({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const debouncedValue = useDebounce(inputValue, 300);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+    </Dialog>
   );
 }

@@ -4,7 +4,7 @@ import { useMessages, useMessagesActions, } from "@/hooks/chat/useMessages";
 import { chatFormattedTime, formatMessageDate, getFormattedTime } from "@/lib/dateFormatters";
 import { ChatMessageWithSender, MessageType, sendMessageSchema } from "@repo/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { useMessageTextarea } from "@/hooks/chat/useMessageTextarea";
@@ -18,6 +18,7 @@ import Image from "next/image";
 import { Media } from "@prisma/client/edge";
 import { SingleImageModal } from "../posts/post/postGallery";
 import { fileToBase64 } from "@/lib/uploadFiles";
+import { useScrollContainer } from "@/hooks/chat/useScrollContainer";
 
 export function Messages({
   conversationId,
@@ -26,8 +27,6 @@ export function Messages({
   conversationId: string;
   user: User | undefined;
 }) {
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const loadTriggerRef = useRef<HTMLDivElement>(null);
   const {
     messagesState,
     addMessage,
@@ -44,6 +43,16 @@ export function Messages({
   const { sendMessage } = useWebSocket();
   const { sendTextMessage, sendTypingStatus } = useMessagesActions(sendMessage);
   const [selectedFileImage, setSelectedFileImage] = useState<Media | null>(null);
+
+  const { containerRef, loadTriggerRef, scrollToBottom } = useScrollContainer({
+    isLoading,
+    hasMore,
+    isLoadingMore,
+    loadMore,
+    isNewMessage,
+    resetNewMessageFlag,
+    items: messagesState.messages,
+  });
 
   const {
     messageText,
@@ -64,24 +73,6 @@ export function Messages({
     sendTypingStatus
   });
 
-  // Smooth scroll to bottom
-  const scrollToBottom = useCallback(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, []);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (messagesState.messages.length > 0) {
-      scrollToBottom();
-    }
-    resetNewMessageFlag();
-  }, [scrollToBottom, isNewMessage]);
-
   const handleCloseModal = useCallback(() => {
     setSelectedFileImage(null);
   }, []);
@@ -89,42 +80,6 @@ export function Messages({
   const handleSetSelectedImage = useCallback((image: string) => {
     setSelectedFileImage({ url: image } as Media);
   }, []);
-
-  // Function to load more messages with scroll position maintenance
-  const handleLoadMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore) return;
-
-    // Store current scroll height before loading more messages
-    const currentHeight = messagesContainerRef.current?.scrollHeight || 0;
-
-    await loadMore();
-
-    // After messages are loaded, adjust scroll position
-    requestAnimationFrame(() => {
-      if (messagesContainerRef.current) {
-        const newHeight = messagesContainerRef.current.scrollHeight;
-        messagesContainerRef.current.scrollTop = newHeight - currentHeight;
-      }
-    });
-  }, [hasMore, isLoadingMore, loadMore]);
-
-  // Set up intersection observer for infinite scrolling
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-          handleLoadMore();
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    if (loadTriggerRef.current) {
-      observer.observe(loadTriggerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasMore, isLoadingMore, handleLoadMore]);
 
   const handleSendMessage = useCallback(async () => {
     if ((!messageText.trim() && !selectedImage) || !user || user?.id === undefined) return;
@@ -252,7 +207,7 @@ export function Messages({
           </div>
         </div>
       </div>
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-8 py-4 space-y-1">
+      <div ref={containerRef} className="flex-1 overflow-y-auto px-8 py-4 space-y-1">
         {/* Loading trigger at the top */}
         <div ref={loadTriggerRef} className="mb-2">
           {isLoadingMore && hasMore && (
@@ -425,11 +380,11 @@ function MessageBubble({
   return (
     <div className={`flex flex-col gap-1 items-start ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`
-        max-w-[70%] text-sm rounded-xl shadow-md 
+        max-w-[70%] text-sm rounded-xl shadow-md
         ${message.image ? 'py-1 px-3' : 'p-4'}
         ${isCurrentUser
-          ? 'bg-orange-200 text-gray-900 self-end rounded-br-none'
-          : 'bg-blue-500 text-white rounded-bl-none'
+          ? 'bg-yellow-500 text-gray-900 self-end rounded-br-none'
+          : 'bg-blue-500 text-white rounded-bl-none border border-gray-300'}
         }
       `}>
         {/* Message image content */}
@@ -470,7 +425,7 @@ function MessageBubble({
 function DateSeparator({ date }: { date: string }) {
   return (
     <div className="flex justify-center">
-      <p className="text-xs bg-gray-100 text-gray-900 py-2 px-3  rounded-xl">
+      <p className="text-xs bg-gray-100 text-gray-900 py-2 px-3 rounded-xl:border border-gray-300 rounded-xl">
         {date}
       </p>
     </div>

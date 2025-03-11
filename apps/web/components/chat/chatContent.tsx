@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { Conversations } from "./conversations";
+import { ConversationContent } from "./conversations";
 import { Messages } from "./messages";
 import { useRecoilValue } from "recoil";
 import { selectedConversationState } from "@repo/store";
@@ -44,14 +44,22 @@ export function ChatContent() {
 
   return (
     <Suspense fallback={<ChatContentSkeleton />}>
-      <div className="flex justify-center items-center gap-6 h-screen p-6 bg-gray-200">
-        {/* This would be your conversation list component */}
-        <div className="w-[540px] bg-white h-[90vh] rounded-2xl flex flex-col">
-          <div className="py-6 border-b px-6">
-            <p>Contacts</p>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            <Conversations
+      <div className="flex flex-col gap-4 h-screen p-6 bg-gray-200">
+        <div className="flex justify-between items-center px-6">
+          <p className="text-lg text-gray-900">Conversations with Instafix User</p>
+          {selectedConversationId &&
+            <Button
+              onClick={handleBookConversation}
+              className="flex items-center gap-2 px-8 rounded-xl bg-yellow-500 hover:bg-yellow-600 active:scale-[0.98]"
+            >
+              <p className="text-sm">Book Freelancer</p>
+            </Button>
+          }
+        </div>
+        <div className="flex justify-center items-center gap-6">
+          {/* This would be your conversation list component */}
+          <div className="w-[540px] bg-white rounded-2xl h-[90vh]">
+            <ConversationContent
               conversationState={conversationState}
               loadMore={loadMore}
               hasMore={hasMore}
@@ -59,19 +67,18 @@ export function ChatContent() {
               user={session.user}
             />
           </div>
-        </div>
-
-        {/* This is the dynamic part that changes based on the URL */}
-        <div className="w-2/3 bg-white h-[90vh] rounded-2xl overflow-auto flex flex-col">
-          {selectedConversationId !== null
-            ?
-            <Messages
-              user={session.user}
-              conversationId={selectedConversationId}
-            />
-            :
-            <NoConversationSelected onClick={handleBookConversation} />
-          }
+          {/* This is the dynamic part that changes based on the URL */}
+          <div className="w-2/3 bg-white h-[90vh] rounded-2xl overflow-auto flex flex-col">
+            {selectedConversationId !== null
+              ?
+              <Messages
+                user={session.user}
+                conversationId={selectedConversationId}
+              />
+              :
+              <NoConversationSelected onClick={handleBookConversation} />
+            }
+          </div>
         </div>
       </div>
     </Suspense>

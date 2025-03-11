@@ -98,7 +98,7 @@ export const useMessages = (conversationId: string) => {
   }, [conversationId, fetchMessages]);
 
   const loadMore = useCallback(async () => {
-    if (!messagesState.pagination.hasNextPage || isLoading) return;
+    if (!messagesState.pagination.hasNextPage || isLoading || isLoadingMore) return;
     try {
       setIsLoadingMore(true);
       setError(null);
@@ -122,6 +122,7 @@ export const useMessages = (conversationId: string) => {
     conversationId,
     messagesState.pagination.hasNextPage,
     messagesState.pagination.endCursor,
+    isLoadingMore,
     isLoading
   ]);
 
