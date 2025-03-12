@@ -8,7 +8,7 @@ import React, { useCallback, useState } from "react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { useMessageTextarea } from "@/hooks/chat/useMessageTextarea";
-import { CheckIcon, Image as ImageIcon } from "lucide-react";
+import { CheckIcon, ChevronLeft, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@repo/ui/components/ui/sonner";
 import { ConversationErrorBoundary } from "./chatContent";
@@ -19,6 +19,8 @@ import { Media } from "@prisma/client/edge";
 import { SingleImageModal } from "../posts/post/postGallery";
 import { fileToBase64 } from "@/lib/uploadFiles";
 import { useScrollContainer } from "@/hooks/chat/useScrollContainer";
+import { useSetRecoilState } from "recoil";
+import { selectedConversationState } from "@repo/store";
 
 export function Messages({
   conversationId,
@@ -43,6 +45,7 @@ export function Messages({
   const { sendMessage } = useWebSocket();
   const { sendTextMessage, sendTypingStatus } = useMessagesActions(sendMessage);
   const [selectedFileImage, setSelectedFileImage] = useState<Media | null>(null);
+  const setSelectedConversationId = useSetRecoilState(selectedConversationState);
 
   const { containerRef, loadTriggerRef, scrollToBottom } = useScrollContainer({
     isLoading,
@@ -187,27 +190,39 @@ export function Messages({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex gap-4 border-b shadow-sm border-b-gray-200 px-6 py-4">
-        <Avatar className="h-14 w-14 shadow-md flex-shrink-0 rounded-xl">
-          <AvatarImage
-            src={messagesState.participants[0].image!}
-            alt={`${messagesState.participants[0].name}'s avatar`}
-            className="object-cover"
+      <div className="flex gap-4 md:gap-0 border-b shadow-sm border-b-gray-200 px-4 md:px-8 py-4">
+        <div
+          onClick={() => {
+            setSelectedConversationId(null)
+          }}
+          className="flex items-center cursor-pointer"
+        >
+          <ChevronLeft
+            className="h-5 w-5 text-gray-950 md:hidden"
           />
-          <AvatarFallback className="bg-gradient-to-br from-amber-200 to-yellow-300 text-amber-800 text-2xl font-medium">
-            {messagesState.participants[0].name}
-          </AvatarFallback>
-          <div className="absolute inset-0 rounded-xl"></div>
-        </Avatar>
-        <div className="space-y-1">
-          <p className="capitalize text-sm font-medium">{messagesState.participants[0].name}</p>
-          <div className="flex gap-2 justify-center items-center">
-            <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
-            <p className="text-xs text-gray-600">Joined {chatFormattedTime(new Date(messagesState.participants[0].createdAt))}</p>
+        </div>
+        <div className="flex gap-4">
+          <Avatar className="h-14 w-14 shadow-md flex-shrink-0 rounded-xl">
+            <AvatarImage
+              src={messagesState.participants[0].image!}
+              alt={`${messagesState.participants[0].name}'s avatar`}
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-gradient-to-br from-amber-200 to-yellow-300 text-amber-800 text-2xl font-medium">
+              {messagesState.participants[0].name}
+            </AvatarFallback>
+            <div className="absolute inset-0 rounded-xl"></div>
+          </Avatar>
+          <div className="space-y-1">
+            <p className="capitalize text-sm font-bold md:font-medium">{messagesState.participants[0].name}</p>
+            <div className="flex gap-2 justify-center items-center">
+              <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
+              <p className="text-xs text-gray-600">Joined {chatFormattedTime(new Date(messagesState.participants[0].createdAt))}</p>
+            </div>
           </div>
         </div>
       </div>
-      <div ref={containerRef} className="flex-1 overflow-y-auto px-8 py-4 space-y-1">
+      <div ref={containerRef} className="flex-1 overflow-y-auto px-6 md:px-8 py-4 space-y-1">
         {/* Loading trigger at the top */}
         <div ref={loadTriggerRef} className="mb-2">
           {isLoadingMore && hasMore && (
@@ -250,74 +265,93 @@ export function Messages({
           </React.Fragment>
         ))}
       </div>
-      {/* Message input area */}
-      <div className="px-8 bg-white mb-2">
-        <div className="border border-gray-200 p-2 rounded-xl focus-within:ring-2 focus-within:ring-yellow-500 focus-within:border-transparent">
-          {fileError && (
-            <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-lg text-sm">
-              {fileError}
-            </div>
-          )}
+      {/* Message input with image preview above */}
+      <div className="relative">
+        <AnimatePresence>
           {imagePreview && (
-            <div className="relative mb-2 inline-block">
-              <Image
-                src={imagePreview}
-                alt={`Selected`}
-                width={60}
-                height={20}
-                className="h-20 rounded-lg object-cover"
-              />
-              <button
-                onClick={removeSelectedImage}
-                className="absolute -top-2 -right-2 bg-gray-800 rounded-full p-1 text-white"
-                title="Remove image"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          )}
-          <div className="flex items-end justify-end gap-1 relative">
-            <Button
-              onClick={triggerImageSelect}
-              className="text-gray-500 bg-yellow-100 hover:bg-yellow-200 px-3 py-2 rounded-xl active:scale-95"
-              title="Add image"
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{
+                type: "spring",
+                damping: 20,
+                stiffness: 300
+              }}
+              className="absolute bottom-full left-6 md:left-8 mb-2"
             >
-              <ImageIcon className="h-5 w-5" />
-            </Button>
-            <textarea
-              ref={textareaRef}
-              value={messageText}
-              onChange={handleTextChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              className="flex-1 resize-none min-h-[40px] max-h-[120px] py-2 px-3 focus:outline-none rounded-lg"
-              rows={1}
-            />
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageSelect}
-              accept="image/*"
-              className="hidden"
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!messageText.trim() && !selectedImage}
-              className="bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg py-2 px-5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 active:scale-[0.98]"
-            >
-              <p className="text-sm text-gray-700">Send</p>
-              <div className="rotate-45">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-black" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                </svg>
+              <div className="relative inline-block">
+                <Image
+                  src={imagePreview}
+                  alt="Selected"
+                  width={60}
+                  height={20}
+                  className="h-20 w-auto rounded-lg object-cover shadow-md"
+                />
+                <motion.button
+                  onClick={removeSelectedImage}
+                  className="absolute -top-2 -right-2 bg-gray-800 rounded-full p-1 text-white"
+                  title="Remove image"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </motion.button>
               </div>
-            </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {/* Message input area */}
+        <div className={`px-6 md:px-8 bg-white ${isTyping ? "mb-0" : "mb-6 md:mb-2"} `}>
+          <div className="border border-gray-200 p-4 md:p-2 rounded-full md:rounded-xl focus-within:ring-2 focus-within:ring-yellow-500 focus-within:border-transparent">
+            {fileError && (
+              <div className="mb-2 p-2 bg-red-100 text-red-700 rounded-lg text-sm">
+                {fileError}
+              </div>
+            )}
+            <div className="flex items-end justify-end gap-1 relative">
+              <Button
+                onClick={triggerImageSelect}
+                className="text-gray-900 bg-yellow-400 hover:bg-yellow-500 px-3 py-2 rounded-full active:scale-95"
+                title="Add image"
+              >
+                <ImageIcon className="h-5 w-5" />
+              </Button>
+              <textarea
+                ref={textareaRef}
+                value={messageText}
+                onChange={handleTextChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Type a message..."
+                className="flex-1 resize-none min-h-[40px] max-h-[120px] py-2 px-3 focus:outline-none rounded-lg"
+                rows={1}
+              />
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageSelect}
+                accept="image/*"
+                className="hidden"
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!messageText.trim() && !selectedImage}
+                className="bg-yellow-400 hover:bg-yellow-500 text-white rounded-full md:rounded-lg py-3 px-3 md:py-2 md:px-5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 active:scale-[0.98]"
+              >
+                <p className="text-sm text-gray-700 hidden md:block">Send</p>
+                <div className="rotate-45">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-black" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                  </svg>
+                </div>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-      <div className="ps-10 pb-4">
+      <div className="ps-10 pb-0 md:pb-4">
         {isTyping && <TypingIndicator name={messagesState.participants[0].name!} />}
       </div>
       {selectedFileImage && (
@@ -383,8 +417,8 @@ function MessageBubble({
         max-w-[70%] text-sm rounded-xl shadow-md
         ${message.image ? 'py-1 px-3' : 'p-4'}
         ${isCurrentUser
-          ? 'bg-yellow-500 text-gray-900 self-end rounded-br-none'
-          : 'bg-blue-500 text-white rounded-bl-none border border-gray-300'}
+          ? 'bg-yellow-400 text-gray-900 self-end rounded-br-none'
+          : 'bg-orange-500/25 text-gray-900 rounded-bl-none'}
         }
       `}>
         {/* Message image content */}
@@ -424,7 +458,7 @@ function MessageBubble({
 
 function DateSeparator({ date }: { date: string }) {
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center py-16">
       <p className="text-xs bg-gray-100 text-gray-900 py-2 px-3 rounded-xl:border border-gray-300 rounded-xl">
         {date}
       </p>

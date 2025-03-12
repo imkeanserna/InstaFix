@@ -10,11 +10,14 @@ import { useConversations } from "@/hooks/chat/useConversations";
 import { useSession } from "next-auth/react";
 import { Button } from "@repo/ui/components/ui/button";
 import { MessageCircleMore } from "lucide-react";
+import { useMediaQuery } from "@/hooks/useMedia";
+import { AnimatePresence, motion } from "framer-motion";
 
 export function ChatContent() {
   const selectedConversationId = useRecoilValue(selectedConversationState);
   const router = useRouter();
   const { data: session, status } = useSession();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const {
     conversationState,
     refresh,
@@ -30,7 +33,7 @@ export function ChatContent() {
   }
 
   if (isLoading || status === 'loading') {
-    return <ChatContentSkeleton />;
+    return <ChatContentSkeleton isMobile={isMobile} />;
   }
 
   if (!session?.user || !session?.user?.id) {
@@ -43,42 +46,90 @@ export function ChatContent() {
   }
 
   return (
-    <Suspense fallback={<ChatContentSkeleton />}>
-      <div className="flex flex-col gap-4 h-screen p-6 bg-gray-200">
-        <div className="flex justify-between items-center px-6">
-          <p className="text-lg text-gray-900">Conversations with Instafix User</p>
-          {selectedConversationId &&
-            <Button
-              onClick={handleBookConversation}
-              className="flex items-center gap-2 px-8 rounded-xl bg-yellow-500 hover:bg-yellow-600 active:scale-[0.98]"
-            >
-              <p className="text-sm">Book Freelancer</p>
-            </Button>
-          }
-        </div>
-        <div className="flex justify-center items-center gap-6">
-          {/* This would be your conversation list component */}
-          <div className="w-[540px] bg-white rounded-2xl h-[90vh]">
-            <ConversationContent
-              conversationState={conversationState}
-              loadMore={loadMore}
-              hasMore={hasMore}
-              isLoadingMore={isLoadingMore}
-              user={session.user}
-            />
-          </div>
-          {/* This is the dynamic part that changes based on the URL */}
-          <div className="w-2/3 bg-white h-[90vh] rounded-2xl overflow-auto flex flex-col">
-            {selectedConversationId !== null
-              ?
-              <Messages
-                user={session.user}
-                conversationId={selectedConversationId}
-              />
-              :
-              <NoConversationSelected onClick={handleBookConversation} />
+    <Suspense fallback={<ChatContentSkeleton isMobile={isMobile} />}>
+      <div className="flex flex-col gap-4 h-screen p-0 md:py-6 md:px-12 bg-gray-200">
+        {!isMobile &&
+          <div className="flex justify-between items-center">
+            <p className="text-lg text-gray-900">Conversations with Instafix User</p>
+            {selectedConversationId &&
+              <Button
+                onClick={handleBookConversation}
+                className="flex items-center gap-2 px-8 rounded-xl bg-yellow-500 hover:bg-yellow-600 active:scale-[0.98]"
+              >
+                <p className="text-sm">Book Freelancer</p>
+              </Button>
             }
           </div>
+        }
+        <div className="flex justify-center items-center gap-6">
+          <AnimatePresence mode="wait">
+            {(isMobile && !selectedConversationId) && (
+              <motion.div
+                key="conversation-list"
+                initial={{ x: '-100%', opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: '-100%', opacity: 0 }}
+                transition={{
+                  type: "spring",
+                  damping: 25,
+                  stiffness: 300,
+                  duration: 0.3
+                }}
+                className="w-full md:w-[540px] bg-white rounded-none md:rounded-3xl h-screen md:h-[90vh]"
+              >
+                <ConversationContent
+                  conversationState={conversationState}
+                  loadMore={loadMore}
+                  hasMore={hasMore}
+                  isLoadingMore={isLoadingMore}
+                  user={session.user}
+                  isMobile={isMobile}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Non-mobile conversation list (always visible on desktop) */}
+          {!isMobile && (
+            <div className="hidden md:block w-full md:w-[540px] bg-white rounded-none md:rounded-3xl h-screen md:h-[90vh]">
+              <ConversationContent
+                conversationState={conversationState}
+                loadMore={loadMore}
+                hasMore={hasMore}
+                isLoadingMore={isLoadingMore}
+                user={session.user}
+                isMobile={isMobile}
+              />
+            </div>
+          )}
+
+          <AnimatePresence mode="wait">
+            {(isMobile && selectedConversationId) || !isMobile ? (
+              <motion.div
+                key={selectedConversationId || 'no-conversation'}
+                initial={isMobile ? { x: '100%', opacity: 0 } : false}
+                animate={{ x: 0, opacity: 1 }}
+                exit={isMobile ? { x: '100%', opacity: 0 } : {}}
+                transition={{
+                  type: "spring",
+                  damping: 25,
+                  stiffness: 300,
+                  duration: 0.3
+                }}
+                className="w-full md:w-2/3 bg-white h-screen md:h-[90vh] rounded-none md:rounded-3xl overflow-auto flex flex-col"
+              >
+                {selectedConversationId !== null
+                  ?
+                  <Messages
+                    user={session.user}
+                    conversationId={selectedConversationId}
+                  />
+                  :
+                  <NoConversationSelected onClick={handleBookConversation} />
+                }
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </div>
       </div>
     </Suspense>
@@ -111,23 +162,28 @@ export function NoConversationSelected({ onClick }: { onClick: () => void }) {
   );
 }
 
-export function ChatContentSkeleton() {
+export function ChatContentSkeleton({
+  isMobile
+}: {
+  isMobile: boolean
+}) {
   return (
-    <div className="flex justify-center items-center gap-6 h-screen p-6 bg-gray-200">
+    <div className="flex justify-center items-center gap-6 h-screen p-0 md:p-6 bg-gray-200">
       {/* Conversation list skeleton */}
-      <div className="w-[540px] bg-white h-[90vh] rounded-2xl flex flex-col">
+      <div className="w-full md:w-[540px] bg-white h-screen md:h-[90vh] rounded-2xl flex flex-col">
         <div className="py-6 border-b px-6">
-          <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-14 w-24 bg-gray-200 rounded animate-pulse"></div>
         </div>
         <div className="flex-1 overflow-y-auto">
-          <ConversationsSkeleton />
+          <ConversationsSkeleton numberOfSkeletons={isMobile ? 9 : 8} />
         </div>
       </div>
-
       {/* Messages area skeleton */}
-      <div className="w-2/3 bg-white h-[90vh] rounded-2xl flex flex-col">
-        <NoConversationSelectedSkeleton />
-      </div>
+      {!isMobile &&
+        <div className="w-2/3 bg-white h-[90vh] rounded-2xl flex flex-col">
+          <NoConversationSelectedSkeleton />
+        </div>
+      }
     </div>
   );
 }
@@ -168,10 +224,10 @@ export function ConversationErrorBoundary({
   );
 }
 
-export function ConversationsSkeleton() {
+export function ConversationsSkeleton({ numberOfSkeletons = 8 }: { numberOfSkeletons?: number }) {
   return (
     <div className="w-full space-y-3">
-      {Array.from({ length: 8 }).map((_, index) => (
+      {Array.from({ length: numberOfSkeletons }).map((_, index) => (
         <ConversationCardSkeleton key={index} />
       ))}
     </div>

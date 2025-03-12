@@ -19,21 +19,23 @@ export function ConversationContent({
   loadMore,
   hasMore,
   isLoadingMore,
-  user
+  user,
+  isMobile
 }: {
   conversationState: ConversationsState;
   loadMore: () => void;
   hasMore: boolean;
   isLoadingMore: boolean;
   user: User;
+  isMobile: boolean;
 }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col overflow-auto">
       <div className="space-y-6 py-6 border-b px-6 border-b-gray-200 shadow-sm">
         <div className="flex justify-between items-center">
           <p className="text-xl font-medium">Contacts</p>
           {conversationState.conversations.length > 0 &&
-            <div className="text-gray-500 flex justify-center items-center gap-1">
+            <div className="text-yellow-600 flex justify-center items-center gap-1 rounded-xl bg-yellow-50 p-1">
               <UsersIcon className="w-4 h-4" />
               <p className="font-bold">{conversationState.conversations.length}</p>
             </div>
@@ -43,7 +45,7 @@ export function ConversationContent({
           <ButtonCommingSoon />
         </SearchEngineConversation>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto h-full">
         <Conversations
           conversationState={conversationState}
           loadMore={loadMore}
@@ -117,7 +119,7 @@ export function Conversations({
       ) :
         (
           <>
-            <div className="space-y-2">
+            <div className="space-y-2 px-6 md:px-0">
               {conversationState.conversations.map((conversation) => (
                 <ConversationCard
                   key={conversation.id}
@@ -125,6 +127,7 @@ export function Conversations({
                   onSelect={handleConversationClick}
                   selected={selectedConversationId === conversation.id}
                   user={user}
+                  isMobile
                 />
               ))}
             </div>
@@ -149,14 +152,17 @@ export function ConversationCard({
   conversation,
   onSelect,
   selected,
-  user
+  user,
+  isMobile
 }: {
   conversation: ConversationWithRelations;
   onSelect: (id: string) => void;
   selected: boolean;
   user: User;
+  isMobile: boolean;
 }) {
   const timeSent = new Date(conversation.chatMessages[0].createdAt);
+  const truncateTextValue = isMobile ? 40 : 50;
 
   const handleClick = () => {
     onSelect(conversation.id);
@@ -166,11 +172,11 @@ export function ConversationCard({
     <div
       onClick={handleClick}
       className={`
-        flex gap-5 w-full py-3 ps-6 cursor-pointer hover:bg-gray-50 
+        flex gap-5 items-center w-full py-6 md:py-3 ps-0 md:ps-6 cursor-pointer hover:bg-gray-50 
         ${selected ? 'bg-gray-100 border-yellow-400 border-r-4' : 'border-b border-b-gray-200'}`
       }>
       <div className="relative">
-        <Avatar className="h-14 w-14 shadow-md flex-shrink-0 rounded-xl">
+        <Avatar className="h-16 w-16 md:h-14 md:w-14 shadow-md flex-shrink-0 rounded-full md:rounded-xl">
           <AvatarImage
             src={conversation.participants[0].user.image!}
             alt={`${conversation.participants[0].user.name}'s avatar`}
@@ -185,7 +191,7 @@ export function ConversationCard({
       </div>
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <p className="capitalize">{conversation.participants[0].user.name}</p>
+          <p className="capitalize font-bold md:font-normal">{conversation.participants[0].user.name}</p>
           {conversation.unreadCount > 0 &&
             (conversation.unreadCount === 1 ?
               <p className="bg-orange-100 text-gray-900 rounded-full px-2 py-1 text-sm">New</p>
@@ -195,9 +201,9 @@ export function ConversationCard({
         </div>
         <div className="text-sm flex gap-3 justify-between text-gray-500">
           {conversation.chatMessages[0].image ? (
-            <p className="w-[350px]">{`${conversation.chatMessages[0].senderId === user?.id ? 'You' : conversation.participants[0].user.name} sent an image`}</p>
+            <p className="w-[260px] md:w-[350px]">{`${conversation.chatMessages[0].senderId === user?.id ? 'You' : conversation.participants[0].user.name} sent an image`}</p>
           ) : (
-            <p className="w-[350px]">{truncateText(conversation.chatMessages[0].body!, 50)}</p>
+            <p className="w-[260px] md:w-[350px]">{truncateText(conversation.chatMessages[0].body!, truncateTextValue)}</p>
           )}
           <p className="lowercase">{timeSent.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</p>
         </div>
