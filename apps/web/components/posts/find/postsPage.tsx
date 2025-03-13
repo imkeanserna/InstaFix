@@ -181,7 +181,7 @@ export function PostsPage() {
   });
 
   return (
-    <div className="py-8 w-full">
+    <div className="pb-8 pt-4 w-full">
       {isCameraRoute && detectedString && professions.length > 0 &&
         <div>
           <p>AI Detected: It looks you have issue on {detectedString}</p>

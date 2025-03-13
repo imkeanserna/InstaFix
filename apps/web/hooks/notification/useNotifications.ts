@@ -6,9 +6,10 @@ import { BookingEventType, BookingStatus } from "@prisma/client/edge";
 import { getStatusForEventType, MessageType, NotificationState, TypeBookingNotification } from "@repo/types";
 import { User } from "next-auth";
 import { useEffect, useState } from "react";
-import { BookingActionData, useBookingAction, useBookingActions } from "../useBooking";
+import { BookingActionData, useBookingAction, useBookingActions, useBookingMessage } from "../useBooking";
 import { useWebSocket } from "../useWebSocket";
 import { toast } from "@repo/ui/components/ui/sonner";
+import { useRouter } from "next/navigation";
 
 export const useNotifications = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -185,3 +186,25 @@ export const useNotificationCard = (notification: TypeBookingNotification, user:
     timeAgo
   };
 };
+
+export function useNotificationHandler() {
+  const { notificationState, addNotification } = useNotifications();
+  const { lastMessage, clearMessage } = useWebSocket();
+  const router = useRouter();
+
+  useBookingMessage({
+    lastMessage,
+    onBookingCreated: () => {
+      addNotification(lastMessage?.payload as TypeBookingNotification);
+      clearMessage();
+    },
+    onError: (errorPayload) => {
+      clearMessage();
+    }
+  });
+
+  return {
+    unreadCount: notificationState.pagination.unreadCount,
+    navigateToNotifications: () => router.push('/notifications')
+  };
+}

@@ -42,7 +42,7 @@ export function BookPage({ postId }: { postId: string }) {
   }
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-8 mt-8">
       <div className="ps-0 lg:ps-56 flex gap-4 items-center">
         <Button
           variant="outline"

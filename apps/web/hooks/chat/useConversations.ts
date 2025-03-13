@@ -158,6 +158,12 @@ export const useConversations = () => {
     }));
   }, []);
 
+  const totalUnreadCount = useMemo(() => {
+    return conversationState.conversations.reduce((total, conversation) => {
+      return total + (conversation.unreadCount || 0);
+    }, 0);
+  }, [conversationState.conversations]);
+
   return useMemo(() => ({
     conversationState,
     isLoading,
@@ -169,6 +175,7 @@ export const useConversations = () => {
     updateConversation,
     updateConversationUnreadCount,
     removeConversation,
+    totalUnreadCount,
     hasMore: conversationState.pagination.hasNextPage
   }), [
     conversationState,
@@ -180,6 +187,7 @@ export const useConversations = () => {
     addConversation,
     updateConversation,
     updateConversationUnreadCount,
-    removeConversation
+    removeConversation,
+    totalUnreadCount
   ]);
 };

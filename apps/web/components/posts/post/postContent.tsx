@@ -51,7 +51,7 @@ export function PostContent({ postId, username }: {
   const showRatingsAndReviews = dynamicData.reviews.length > 0 && dynamicData.averageRating && dynamicData.averageRating > 0;
 
   return (
-    <div className='w-full'>
+    <div className='w-full mt-8'>
       <div className="flex flex-col md:flex-row gap-20 relative">
         {/* Left Side - hidden on tablet and below */}
         <div className='hidden lg:flex w-[600px] h-screen sticky top-0 flex-col gap-8'>

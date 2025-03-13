@@ -49,7 +49,7 @@ export function ChatContent() {
     <Suspense fallback={<ChatContentSkeleton isMobile={isMobile} />}>
       <div className="flex flex-col gap-4 h-screen p-0 md:py-6 md:px-12 bg-gray-200">
         {!isMobile &&
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center px-6">
             <p className="text-lg text-gray-900">Conversations with Instafix User</p>
             {selectedConversationId &&
               <Button

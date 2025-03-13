@@ -82,14 +82,16 @@ class RealTimeServer {
             await this.chatManager.handleChatEvent(ws, data);
             break;
           default:
-            console.log(`Unknown event: ${event}`);
+            throw new Error(`Unknown event: ${event}`);
         }
       } catch (error) {
-        console.error('Message handling error:', error);
+        this.handleError(error instanceof Error ? error : new Error(String(error)), ws.userId);
       }
     });
 
-    ws.on("error", this.handleError);
+    ws.on("error", (err) => {
+      this.handleError(err instanceof Error ? err : new Error(String(err)), ws.userId);
+    });
     ws.on("close", () => {
       this.messagingService.disconnect(ws.userId);
       this.handleDisconnection();
@@ -100,8 +102,9 @@ class RealTimeServer {
     console.log("Client disconnected");
   }
 
-  private handleError(error: Error): void {
+  private handleError(error: Error, userId: string): void {
     console.error("WebSocket error:", error);
+    DirectMessagingPubSub.getInstance().handleError(error, userId);
   }
 
   public start(): void {

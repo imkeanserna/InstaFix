@@ -67,7 +67,7 @@ export function Notifications() {
           <h1 className="text-3xl font-semibold">Notifications</h1>
         </div>
         <NotificationIcon
-          unreadCount={notificationState.pagination.unreadCount}
+          isClickable={false}
         />
       </div>
       {notificationState.notifications.length === 0 ? (

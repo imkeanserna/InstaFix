@@ -1,25 +1,26 @@
 "use client";
 
+import { useNotificationHandler } from "@/hooks/notification/useNotifications";
 import { Bell } from "lucide-react";
 
 interface NotificationIconProps {
-  unreadCount: number;
-  onClick?: () => void;
+  isClickable?: boolean;
   className?: string;
 }
 
-export const NotificationIcon = ({ unreadCount, onClick, className = '' }: NotificationIconProps) => {
-  const Component = onClick ? 'button' : 'div';
+export const NotificationIcon = ({ isClickable, className = '' }: NotificationIconProps) => {
+  const { unreadCount, navigateToNotifications } = useNotificationHandler();
+  const Component = isClickable ? 'button' : 'div';
 
   return (
     <div className={`relative ${className}`}>
       <Component
         className={`flex items-center gap-2 p-3 rounded-full transition-colors
           ${unreadCount > 0 ? 'bg-yellow-500' : 'bg-gray-100'}
-          ${onClick ? 'hover:bg-yellow-500 cursor-pointer hover:text-white' : ''}
+          ${isClickable ? 'hover:bg-yellow-500 cursor-pointer hover:text-white' : ''}
         `}
-        onClick={onClick}
-        type={onClick ? 'button' : undefined}
+        onClick={navigateToNotifications}
+        type={isClickable ? 'button' : undefined}
       >
         <Bell
           className={`h-5 w-5 ${unreadCount > 0 ? 'text-white' : 'text-gray-900'}`}

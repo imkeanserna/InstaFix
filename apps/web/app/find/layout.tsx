@@ -1,4 +1,3 @@
-import { FindNavbar } from "@/components/navbar/FindNavbar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,7 +12,6 @@ export default function RootLayout({
 }>) {
   return (
     <div className="px-0 sm:px-6 lg:px-24">
-      <FindNavbar />
       {children}
     </div>
   );
