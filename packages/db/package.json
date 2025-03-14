@@ -3,7 +3,11 @@
     "type": "module",
     "scripts": {
         "dev": "tsc --watch",
-        "build": "tsc"
+        "build": "tsc",
+        "db:seed": "prisma db seed"
+    },
+    "prisma": {
+        "seed": "npx tsx prisma/seed.ts"
     },
     "exports": {
         "./schema": "./src/index.ts"
@@ -13,6 +17,8 @@
         "typescript": "latest"
     },
     "dependencies": {
-        "@prisma/extension-accelerate": "^1.2.1"
+        "@prisma/extension-accelerate": "^1.2.1",
+        "@types/bcryptjs": "^2.4.6",
+        "bcryptjs": "^2.4.3"
     }
 }

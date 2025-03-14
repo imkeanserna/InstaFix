@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
-import { addUser } from "../app/_lib/user.actions";
+import { addUser } from "@/app/api/_action/user/userQuery";
 
 export const currentUser = async () => {
   const session = await auth();

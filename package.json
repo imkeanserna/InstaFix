@@ -19,6 +19,13 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4"
+    "@neondatabase/serverless": "^0.10.4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.8",
+    "bcryptjs": "^2.4.3",
+    "framer-motion": "^11.18.1",
+    "jsonwebtoken": "^9.0.2",
+    "recoil": "^0.7.7",
+    "zod": "^3.24.1"
   }
 }

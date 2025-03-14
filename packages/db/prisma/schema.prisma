@@ -16,9 +16,442 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  name     String?
-  password String?
-  image    String?
+  id                   String                @id @default(cuid())
+  email                String                @unique
+  name                 String?
+  password             String?
+  image                String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  location             Location?             @relation(fields: [locationId], references: [id])
+  locationId           String?
+  posts                Post[]
+  payments             Payment[]
+  payouts              Payout[]
+  transactions         Transaction[]
+  reviews              Review[]
+  clientBookings       Booking[]             @relation("ClientBookings")
+  freelancerBookings   Booking[]             @relation("FreelancerBookings")
+  likes                Like[]
+  bookingNotifications BookingNotification[]
+  participants         Participant[]
+  chatMessages         ChatMessage[]
+  deletedMessages      DeletedMessage[]
+}
+
+model Post {
+  id                  String                   @id @default(cuid())
+  title               String?
+  description         String?
+  pricingType         PricingType?
+  hourlyRate          Float?
+  fixedPrice          Float?
+  customDetails       String?
+  packageDetails      String?
+  media               Media[]
+  coverPhoto          String?
+  userId              String
+  tags                PostTag[]
+  user                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messagePosts        MessagePost[]
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  serviceEngagement   ServiceEngagement[]
+  location            Location?                @relation(fields: [locationId], references: [id])
+  locationId          String?
+  serviceLocation     ServiceLocationType?
+  skills              String[]
+  experience          String?
+  targetAudience      TargetAudience?
+  servicesIncluded    ServicesIncluded[]
+  requestConfirmation RequestConfirmationType?
+  payments            Payment[]
+  reviews             Review[]
+  averageRating       Float?
+  bookings            Booking[]
+  likes               Like[]
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Booking {
+  id                   String                @id @default(cuid())
+  date                 DateTime
+  startTime            DateTime?
+  endTime              DateTime?
+  status               BookingStatus         @default(PENDING)
+  description          String
+  totalAmount          Float
+  quantity             Int?
+  post                 Post                  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId               String
+  client               User                  @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
+  clientId             String
+  freelancer           User                  @relation("FreelancerBookings", fields: [freelancerId], references: [id], onDelete: Cascade)
+  freelancerId         String
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  bookingNotifications BookingNotification[]
+  chatMessages         ChatMessage[]
+  review               Review?
+
+  @@index([date, freelancerId])
+  @@index([clientId])
+  @@index([postId])
+  @@index([status])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Float    @default(0.0)
+  comment   String?
+  userId    String
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BookingNotification {
+  id     String           @id @default(cuid())
+  type   BookingEventType
+  isRead Boolean          @default(false)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([type])
+}
+
+model Media {
+  id        String    @id @default(cuid())
+  url       String
+  type      MediaType
+  postId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  post      Post      @relation(fields: [postId], references: [id])
+}
+
+model ServiceEngagement {
+  id             String         @id @default(cuid())
+  postId         String
+  engagementType EngagementType
+  customDetails  String?
+  post           Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model PostTag {
+  id            String      @id @default(cuid())
+  postId        String
+  subcategoryId String
+  post          Post        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id            String        @id @default(cuid())
+  name          String        @unique
+  imageSrc      String?
+  subcategories Subcategory[]
+}
+
+model Subcategory {
+  id         String    @id @default(cuid())
+  name       String    @unique
+  imageSrc   String?
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  PostTag    PostTag[]
+}
+
+model Location {
+  id                String   @id @default(cuid())
+  fullAddress       String
+  normalizedAddress String
+  latitude          Float
+  longitude         Float
+  streetAddress     String?
+  neighborhood      String?
+  city              String?
+  state             String?
+  country           String?
+  postalCode        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  posts             Post[]
+  users             User[]
+}
+
+model ChatSession {
+  id        String    @id @default(uuid())
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+}
+
+model Message {
+  id            String        @id @default(uuid())
+  chatSessionId String
+  role          Role
+  content       String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  status        Status        @default(SENT)
+  errorCode     String?
+  ChatSession   ChatSession   @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+  messagePosts  MessagePost[]
+}
+
+model MessagePost {
+  id        String   @id @default(uuid())
+  messageId String
+  postId    String
+  createdAt DateTime @default(now())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, postId])
+}
+
+model Conversation {
+  id            String        @id @default(cuid())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  lastMessageAt DateTime      @default(now())
+  chatMessages  ChatMessage[]
+  participants  Participant[]
+}
+
+model Participant {
+  id             String       @id @default(cuid())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  hasSeenLatest  Boolean      @default(false)
+  joinedAt       DateTime     @default(now())
+  leftAt         DateTime?
+
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model ChatMessage {
+  id              String           @id @default(cuid())
+  body            String?
+  image           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  isRead          Boolean          @default(false)
+  sender          User             @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId        String
+  conversation    Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId  String
+  booking         Booking?         @relation(fields: [bookingId], references: [id])
+  bookingId       String?
+  isSystemMessage Boolean          @default(false)
+  deletedForUsers DeletedMessage[]
+
+  @@index([senderId])
+  @@index([conversationId])
+  @@index([bookingId])
+}
+
+model DeletedMessage {
+  id          String      @id @default(cuid())
+  chatMessage ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId   String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  deletedAt   DateTime    @default(now())
+
+  @@index([messageId])
+  @@index([userId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Float
+  currency      String
+  userId        String
+  postId        String
+  status        PaymentStatus
+  paymentMethod String // E.g., credit card, PayPal, bank transfer
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post   Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  payout Payout[]
+}
+
+model Payout {
+  id           String       @id @default(cuid())
+  amount       Float
+  currency     String
+  userId       String
+  paymentId    String
+  status       PayoutStatus
+  payoutMethod String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id              String          @id @default(cuid())
+  userId          String
+  amount          Float
+  currency        String
+  transactionType TransactionType
+  createdAt       DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PopularSearch {
+  id           String   @id @default(cuid())
+  query        String   @unique
+  count        Int      @default(1)
+  lastSearched DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@index([count, lastSearched])
+}
+
+enum Role {
+  USER
+  BOT
+}
+
+enum Status {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum EngagementType {
+  ONE_TIME_PROJECT
+  ONGOING_COLLABORATION
+  CONSULTATION
+  CUSTOM_ARRANGEMENT
+}
+
+enum ServiceLocationType {
+  ONLINE
+  IN_PERSON
+  HYBRID
+}
+
+enum TargetAudience {
+  STARTUPS
+  ENTERPRISES
+  INDIVIDUALS
+  NON_PROFITS
+}
+
+enum ServicesIncluded {
+  FAST_TURNAROUND
+  UNLIMITED_REVISIONS
+  FREE_CONSULTATION
+  PROJECT_MANAGEMENT_SUPPORT
+  AVAILABILITY_24_7
+  NO_UPFRONT_PAYMENT
+  PROFESSIONAL_PORTFOLIO
+  MONEY_BACK_GUARANTEE
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum RequestConfirmationType {
+  INSTANT_BOOK
+  APPROVE_DECLINE
+}
+
+enum PricingType {
+  HOURLY
+  FIXED_PRICE
+  CUSTOM
+  PACKAGE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PayoutStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum TransactionType {
+  PAYMENT
+  PAYOUT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  DECLINED
+}
+
+enum NotificationType {
+  CHAT
+  BOOKING
+}
+
+enum BookingEventType {
+  CREATED
+  UPDATED
+  RESCHEDULED
+  CANCELLED
+  COMPLETED
+  CONFIRMED
+  DECLINED
+}
+
+enum ChatEventType {
+  SENT
+  DELIVERED
+  READ
+  TYPING
+  STOPPED_TYPING
+  DELETED
+  START_CONVERSATION
+  CONVERSATION_CREATED
 }

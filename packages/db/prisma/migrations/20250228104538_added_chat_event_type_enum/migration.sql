@@ -1,0 +1,2 @@
+-- CreateEnum
+CREATE TYPE "ChatEventType" AS ENUM ('SENT', 'DELIVERED', 'READ', 'TYPING', 'STOPPED_TYPING', 'DELETED');

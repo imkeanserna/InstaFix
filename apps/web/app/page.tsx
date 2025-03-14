@@ -1,5 +1,6 @@
 import Image from "next/image";
 import SignInButton from "@/components/ui/signInButton";
+import { ChatBotAi } from "@/components/chatbot/chat";
 
 export default function Home() {
   return (

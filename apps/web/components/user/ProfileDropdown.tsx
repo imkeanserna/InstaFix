@@ -10,10 +10,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/ui/components/ui/dropdown-menu"
-import { Sun, Moon, User as UserIcon, Settings, LogOut, ChevronRight } from 'lucide-react'
+import { User as UserIcon, Settings, LogOut, ChevronRight, MessageCircle, Heart, BriefcaseBusiness } from 'lucide-react'
 import { useTheme } from '@repo/ui/context/ThemeContext';
 import { User } from "next-auth";
 import { signOut } from "next-auth/react";
+import { useConversations } from "@/hooks/chat/useConversations"
+import { useRouter } from "next/navigation"
 
 interface ProfileDropdownProps {
   user?: User | null;
@@ -22,50 +24,46 @@ interface ProfileDropdownProps {
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
   const { theme, toggleTheme } = useTheme();
   const darkTheme = theme === 'dark';
+  const { totalUnreadCount } = useConversations();
+  const router = useRouter();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-12 w-12 p-0
-            hover:bg-amber-900/20
-            transition-all
-            rounded-full
-            group"
+          className="relative bg-yellow-400 hover:bg-yellow-500 flex group items-center justify-center gap-2 border border-gray-500 rounded-full py-7 px-4
+          transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 shadow-md"
         >
-          <Avatar className="h-12 w-12
-            border-2 border-transparent
-            group-hover:border-amber-500
-            transition-all">
-            <AvatarImage
-              src={user?.image || "https://github.com/shadcn.png"}
-              alt={user?.name || "User Profile"}
-              className="object-cover"
-            />
-            <AvatarFallback className="
-              bg-neutral-700
-              text-neutral-300
-              group-hover:bg-amber-900/30
-              transition-all">
-              {user?.name!.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <p className="font-medium">{user?.name}</p>
+          <div className="relative">
+            <Avatar className={`h-12 w-12 border-transparent ${totalUnreadCount > 0 ? 'border-2' : 'border'} border-amber-500 transition-all`}>
+              <AvatarImage
+                src={user?.image || "https://github.com/shadcn.png"}
+                alt={user?.name || "User Profile"}
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-neutral-700 text-neutral-300 group-hover:bg-amber-900/30 transition-all">
+                {user?.name?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            {totalUnreadCount > 0 && (
+              <div className="px-2 py-1 rounded-full bg-red-500 text-white absolute -top-1 -right-1 flex items-center justify-center border border-white">
+                <p className="text-xs">{totalUnreadCount}</p>
+              </div>
+            )}
+          </div>
         </Button>
       </DropdownMenuTrigger>
-
       <DropdownMenuContent
         className="w-72
-          bg-gradient-to-br
-          from-neutral-900/95
-          via-neutral-900/90
-          to-neutral-950/95
-          backdrop-blur-xl
           border-2
-          border-amber-700/20
+          border-gray-200
           rounded-2xl
           shadow-2xl
-          overflow-hidden"
+          overflow-hidden
+          p-0
+        "
         align="end"
         forceMount
       >
@@ -73,16 +71,11 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
         <div className="
           px-4
           py-4
-          border-b
-          border-amber-700/20
-          bg-gradient-to-r
-          from-neutral-900/50
-          to-amber-900/20">
-          <div className="flex items-center space-x-3">
+          border-b border-gray-200"
+        >
+          <div className="flex items-center space-x-3 text-gray-900">
             <Avatar className="h-12 w-12
-              border-2
-              border-transparent
-              group-hover:border-amber-500">
+              border-2 border-amber-500">
               <AvatarImage
                 src={user?.image || "https://github.com/shadcn.png"}
                 alt={user?.name || "User Profile"}
@@ -99,16 +92,12 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
               <p className="
                 text-sm
                 font-semibold
-                text-amber-100
-                group-hover:text-white
                 transition-colors">
                 {user?.name}
               </p>
               <p className="
                 text-xs
-                text-amber-200/50
                 truncate
-                group-hover:text-amber-200/80
                 transition-colors">
                 {user?.email}
               </p>
@@ -123,49 +112,74 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
         </div>
 
         {/* Menu Items */}
-        <div className="py-2">
-          <DropdownMenuGroup>
+        <div>
+          <DropdownMenuGroup className="space-y-1">
             {[
+              {
+                icon: <MessageCircle className="menu-icon" />,
+                text: 'Messages',
+                hoverClass: 'hover:text-amber-500',
+                badge: totalUnreadCount > 0 ? totalUnreadCount.toString() : null,
+                url: '/messages'
+              },
+              {
+                icon: <Heart className="menu-icon" />,
+                text: 'Favorites',
+                hoverClass: 'hover:text-amber-500',
+                badge: 10,
+                url: null
+              },
               {
                 icon: <UserIcon className="menu-icon" />,
                 text: 'Profile',
-                hoverClass: 'hover:text-amber-500'
+                hoverClass: 'hover:text-amber-500',
+                url: null
               },
               {
                 icon: <Settings className="menu-icon" />,
                 text: 'Settings',
                 hoverClass: 'hover:text-amber-500',
-                badge: 'Coming soon'
-              }
-            ].map(({ icon, text, hoverClass, badge }) => (
+                badge: 'Coming soon',
+                badgeClass: 'text-xs text-gray-500',
+                url: null
+              },
+              {
+                icon: <BriefcaseBusiness className="menu-icon" />,
+                text: 'Be a freelancer',
+                hoverClass: 'hover:text-amber-500',
+                url: '/become-a-freelancer'
+              },
+            ].map(({ icon, text, hoverClass, badge, url }) => (
               <DropdownMenuItem
                 key={text}
                 className={`
                   cursor-pointer
+                  py-3
                   px-4
-                  py-2.5
                   transition-all
                   group
                   relative
                   flex
+                  text-gray-900
                   items-center
                   hover:bg-amber-900/10
                   ${hoverClass}
                 `}
+                onClick={() => {
+                  if (url) {
+                    router.push(url);
+                  }
+                }}
               >
                 {React.cloneElement(icon, {
                   className: `
                     mr-3
                     h-5
                     w-5
-                    text-neutral-400
-                    group-hover:text-amber-500
                     transition-colors
                   `
                 })}
                 <span className="
-                  text-neutral-300
-                  group-hover:text-amber-100
                   transition-colors
                   flex-grow
                 ">
@@ -176,32 +190,17 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
                     absolute
                     right-4
                     text-xs
-                    text-neutral-500
-                    group-hover:text-amber-400
+                    text-amber-700
                   ">
                     {badge}
                   </span>
                 )}
               </DropdownMenuItem>
             ))}
-            {/* Dark Mode Toggle */}
-            <DropdownMenuItem
-              className="cursor-pointer px-4 py-2.5 transition-all group hover:bg-amber-900/10 flex items-center"
-              onClick={toggleTheme}
-            >
-              {darkTheme ? (
-                <Sun className="mr-3 h-5 w-5 text-amber-500 group-hover:text-yellow-400 transition-colors" />
-              ) : (
-                <Moon className="mr-3 h-5 w-5 text-neutral-400 group-hover:text-amber-500 transition-colors" />
-              )}
-              <span className="text-neutral-300 group-hover:text-amber-100 transition-colors flex-grow">
-                {darkTheme ? "Light Mode" : "Dark Mode"}
-              </span>
-            </DropdownMenuItem>
           </DropdownMenuGroup>
 
           {/* Logout Section */}
-          <div className="border-t border-amber-700/20 mt-2">
+          <div className="border-t">
             <DropdownMenuItem
               className="
                 cursor-pointer
@@ -209,9 +208,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
                 py-2.5
                 transition-all
                 group
-                hover:bg-red-900/20
-                text-red-400
-                hover:text-red-500
                 flex
                 items-center"
               onClick={() => signOut({ callbackUrl: '/auth/login' })}
@@ -220,10 +216,9 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
                 mr-3
                 h-5
                 w-5
-                text-red-400
-                group-hover:text-red-500
-                transition-colors" />
-              <span>Log out</span>
+                text-red-500
+                group-hover:text-red-600" />
+              <span className="group-hover:text-red-600 text-red-500">Log out</span>
             </DropdownMenuItem>
           </div>
         </div>

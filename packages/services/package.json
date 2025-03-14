@@ -1,0 +1,22 @@
+{
+  "name": "@repo/services",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "export": {
+    "./storage": "./src/storage/mediaUpload.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.722.0",
+    "@repo/types": "workspace:*"
+  }
+}

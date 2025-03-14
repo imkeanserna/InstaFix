@@ -52,6 +52,22 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        blue: {
+          100: '#EFF6FC',
+          600: '#2E86DE',
+        },
+        green: {
+          100: '#EFF7F2',
+          600: '#329F5D',
+        },
+        red: {
+          100: '#FAEDEC',
+          600: '#C2160A',
+        },
+        orange: {
+          100: '#FFF5EB',
+          600: '#FA7F05',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -67,10 +83,21 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        'message-appear': {
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(8px)'
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        'message-appear': 'message-appear 0.3s ease-out forwards'
       },
     },
   },

@@ -8,6 +8,19 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  env: {
+    NEXT_BACKEND_URL: process.env.NEXT_BACKEND_URL,
+    MAPTILER_API_KEY: process.env.MAPTILER_API_KEY,
+    SOCKET_SERVER_URL: process.env.SOCKET_SERVER_URL
+    // Add other environment variables here as needed
+  },
+  images: {
+    domains: [
+      'pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev',
+      'lh3.googleusercontent.com'
+    ]
+  }
+};
 
 export default nextConfig;
