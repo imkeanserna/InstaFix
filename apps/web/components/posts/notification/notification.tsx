@@ -4,7 +4,7 @@ import { useNotificationHandler } from "@/hooks/notification/useNotifications";
 import { Button } from "@repo/ui/components/ui/button";
 import { Inbox } from "lucide-react";
 
-export function NotificationBell() {
+export function NotificationBell({ isScrolled }: { isScrolled: boolean }) {
   const { unreadCount, navigateToNotifications } = useNotificationHandler();
   return (
     <div className="flex flex-col items-center">
@@ -22,7 +22,7 @@ export function NotificationBell() {
           </div>
         )}
       </Button>
-      <p className="text-xs font-medium">Booking</p>
+      {!isScrolled && <p className="text-xs font-medium transition-opacity duration-300 ease-in-out opacity-100">Bookings</p>}
     </div>
   );
 }

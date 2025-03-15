@@ -7,11 +7,14 @@ import { NotificationBell } from "../posts/notification/notification";
 import ProfileDropdown from "../user/ProfileDropdown";
 import { User } from "next-auth";
 import { Earth, Search } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { Location } from "../ui/locationNavigation";
 
 export function FindNavbar({ user }: { user: User | undefined }) {
+  const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const hideSearchRoutes = ['/messages', '/notifications'];
   const hideNavBar = ['/'];
   const shouldHideSearch = hideSearchRoutes.includes(pathname);
@@ -32,14 +35,34 @@ export function FindNavbar({ user }: { user: User | undefined }) {
     };
   }, []);
 
+  const updateUrlParams = useCallback((updates: Partial<{
+    location: Location | null;
+  }>) => {
+    const params = new URLSearchParams(searchParams.toString())
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === undefined || (Array.isArray(value) && value.length === 0)) {
+        params.delete(key)
+      } else if (typeof value === 'object') {
+        params.set(key, JSON.stringify(value))
+      } else {
+        params.set(key, String(value))
+      }
+    });
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    router.push(newUrl, { scroll: false });
+  }, [router, searchParams]);
+
   if (pathname.includes("/book") || pathname.includes("/become-a-freelancer") || hideNavBar.includes(pathname)) {
     return null;
   }
 
   return (
     <div
-      className={`sticky top-0 z-50 bg-white flex items-center justify-between pt-6 pb-4 border-b border-b-gray-200 px-24 transition-shadow duration-300 
-        ${scrolled ? "shadow-lg" : "shadow-sm"}`}
+      className={`sticky top-0 z-50 bg-white flex items-center justify-between 
+         border-b-gray-200 px-24 transition-all duration-300 ease-in-out
+        ${scrolled ? "shadow-lg py-2" : "shadow-sm pt-6 pb-4"}`}
     >
       <h1>Find</h1>
       <div className="flex gap-64 justify-center items-center">
@@ -60,8 +83,10 @@ export function FindNavbar({ user }: { user: User | undefined }) {
             </Button>
           </SearchEngine>
         }
-        <div className="flex gap-9">
-          <LocationDialog>
+        <div className={`flex gap-9 ${scrolled ? "justify-center items-center" : ""}`}>
+          <LocationDialog
+            onFilterChange={updateUrlParams}
+          >
             <div className="flex flex-col items-center">
               <Button
                 variant="outline"
@@ -71,10 +96,10 @@ export function FindNavbar({ user }: { user: User | undefined }) {
                   <Earth className="h-6 w-6 text-gray-700" />
                 </div>
               </Button>
-              <p className="text-xs font-medium">Location</p>
+              {!scrolled && <p className="text-xs font-medium transition-opacity duration-300 ease-in-out opacity-100">Location</p>}
             </div>
           </LocationDialog>
-          <NotificationBell />
+          <NotificationBell isScrolled={scrolled} />
           <ProfileDropdown user={user} />
         </div>
       </div>

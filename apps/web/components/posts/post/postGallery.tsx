@@ -175,9 +175,125 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
   displayImages,
   setSelectedImage,
   setIsImageLoading
-}) => (
-  <div className="flex gap-2 h-[500px] rounded-2xl overflow-hidden">
-    {displayImages.length > 0 && (
+}) => {
+  // Different layouts based on image count
+  if (displayImages.length === 0) {
+    return <div className="h-[500px] rounded-2xl bg-gray-100 flex items-center justify-center">No images available</div>;
+  }
+
+  if (displayImages.length === 1) {
+    // For single image, show it full width
+    return (
+      <div className="h-[500px] rounded-2xl overflow-hidden">
+        <div
+          className="w-full h-full relative cursor-pointer active:scale-[0.99] transition duration-75"
+          onClick={() => setSelectedImage(displayImages[0])}
+        >
+          <LazyPostImage
+            src={displayImages[0].url}
+            alt="Gallery image"
+            className="object-cover"
+            onLoadingChange={setIsImageLoading}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (displayImages.length === 2) {
+    // For two images, split screen 50/50
+    return (
+      <div className="flex gap-2 h-[500px] rounded-2xl overflow-hidden">
+        {displayImages.map((image, index) => (
+          <div
+            key={image.id}
+            className="w-1/2 h-full relative cursor-pointer active:scale-[0.99] transition duration-75"
+            onClick={() => setSelectedImage(image)}
+          >
+            <LazyPostImage
+              src={image.url}
+              alt={`Gallery image ${index + 1}`}
+              className="object-cover"
+              onLoadingChange={index === 0 ? setIsImageLoading : undefined}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (displayImages.length === 3) {
+    // For three images, show first one large, other two in a column
+    return (
+      <div className="flex gap-2 h-[500px] rounded-2xl overflow-hidden">
+        <div
+          className="w-2/3 h-full relative cursor-pointer active:scale-[0.99] transition duration-75"
+          onClick={() => setSelectedImage(displayImages[0])}
+        >
+          <LazyPostImage
+            src={displayImages[0].url}
+            alt="Main gallery image"
+            className="object-cover"
+            onLoadingChange={setIsImageLoading}
+          />
+        </div>
+        <div className="w-1/3 flex flex-col gap-2">
+          {displayImages.slice(1, 3).map((image, index) => (
+            <div
+              key={image.id}
+              className="h-1/2 relative cursor-pointer active:scale-[0.99] transition duration-75"
+              onClick={() => setSelectedImage(image)}
+            >
+              <LazyPostImage
+                src={image.url}
+                alt={`Gallery image ${index + 2}`}
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (displayImages.length === 4) {
+    // For four images, show first one large, other three in a column
+    return (
+      <div className="flex gap-2 h-[500px] rounded-2xl overflow-hidden">
+        <div
+          className="w-1/2 h-full relative cursor-pointer active:scale-[0.99] transition duration-75"
+          onClick={() => setSelectedImage(displayImages[0])}
+        >
+          <LazyPostImage
+            src={displayImages[0].url}
+            alt="Main gallery image"
+            className="object-cover"
+            onLoadingChange={setIsImageLoading}
+          />
+        </div>
+        <div className="w-1/2 grid grid-cols-2 grid-rows-2 gap-2">
+          {displayImages.slice(1, 4).map((image, index) => (
+            <div
+              key={image.id}
+              className={`relative cursor-pointer active:scale-[0.99] transition duration-75 ${index === 0 ? "col-span-2" : ""
+                }`}
+              onClick={() => setSelectedImage(image)}
+            >
+              <LazyPostImage
+                src={image.url}
+                alt={`Gallery image ${index + 2}`}
+                className="object-cover h-full"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Default layout for 5 or more images (your original layout)
+  return (
+    <div className="flex gap-2 h-[500px] rounded-2xl overflow-hidden">
       <div
         className="w-1/2 h-full relative cursor-pointer active:scale-[0.99] transition duration-75"
         onClick={() => setSelectedImage(displayImages[0])}
@@ -186,27 +302,27 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
           src={displayImages[0].url}
           alt="Main gallery image"
           className="object-cover"
+          onLoadingChange={setIsImageLoading}
         />
       </div>
-    )}
-    <div className="w-1/2 grid grid-cols-2 grid-rows-2 gap-2">
-      {displayImages.slice(1, 5).map((image, index) => (
-        <div
-          key={image.id}
-          className="relative h-full cursor-pointer active:scale-[0.99] transition duration-75"
-          onClick={() => setSelectedImage(image)}
-        >
-          <LazyPostImage
-            src={image.url}
-            alt={`Gallery image ${index + 2}`}
-            className="object-cover"
-            onLoadingChange={index === 0 ? setIsImageLoading : undefined}
-          />
-        </div>
-      ))}
+      <div className="w-1/2 grid grid-cols-2 grid-rows-2 gap-2">
+        {displayImages.slice(1, 5).map((image, index) => (
+          <div
+            key={image.id}
+            className="relative h-full cursor-pointer active:scale-[0.99] transition duration-75"
+            onClick={() => setSelectedImage(image)}
+          >
+            <LazyPostImage
+              src={image.url}
+              alt={`Gallery image ${index + 2}`}
+              className="object-cover"
+            />
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-));
+  );
+});
 
 DesktopGrid.displayName = "DesktopGrid";
 

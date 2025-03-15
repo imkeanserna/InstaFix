@@ -56,58 +56,33 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-72
-          border-2
-          border-gray-200
-          rounded-2xl
-          shadow-2xl
-          overflow-hidden
-          p-0
-        "
+        className="w-72 border-2 border-gray-200 rounded-2xl shadow-2xl overflow-hidden p-0"
         align="end"
         forceMount
       >
         {/* User Profile Header */}
-        <div className="
-          px-4
-          py-4
-          border-b border-gray-200"
+        <div className="px-4 py-4 border-b border-gray-200"
         >
           <div className="flex items-center space-x-3 text-gray-900">
-            <Avatar className="h-12 w-12
-              border-2 border-amber-500">
+            <Avatar className="h-12 w-12 border-2 border-amber-500">
               <AvatarImage
                 src={user?.image || "https://github.com/shadcn.png"}
                 alt={user?.name || "User Profile"}
                 className="object-cover"
               />
-              <AvatarFallback className="
-                bg-neutral-700
-                text-neutral-300
-                group-hover:bg-amber-900/30">
+              <AvatarFallback className="bg-neutral-700 text-neutral-300 group-hover:bg-amber-900/30">
                 {user?.name!.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <p className="
-                text-sm
-                font-semibold
-                transition-colors">
+              <p className="text-sm font-semibold transition-colors">
                 {user?.name}
               </p>
-              <p className="
-                text-xs
-                truncate
-                transition-colors">
+              <p className="text-xs truncate transition-colors">
                 {user?.email}
               </p>
             </div>
-            <ChevronRight className="
-              text-neutral-500
-              w-5
-              h-5
-              group-hover:text-amber-500
-              transition-colors" />
+            <ChevronRight className="text-neutral-500 w-5 h-5 group-hover:text-amber-500 transition-colors" />
           </div>
         </div>
 
@@ -152,19 +127,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
             ].map(({ icon, text, hoverClass, badge, url }) => (
               <DropdownMenuItem
                 key={text}
-                className={`
-                  cursor-pointer
-                  py-3
-                  px-4
-                  transition-all
-                  group
-                  relative
-                  flex
-                  text-gray-900
-                  items-center
-                  hover:bg-amber-900/10
-                  ${hoverClass}
-                `}
+                className={`cursor-pointer py-3 px-4 transition-all group relative flex text-gray-900 items-center
+                  hover:bg-amber-900/10 ${hoverClass}`}
                 onClick={() => {
                   if (url) {
                     router.push(url);
@@ -172,26 +136,13 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
                 }}
               >
                 {React.cloneElement(icon, {
-                  className: `
-                    mr-3
-                    h-5
-                    w-5
-                    transition-colors
-                  `
+                  className: `mr-3 h-5 w-5 transition-colors`
                 })}
-                <span className="
-                  transition-colors
-                  flex-grow
-                ">
+                <span className="transition-colors flex-grow">
                   {text}
                 </span>
                 {badge && (
-                  <span className="
-                    absolute
-                    right-4
-                    text-xs
-                    text-amber-700
-                  ">
+                  <span className="absolute right-4 text-xs text-amber-700">
                     {badge}
                   </span>
                 )}
@@ -202,22 +153,10 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null }) => {
           {/* Logout Section */}
           <div className="border-t">
             <DropdownMenuItem
-              className="
-                cursor-pointer
-                px-4
-                py-2.5
-                transition-all
-                group
-                flex
-                items-center"
+              className="cursor-pointer px-4 py-2.5 transition-all group flex items-center"
               onClick={() => signOut({ callbackUrl: '/auth/login' })}
             >
-              <LogOut className="
-                mr-3
-                h-5
-                w-5
-                text-red-500
-                group-hover:text-red-600" />
+              <LogOut className="mr-3 h-5 w-5 text-red-500 group-hover:text-red-600" />
               <span className="group-hover:text-red-600 text-red-500">Log out</span>
             </DropdownMenuItem>
           </div>
