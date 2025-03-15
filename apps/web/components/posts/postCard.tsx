@@ -1,68 +1,61 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@repo/ui/components/ui/card";
-import { Calendar, ThumbsUp, MessageSquare, Share2, ExternalLink } from 'lucide-react';
+import { Card, CardContent } from "@repo/ui/components/ui/card";
 import { motion } from 'framer-motion';
 import { PostWithRelations } from "@/app/api/_action/posts/getPosts";
 import { formatDistanceToNow } from "date-fns";
+import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar";
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 export const PostCard = ({ post }: { post: PostWithRelations }) => {
+  const router = useRouter();
+  const handleClick = useCallback(() => {
+    router.push(`/find/${post.user.name}/${post.title}/${post.id}`);
+  }, [post, router]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="w-full overflow-hidden bg-white/95 backdrop-blur border border-gray-100 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/50 transition-all duration-300">
-        <div className="flex">
-          {true && (
-            <div className="w-28 h-28 flex-shrink-0">
-              <img
-                src={"https://ideogram.ai/assets/progressive-image/balanced/response/6gTAhKo9SfqEIahkNWmciA"}
-                alt={post.title || "Post"}
-                className="w-full h-full object-cover"
-              />
+      <Card
+        onClick={handleClick}
+        className="w-auto overflow-hidden bg-white/95 backdrop-blur 
+        hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/90 transition-all duration-300 rounded-r-2xl
+        cursor-pointer active:scale-[0.98] border-l-4 border-l-gray-900 hover:border-l-gray-950"
+      >
+        <CardContent className="rounded-2xl flex gap-4 px-3 py-2 relative">
+          <Image
+            src={post.coverPhoto!}
+            alt={`Message attachment from ${post.user.name}`}
+            width={150}
+            height={150}
+            className="rounded-2xl h-24 w-24 object-cover"
+          />
+          <div>
+            <p className="font-bold">{post.title}</p>
+            <p className="text-xs text-gray-500">{post.tags[0].subcategory.category.name}</p>
+            <div className="flex items-start gap-2 mt-2">
+              <Avatar className={`h-10 w-10 border-transparent border border-gray-500 transition-all`}>
+                <AvatarImage
+                  src={post.user.image || "https://github.com/shadcn.png"}
+                  alt={post.user.name || "User Profile"}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-neutral-700 text-neutral-300 group-hover:bg-amber-900/30 transition-all">
+                  {post.user?.name?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">{post.user.name}</p>
+                <p className="text-xs text-gray-400 font-medium">Joined {formatDistanceToNow(new Date(post.user.createdAt), { addSuffix: true })}</p>
+              </div>
             </div>
-          )}
-          <div className="flex-1 min-w-0 bg-white">
-            <CardHeader className="p-4 pb-2">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="font-semibold text-[15px] text-gray-900 line-clamp-1 tracking-tight">
-                  {post.title}
-                </h3>
-                <ExternalLink className="w-4 h-4 text-gray-400 hover:text-violet-500 transition-colors" />
-              </div>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="text-xs text-gray-500 font-medium">
-                  by {post.user.name || "Anonymous"}
-                </span>
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <Calendar className="w-3 h-3" />
-                  {formatDistanceToNow(new Date(), { addSuffix: true })}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-                {post.description}
-              </p>
-              <div className="flex items-center gap-6 mt-4 pt-3 border-t border-gray-100">
-                <button className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-violet-600 transition-colors">
-                  <ThumbsUp className="w-3.5 h-3.5" />
-                  {22}
-                </button>
-                <button className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-violet-600 transition-colors">
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  {22}
-                </button>
-                <button className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-violet-600 transition-colors">
-                  <Share2 className="w-3.5 h-3.5" />
-                  {22}
-                </button>
-              </div>
-            </CardContent>
           </div>
-        </div>
+        </CardContent>
       </Card>
     </motion.div>
   );

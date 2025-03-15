@@ -5,7 +5,7 @@ import { InfiniteData } from "@tanstack/react-query";
 import { motion } from 'framer-motion'
 import { PostWithUserInfo } from "@repo/types";
 import { PricingType } from "@prisma/client/edge";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, CarouselDots } from "@repo/ui/components/ui/carousel";
 import { Heart, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ import { LazyAvatarImage, LazyPostImage } from "../lazyImage";
 import { differenceInDays } from "date-fns";
 import { formatPrice } from "@/lib/postUtils";
 import { useLike } from "@/hooks/posts/useLike";
+import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more";
 
 interface PostsGridProps {
   postsData: InfiniteData<PostPage> | undefined
@@ -50,6 +51,41 @@ export const PostsGrid = memo(function PostsGrid({
     [postsData]
   );
 
+  // Ref for the sentinel element (for infinite scrolling)
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Intersection observer for infinite scrolling
+  const setupObserver = useCallback(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+  }, [hasNextPage, isFetchingNextPage, onLoadMore]);
+
+  // Connect observer when component mounts or when dependencies change
+  useEffect(() => {
+    setupObserver();
+    // Cleanup observer on unmount
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [setupObserver, allPosts.length]);
+
   if (!postsData) {
     return <motion.div
       initial={{ opacity: 0 }}
@@ -60,7 +96,7 @@ export const PostsGrid = memo(function PostsGrid({
     </motion.div>
   }
 
-  if (isLoading || isFetchingNextPage || error) {
+  if (isLoading || error) {
     return <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -105,24 +141,18 @@ export const PostsGrid = memo(function PostsGrid({
           </motion.div>
         ))}
       </motion.div>
-
-      {hasNextPage && (
-        <motion.div
-          className="text-center mt-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: allPosts.length * 0.1 + 0.3 }}
-        >
-          <button
-            onClick={onLoadMore}
-            disabled={isFetchingNextPage}
-            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 
-              disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isFetchingNextPage ? 'Loading more...' : 'Load more'}
-          </button>
-        </motion.div>
-      )}
+      <div
+        ref={loadMoreRef}
+        className="h-10 w-full flex justify-center items-center py-6"
+      >
+        {isFetchingNextPage ? (
+          <LoadingSpinnerMore className="w-6 h-6" />
+        ) : hasNextPage ? (
+          <div className="h-4"></div>
+        ) : (
+          <div className="text-sm text-gray-500">No more posts</div>
+        )}
+      </div>
     </div>
   )
 });
