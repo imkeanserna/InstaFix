@@ -19,12 +19,14 @@ import { capitalizeFirstLetter } from "@/lib/notificationUtils";
 import React, { useState } from "react";
 import { ReviewDrawerWrapper, ReviewModal } from "../review/reviewModalDrawer";
 import { useMediaQuery } from "@/hooks/useMedia";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function NotificationContent({ notificationId }: { notificationId: string }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [showReviewModal, setShowReviewModal] = useState(true);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { currency } = useCurrency();
 
   const {
     notification,
@@ -157,7 +159,7 @@ export function NotificationContent({ notificationId }: { notificationId: string
             </div>
             <div className="flex justify-between mb-2">
               <p className="underline">Price per item</p>
-              <p>₱{formatPrice((notification.booking.post.pricingType === PricingType.HOURLY ? notification.booking.post.hourlyRate || 0 : notification.booking.post.fixedPrice || 0))}.00</p>
+              <p>{currency === "PHP" ? "₱" : "$"}{formatPrice((notification.booking.post.pricingType === PricingType.HOURLY ? notification.booking.post.hourlyRate || 0 : notification.booking.post.fixedPrice || 0))}.00</p>
             </div>
             <div className="flex justify-between mb-2">
               <p className="underline">Quantity</p>
@@ -166,8 +168,8 @@ export function NotificationContent({ notificationId }: { notificationId: string
           </div>
           <Divider marginY="my-10" />
           <div className="flex justify-between font-medium">
-            <p>Total(PHP)</p>
-            <p>₱{formatPrice(notification.booking.totalAmount)}.00</p>
+            <p>Total({currency === "PHP" ? "PHP" : "USD"})</p>
+            <p>{currency === "PHP" ? "₱" : "$"}{formatPrice(notification.booking.totalAmount)}.00</p>
           </div>
           <div className="mt-4">
             <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">

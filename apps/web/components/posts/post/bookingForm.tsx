@@ -14,6 +14,8 @@ import { User } from "next-auth";
 import { formatPrice } from "@/lib/postUtils";
 import { useAuthModal } from "@repo/ui/context/AuthModalProvider";
 import { useMediaQuery } from "@/hooks/useMedia";
+import { useCurrency } from "@/hooks/useCurrency";
+import { PricingType } from "@prisma/client/edge";
 
 export const createBookingSchema = z.object({
   date: z.date(),
@@ -29,13 +31,15 @@ export function BookingForm({
   user,
   rate,
   username,
-  freelancerId
+  freelancerId,
+  pricingType
 }: {
   postId: string,
   user: User | null
   rate: number
   username: string
   freelancerId: string
+  pricingType: PricingType
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -46,6 +50,7 @@ export function BookingForm({
   const dateParam = searchParams.get('date');
   const selectedDate = dateParam ? new Date(dateParam) : undefined;
   const [inputDate, setInputDate] = useState<string>('');
+  const { currency } = useCurrency();
   const { openModal } = useAuthModal();
 
   const { bookingData, isLoading, isError } = useBookingData(postId);
@@ -205,8 +210,8 @@ export function BookingForm({
 
   return <div className={`flex flex-col rounded-xl p-6 shadow-2xl`}>
     <div className="flex gap-2 items-end mb-6">
-      <p className="text-2xl font-medium">₱{formatPrice(rate)}</p>
-      <span>hour</span>
+      <p className="text-2xl font-medium">{currency === "PHP" ? "₱" : "$"}{formatPrice(rate)}</p>
+      <span>{pricingType === PricingType.HOURLY ? "Hour" : "Fixed"}</span>
     </div>
     <div className={`${error ? 'border-2 border-red-400 rounded-xl' : ''}`}>
       <Popover>

@@ -15,6 +15,7 @@ import { differenceInDays } from "date-fns";
 import { formatPrice } from "@/lib/postUtils";
 import { useLike } from "@/hooks/posts/useLike";
 import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more";
+import { Currency, useCurrency } from "@/hooks/useCurrency";
 
 interface PostsGridProps {
   postsData: InfiniteData<PostPage> | undefined
@@ -50,6 +51,7 @@ export const PostsGrid = memo(function PostsGrid({
     ) || [],
     [postsData]
   );
+  const { currency } = useCurrency();
 
   // Ref for the sentinel element (for infinite scrolling)
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -137,7 +139,10 @@ export const PostsGrid = memo(function PostsGrid({
             }}
             className="h-full"
           >
-            <PostCard post={post} />
+            <PostCard
+              currency={currency}
+              post={post}
+            />
           </motion.div>
         ))}
       </motion.div>
@@ -159,12 +164,14 @@ export const PostsGrid = memo(function PostsGrid({
 
 export const PostCard = memo(function PostCard({
   post,
-  isFeatured
+  isFeatured,
+  currency
 }: {
   post: (PostWithUserInfo & {
     distance: number | null
   }),
-  isFeatured?: boolean
+  isFeatured?: boolean,
+  currency: Currency
 }) {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
@@ -313,7 +320,7 @@ export const PostCard = memo(function PostCard({
           ) : (
             <>
               <span className="font-semibold">
-                ${formatPrice(post.hourlyRate || post.fixedPrice || 0)}
+                {currency === "PHP" ? "₱" : "$"}{formatPrice(post.hourlyRate || post.fixedPrice || 0)}
               </span>
               <span>{post.pricingType === PricingType.HOURLY ? "hour" : "fixed"}</span>
             </>

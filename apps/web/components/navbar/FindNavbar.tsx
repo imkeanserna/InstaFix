@@ -3,13 +3,14 @@
 import { Button } from "@repo/ui/components/ui/button";
 import { LocationDialog } from "../posts/find/location";
 import { SearchEngine } from "../posts/find/search-engine";
-import { NotificationBell } from "../posts/notification/notification";
+import { CurrencyToggle, NotificationBell } from "../posts/notification/notification";
 import ProfileDropdown from "../user/ProfileDropdown";
 import { User } from "next-auth";
 import { Earth, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Location } from "../ui/locationNavigation";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function FindNavbar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -19,6 +20,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
   const hideNavBar = ['/'];
   const shouldHideSearch = hideSearchRoutes.includes(pathname);
   const [scrolled, setScrolled] = useState(false);
+  const { currency, changeCurrency } = useCurrency();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -90,7 +92,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
             <div className="flex flex-col items-center">
               <Button
                 variant="outline"
-                className="active:scale-[0.97] gap-0 py-6 px-3 rounded-full hover:bg-yellow-400 hover:border-gray-900 hover:text-gray-900 relative"
+                className="active:scale-[0.97] gap-0 py-6 px-3 rounded-full border-none hover:bg-yellow-400 hover:border-gray-900 hover:text-gray-900 relative"
               >
                 <div className="space-y-1 flex flex-col items-center">
                   <Earth className="h-6 w-6 text-gray-700" />
@@ -102,6 +104,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
           {user && (
             <NotificationBell isScrolled={scrolled} />
           )}
+          <CurrencyToggle currency={currency} changeCurrency={changeCurrency} />
           <ProfileDropdown user={user} pathname={pathname} />
         </div>
       </div>

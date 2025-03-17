@@ -10,7 +10,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/ui/components/ui/dropdown-menu"
-import { User as UserIcon, Settings, LogOut, ChevronRight, MessageCircle, Heart, BriefcaseBusiness, LogIn, UserPlus } from 'lucide-react'
+import {
+  User as UserIcon,
+  Settings,
+  LogOut,
+  ChevronRight,
+  MessageCircle,
+  Heart,
+  BriefcaseBusiness,
+  LogIn,
+  UserPlus,
+} from 'lucide-react'
 import { useTheme } from '@repo/ui/context/ThemeContext';
 import { User } from "next-auth";
 import { signOut } from "next-auth/react";

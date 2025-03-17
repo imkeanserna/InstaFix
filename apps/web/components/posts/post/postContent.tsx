@@ -74,6 +74,7 @@ export function PostContent({ postId, username }: {
                 rate={dynamicData.pricingType === PricingType.FIXED_PRICE ? dynamicData.fixedPrice || 0 : dynamicData.hourlyRate || 0}
                 username={username}
                 freelancerId={staticData.post.user.id}
+                pricingType={dynamicData.pricingType || PricingType.HOURLY}
               />
             </div>
           )}

@@ -9,16 +9,19 @@ import { getInitials } from "@/lib/profile";
 import { MapPin, Star } from "lucide-react";
 import ExpandableDescription from "../posts/post/expandibleDescription";
 import { formatPrice } from "@/lib/postUtils";
+import { Currency, useCurrency } from "@/hooks/useCurrency";
 
 interface BookingSummaryProps {
   post: PostWithUserInfo;
   description: string;
   checkout: string;
   numberOfItems: string;
+  currency: Currency;
 }
 
 export const BookingSummary = (props: BookingSummaryProps) => {
   const { post } = props;
+  const { currency } = useCurrency();
 
   return (
     <div className="bg-white p-4 lg:p-6 rounded-xl shadow border border-gray-300">
@@ -26,9 +29,9 @@ export const BookingSummary = (props: BookingSummaryProps) => {
         <div>
           <PostHeader post={post} />
           <Divider marginY="my-6" />
-          <PriceDetails {...props} />
+          <PriceDetails {...props} currency={currency} />
           <Divider marginY="my-6" />
-          <TotalPrice post={post} numberOfItems={props.numberOfItems} />
+          <TotalPrice post={post} numberOfItems={props.numberOfItems} currency={currency} />
         </div>
       )}
     </div>
@@ -78,7 +81,8 @@ export const PriceDetails = ({
   post,
   description,
   checkout,
-  numberOfItems
+  numberOfItems,
+  currency
 }: BookingSummaryProps) => (
   <div>
     <p className="font-medium text-xl">Price details</p>
@@ -100,7 +104,7 @@ export const PriceDetails = ({
       </div>
       <div className="flex justify-between mb-2">
         <p className="underline">Price per item</p>
-        <p>₱{formatPrice((post?.pricingType === PricingType.HOURLY ? post?.hourlyRate || 0 : post?.fixedPrice || 0))}.00</p>
+        <p>{currency === "PHP" ? "₱" : "$"}{formatPrice((post?.pricingType === PricingType.HOURLY ? post?.hourlyRate || 0 : post?.fixedPrice || 0))}.00</p>
       </div>
       <div className="flex justify-between mb-2">
         <p className="underline">Quantity</p>
@@ -110,7 +114,7 @@ export const PriceDetails = ({
   </div>
 );
 
-export const TotalPrice = ({ post, numberOfItems }: { post: PostWithUserInfo, numberOfItems: string }) => {
+export const TotalPrice = ({ post, numberOfItems, currency }: { post: PostWithUserInfo, numberOfItems: string, currency: Currency }) => {
   const hourlyRate = post?.hourlyRate ?? 0;
   const fixedPrice = post?.fixedPrice ?? 0;
   const totalPrice =
@@ -121,8 +125,8 @@ export const TotalPrice = ({ post, numberOfItems }: { post: PostWithUserInfo, nu
   return (
     <div>
       <div className="flex justify-between font-medium">
-        <p>Total(PHP)</p>
-        <p>₱{formatPrice(totalPrice)}.00</p>
+        <p>Total({currency === "PHP" ? "PHP" : "USD"})</p>
+        <p>{currency === "PHP" ? "₱" : "$"}{formatPrice(totalPrice)}.00</p>
       </div>
       <div className="mt-4">
         <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
