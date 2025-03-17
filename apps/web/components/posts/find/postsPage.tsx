@@ -183,16 +183,32 @@ export function PostsPage() {
   return (
     <div className="pb-8 pt-4 w-full">
       {isCameraRoute && detectedString && professions.length > 0 &&
-        <div>
-          <p>AI Detected: It looks you have issue on {detectedString}</p>
-          <div className="space-x-2">
-            {professions.map(profession => (
-              <span
-                key={profession}
-                className="border border-gray-300 px-2 py-1 rounded-md bg-gray-100 text-xs">
-                {profession}
+        <div className="mb-6 md:mb-10 mt-8 px-6 md:px-0">
+          <div className="relative z-10">
+            <div className="flex items-start md:items-center mb-4">
+              <span className="flex h-3 w-3 relative mr-3 mt-1 md:mt-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
               </span>
-            ))}
+              <div className="flex gap-3 md:gap-2 flex-col md:flex-row text-sm">
+                <span className="text-yellow-500 font-bold whitespace-nowrap">AI Detected:</span>
+                <span className="text-gray-600 font-medium">{`"`} Hi, It looks you have issue on
+                  <span className="font-bold text-gray-900 italic"> {detectedString}</span> {`"`}</span>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-8 md:mt-3">
+              <p className="text-gray-600 text-xs font-medium">Tags:</p>
+              <div className="flex flex-wrap gap-2">
+                {professions.map(profession => (
+                  <span
+                    key={profession}
+                    className="inline-flex items-center py-1 px-3 text-xs font-medium text-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 border-l-4 border-yellow-400 rounded-r-md shadow-sm hover:shadow hover:border-yellow-500 transition-all duration-200"
+                  >
+                    {profession}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       }

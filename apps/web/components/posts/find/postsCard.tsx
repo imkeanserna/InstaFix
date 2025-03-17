@@ -99,13 +99,7 @@ export const PostsGrid = memo(function PostsGrid({
   }
 
   if (isLoading || error) {
-    return <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6 mx-auto"
-    >
-      <PostsGridSkeleton />
-    </motion.div>
+    return <PostsPageLoading />
   }
 
   if (allPosts.length === 0) {
@@ -409,3 +403,15 @@ const PostsGridSkeleton = () => {
     </div>
   );
 };
+
+export function PostsPageLoading() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6 mx-auto"
+    >
+      <PostsGridSkeleton />
+    </motion.div>
+  );
+}

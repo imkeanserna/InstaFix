@@ -57,20 +57,11 @@ export function SearchPage() {
 
   if (isLoading && !isFetchingNextPage) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-2 text-center"
-        >
-          <Loader2 className="w-8 h-8 mx-auto text-yellow-500 animate-spin" />
-          <p className="text-sm text-gray-600">Searching...</p>
-        </motion.div>
-      </div>
+      <SearchLoading />
     );
   }
 
-  if (error) {
+  if (error || searchResults?.pages[0].posts.posts === undefined) {
     return (
       <div className="text-center p-8 text-red-500">
         Error performing search
@@ -79,7 +70,9 @@ export function SearchPage() {
   }
 
   return (
-    <div className="mt-8">
+    <div className="mt-8 space-y-8 md:px-0 px-6">
+      <p className="text-gray-800 text-sm font-semibold">Over {searchResults?.pages[0].posts.posts.length}
+        {" "}{searchResults?.pages[0].posts.posts.length <= 1 ? 'result' : 'results'} for {`"`}{currentSearchQuery}{`"`}</p>
       <PostsGrid
         postsData={searchResults}
         isLoading={isLoading}
@@ -88,6 +81,21 @@ export function SearchPage() {
         isFetchingNextPage={isFetchingNextPage}
         onLoadMore={fetchNextPage}
       />
+    </div>
+  );
+}
+
+export function SearchLoading() {
+  return (
+    <div className="flex items-center justify-center p-8">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="space-y-2 text-center"
+      >
+        <Loader2 className="w-8 h-8 mx-auto text-yellow-500 animate-spin" />
+        <p className="text-sm text-gray-600">Searching...</p>
+      </motion.div>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { addDays, format } from "date-fns";
 import { useSession } from "next-auth/react";
 import { BookingSuccessModal } from "./bookingSuccessModal";
 import { useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function BookPage({ postId }: { postId: string }) {
   const router = useRouter();
@@ -31,6 +32,7 @@ export function BookPage({ postId }: { postId: string }) {
   const cancellationDeadline = addDays(new Date(), 1);
   const formattedDate = format(cancellationDeadline, "MMM d");
   const { data: session } = useSession();
+  const { currency } = useCurrency();
 
   if (postError || validationError || (session?.user && session?.user.id === post?.userId)) {
     router.back();
@@ -72,11 +74,16 @@ export function BookPage({ postId }: { postId: string }) {
                 description={description!}
                 checkout={checkout!}
                 numberOfItems={numberOfItems!}
+                currency={currency}
               />
             </div>
             <Divider marginY="my-6" height="h-[8px] md:h-[1px]" />
             <div className="px-6">
-              <TotalPrice post={post} numberOfItems={numberOfItems!} />
+              <TotalPrice
+                post={post}
+                numberOfItems={numberOfItems!}
+                currency={currency}
+              />
             </div>
             <Divider marginY="my-6" height="h-[8px] md:h-[1px]" />
           </div>
@@ -137,6 +144,7 @@ export function BookPage({ postId }: { postId: string }) {
             description={description!}
             checkout={checkout!}
             numberOfItems={numberOfItems!}
+            currency={currency}
           />
         </div>
       </div>

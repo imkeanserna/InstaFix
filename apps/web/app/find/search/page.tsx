@@ -1,12 +1,15 @@
+import { DiaglogCamera } from "@/components/camera/diaglogCamera";
 import { ChatBotAi } from "@/components/chatbot/chat";
-import { SearchPage } from "@/components/posts/find/searchPage";
+import { SearchLoading, SearchPage } from "@/components/posts/find/searchPage";
+import { Suspense } from "react";
 
 const Page = () => {
   return (
-    <div>
+    <Suspense fallback={<SearchLoading />}>
       <SearchPage />
       <ChatBotAi />
-    </div>
+      <DiaglogCamera />
+    </Suspense>
   )
 }
 
