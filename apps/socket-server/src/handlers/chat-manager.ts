@@ -19,6 +19,8 @@ import {
 import { getOrCreateConversation } from "../action/chat";
 import { getOrCreateSystemUser } from "../action/system";
 
+// export const runtime = 'edge'
+
 export interface ChatEvent {
   type: ChatEventType;
   payload: any;

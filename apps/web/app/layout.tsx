@@ -6,12 +6,13 @@ import { Toaster } from "@repo/ui/components/ui/sonner";
 import { RecoilContextProvider } from "@/context/RecoilContextProvider";
 import "@repo/ui/globals.css";
 import { ChatProvider } from "@/context/ChatProvider";
-import { ChatBotAi } from "@/components/chatbot/chat";
 import { ReactQueryProvider } from "@/context/ReactQueryProvider";
 import { FormDataProvider } from "@/context/FormDataProvider";
 import { WebSocketProvider } from "@/context/WebSocketProvider";
 import { FindNavbar } from "@/components/navbar/FindNavbar";
 import { currentUser } from "@/lib";
+import { AuthModalProvider } from "@repo/ui/context/AuthModalProvider";
+import { AuthModal } from "@repo/ui/components/auth/auth-modal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,21 +31,23 @@ export default async function RootLayout({
     <html lang="en" className="bg-background text-black dark:text-white">
       <body className={inter.className}>
         <ThemeProvider>
-          <AuthProvider>
-            <WebSocketProvider>
-              <RecoilContextProvider>
-                <ChatProvider>
-                  <ReactQueryProvider>
-                    <FormDataProvider>
-                      <FindNavbar user={user} />
-                      {children}
-                    </FormDataProvider>
-                    <ChatBotAi />
-                  </ReactQueryProvider>
-                </ChatProvider>
-              </RecoilContextProvider>
-            </WebSocketProvider>
-          </AuthProvider>
+          <AuthModalProvider>
+            <AuthProvider>
+              <WebSocketProvider>
+                <RecoilContextProvider>
+                  <ChatProvider>
+                    <ReactQueryProvider>
+                      <FormDataProvider>
+                        <FindNavbar user={user} />
+                        {children}
+                        <AuthModal />
+                      </FormDataProvider>
+                    </ReactQueryProvider>
+                  </ChatProvider>
+                </RecoilContextProvider>
+              </WebSocketProvider>
+            </AuthProvider>
+          </AuthModalProvider>
           <Toaster richColors />
         </ThemeProvider>
       </body>

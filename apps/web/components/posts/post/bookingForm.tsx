@@ -12,6 +12,8 @@ import { z } from 'zod';
 import { useBookingData } from "@/hooks/posts/useBookingData";
 import { User } from "next-auth";
 import { formatPrice } from "@/lib/postUtils";
+import { useAuthModal } from "@repo/ui/context/AuthModalProvider";
+import { useMediaQuery } from "@/hooks/useMedia";
 
 export const createBookingSchema = z.object({
   date: z.date(),
@@ -38,11 +40,13 @@ export function BookingForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [description, setDescription] = useState<string>("");
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [quantity, setQuantity] = useState<number>(1);
   const [error, setError] = useState("");
   const dateParam = searchParams.get('date');
   const selectedDate = dateParam ? new Date(dateParam) : undefined;
   const [inputDate, setInputDate] = useState<string>('');
+  const { openModal } = useAuthModal();
 
   const { bookingData, isLoading, isError } = useBookingData(postId);
 
@@ -96,6 +100,15 @@ export function BookingForm({
   const handleSubmit = async () => {
     setError("");
 
+    if (user == null) {
+      if (isMobile) {
+        router.push("/auth/login");
+        return;
+      }
+      openModal();
+      return;
+    }
+
     try {
       if (!selectedDate) {
         setError("Please select a date");
@@ -124,7 +137,6 @@ export function BookingForm({
         numberOfItems: bookingData.quantity.toString()
       }).toString();
       const fullUrl = `${baseUrl}?${queryParams}`;
-      console.log('Query params:', fullUrl);
       router.push(fullUrl);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create booking";

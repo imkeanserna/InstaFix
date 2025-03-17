@@ -6,6 +6,9 @@ import { toast } from "@repo/ui/components/ui/sonner";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePostLikeUpdate } from "./usePosts";
+import { useAuthModal } from "@repo/ui/context/AuthModalProvider";
+import { useMediaQuery } from "../useMedia";
+import { useRouter } from "next/navigation";
 
 interface UseLikeProps {
   postId: string;
@@ -18,6 +21,9 @@ export function useLike({ postId, likes }: UseLikeProps) {
   const hasUserLiked = likes?.some(like => like.userId === session?.user?.id) ?? false;
   const [isLiked, setIsLiked] = useState(hasUserLiked);
   const { updatePostLike, invalidatePostQueries } = usePostLikeUpdate();
+  const { openModal } = useAuthModal();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const router = useRouter();
 
   useEffect(() => {
     setIsLiked(likes?.some(like => like.userId === session?.user?.id) ?? false);
@@ -27,7 +33,11 @@ export function useLike({ postId, likes }: UseLikeProps) {
     e?.stopPropagation();
 
     if (!session?.user && !session?.user?.id) {
-      // --TODO: Pop up the modal login
+      if (isMobile) {
+        router.push("/auth/login");
+        return;
+      }
+      openModal();
       return;
     }
 
@@ -54,7 +64,7 @@ export function useLike({ postId, likes }: UseLikeProps) {
       if (!result) {
         invalidatePostQueries(postId);
         setIsLiked(previousState);
-        // --TODO: Pop up the modal login
+        openModal();
       }
     } catch (error) {
       invalidatePostQueries(postId);

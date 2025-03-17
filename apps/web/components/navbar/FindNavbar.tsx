@@ -54,7 +54,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
     router.push(newUrl, { scroll: false });
   }, [router, searchParams]);
 
-  if (pathname.includes("/book") || pathname.includes("/become-a-freelancer") || hideNavBar.includes(pathname)) {
+  if (pathname.includes("/book") || pathname.includes("/become-a-freelancer") || pathname.includes("/auth") || hideNavBar.includes(pathname)) {
     return null;
   }
 
@@ -83,7 +83,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
             </Button>
           </SearchEngine>
         }
-        <div className={`flex gap-9 ${scrolled ? "justify-center items-center" : ""}`}>
+        <div className={`flex gap-9 ${scrolled ? "justify-center items-center" : "justify-center items-center"}`}>
           <LocationDialog
             onFilterChange={updateUrlParams}
           >
@@ -99,8 +99,10 @@ export function FindNavbar({ user }: { user: User | undefined }) {
               {!scrolled && <p className="text-xs font-medium transition-opacity duration-300 ease-in-out opacity-100">Location</p>}
             </div>
           </LocationDialog>
-          <NotificationBell isScrolled={scrolled} />
-          <ProfileDropdown user={user} />
+          {user && (
+            <NotificationBell isScrolled={scrolled} />
+          )}
+          <ProfileDropdown user={user} pathname={pathname} />
         </div>
       </div>
     </div>

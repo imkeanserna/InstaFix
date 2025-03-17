@@ -16,7 +16,7 @@ const Page = async () => {
   return (
     <div className="w-full min-h-screen bg-background transition-colors duration-300 flex items-center justify-center px-4 py-8">
       <div className="z-50 absolute top-8 right-8">
-        <ProfileDropdown user={user} />
+        <ProfileDropdown user={user} pathname={'/profile'} />
       </div>
       <Card className="w-full max-w-md shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

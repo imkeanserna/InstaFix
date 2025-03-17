@@ -1,8 +1,12 @@
+import { ChatBotAi } from "@/components/chatbot/chat";
 import { SearchPage } from "@/components/posts/find/searchPage";
 
 const Page = () => {
   return (
-    <SearchPage />
+    <div>
+      <SearchPage />
+      <ChatBotAi />
+    </div>
   )
 }
 

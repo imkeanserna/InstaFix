@@ -92,8 +92,10 @@ export const useConversations = () => {
   }, []);
 
   useEffect(() => {
-    fetchConversations();
-  }, [fetchConversations]);
+    if (session?.user?.id) {
+      fetchConversations();
+    }
+  }, [fetchConversations, session]);
 
   const loadMore = useCallback(async () => {
     if (!conversationState.pagination.hasNextPage || isLoading) return;
