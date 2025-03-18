@@ -8,7 +8,7 @@ const Page = () => {
   return (
     <Suspense fallback={<PostsPageLoading />}>
       <PostsPage />
-      <ChatBotAi />
+      {/* <ChatBotAi /> */}
       <DiaglogCamera />
     </Suspense>
   )
