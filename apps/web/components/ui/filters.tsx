@@ -43,11 +43,11 @@ export const FilterDrawerWrapper = ({ initialState, onFilterChange, className }:
         variant="ghost"
         size="lg"
         onClick={() => setIsVisible(!isVisible)}
-        className="whitespace-nowrap border text-xs border-gray-300 md:hover:border-gray-900 
-              dark:border-slate-700 rounded-xl shadow-sm md:hover:bg-yellow-400 dark:hover:bg-slate-800
-              p-2 md:p-6 group transition-transform active:scale-95"
+        className="whitespace-nowrap w-12 h-12 md:w-28 md:h-12 border-0 md:border text-xs md:border-gray-300 bg-gray-100 md:bg-white md:hover:border-gray-900 
+          dark:md:border-slate-700 rounded-xl shadow-sm md:hover:bg-yellow-400 dark:hover:bg-slate-800
+          p-2 md:p-6 group transition-transform active:scale-95"
       >
-        <SlidersHorizontal className="md:mr-2 h-4 w-4 md:h5 md:w-5" />
+        <SlidersHorizontal className="md:mr-2 h-4 w-4" />
         <span className="hidden md:inline">Filters</span>
       </Button>
       <AnimatePresence>
@@ -386,7 +386,7 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
       >
         <Button
           onClick={handleApplyFilters}
-          className="w-full py-8 bg-yellow-500 text-lg hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-sm transition-colors"
+          className="w-full rounded-xl py-9 bg-yellow-500 text-lg hover:bg-yellow-600 text-white font-semibold shadow-sm transition-colors"
         >
           Apply Filters
         </Button>

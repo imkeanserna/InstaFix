@@ -287,7 +287,7 @@ export function BookingForm({
       </div>
     </div>
     <Button
-      className="py-7 mt-6 text-sm font-medium text-white rounded-xl bg-yellow-500 hover:bg-yellow-500 active:scale-[0.98] transition duration-75"
+      className="py-9 mt-6 text-sm font-medium text-white rounded-xl bg-yellow-500 hover:bg-yellow-500 active:scale-[0.98] transition duration-75"
       onClick={handleSubmit}
     >
       Book Now

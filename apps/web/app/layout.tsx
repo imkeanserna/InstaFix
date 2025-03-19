@@ -13,6 +13,7 @@ import { FindNavbar } from "@/components/navbar/FindNavbar";
 import { currentUser } from "@/lib";
 import { AuthModalProvider } from "@repo/ui/context/AuthModalProvider";
 import { AuthModal } from "@repo/ui/components/auth/auth-modal";
+import { NavigationBar } from "@/components/navbar/NavigationBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,6 +40,7 @@ export default async function RootLayout({
                     <ReactQueryProvider>
                       <FormDataProvider>
                         <FindNavbar user={user} />
+                        <NavigationBar user={user} />
                         {children}
                         <AuthModal />
                       </FormDataProvider>

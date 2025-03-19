@@ -217,7 +217,7 @@ export function PostsPage() {
         <div className="flex flex-col px-2 md:px-0">
           {/* Mobile "Select all" button */}
           <button
-            className="md:hidden text-right text-xs text-gray-900 hover:underline mb-2"
+            className="md:hidden text-right text-sm text-gray-900 hover:underline mb-2"
             onClick={() => setShowMobileFilters(!showMobileFilters)}
           >
             {showMobileFilters ? 'Hide filters' : 'See All'}

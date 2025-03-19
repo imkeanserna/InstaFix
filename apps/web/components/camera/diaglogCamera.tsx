@@ -2,7 +2,7 @@
 
 import { Button } from "@repo/ui/components/ui/button";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, Grid, ImagePlus, Instagram, SlidersHorizontal, SwitchCamera, X } from "lucide-react";
+import { Camera, Grid, Instagram, SlidersHorizontal, SwitchCamera, X } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
 import { Filters } from "../ui/filters";
 import { CubeLoader } from "../ui/cubeLoading";
@@ -15,6 +15,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { EngagementType, PricingType, ServicesIncluded, TargetAudience } from "@prisma/client/edge";
 import { getStoredLocation } from "@/lib/sessionUtils";
 import { useMediaQuery } from "@/hooks/useMedia";
+import { useScrollVisibility } from "@/hooks/useScrollControls";
 
 export const messages = [
   "Choose the right skills for your project.",
@@ -37,6 +38,7 @@ export function DiaglogCamera() {
   const searchParams = useSearchParams();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [currentCamera, setCurrentCamera] = useState<'environment' | 'user'>('environment');
+  const { visible } = useScrollVisibility(20, true);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const {
@@ -232,23 +234,20 @@ export function DiaglogCamera() {
     };
   }, [isSettingsOpen, isFiltersOpen]);
 
-  if (isMobile) {
-    return null;
-  }
-
   return (
     <div className="flex flex-col">
       <Button
         variant="outline"
         onClick={() => setIsOpen(true)}
-        className="gap-2 fixed bottom-12 left-1/2 -translate-x-1/2 z-50 py-6 px-5 
-            rounded-full shadow-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 font-semibold hover:bg-yellow-400
-            hover:scale-105 transition-all duration-200 hover:text-gray-900 active:scale-[0.97]
-      border-2 border-amber-300"
+        className={`gap-2 fixed ${(visible && isMobile) ? "bottom-24" : isMobile ? "bottom-8" : "bottom-12"}
+             ${isMobile ? "py-1 px-4" : "py-6 px-5"} text-xs left-1/2 -translate-x-1/2 z-0
+             rounded-full shadow-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-gray-900 font-semibold hover:bg-yellow-400
+             hover:scale-105 transition-all duration-200 hover:text-gray-900 active:scale-[0.97]
+             border-2 border-amber-300`}
         aria-expanded={isOpen}
         aria-controls="slide-overlay"
       >
-        Show snap
+        {isMobile ? "Snap" : "Show snap"}
         <Instagram className="h-5 w-5 fill-white stroke-gray-900" />
       </Button>
 

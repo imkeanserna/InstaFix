@@ -41,7 +41,7 @@ export const MobileControlPanel = React.memo(({ handleImageProcessing, handleFil
               }
             }}
             onClick={handleFilterInteraction}
-            className="absolute bottom-20 left-0 right-0 flex justify-center z-20 px-4 cursor-pointer"
+            className="absolute bottom-28 left-0 right-0 flex justify-center z-20 px-4 cursor-pointer"
             whileTap={{ scale: 0.95 }}
           >
             <div className="bg-black/60 text-white px-4 py-2 rounded-full text-xs flex items-center gap-2">
@@ -62,12 +62,14 @@ export const MobileControlPanel = React.memo(({ handleImageProcessing, handleFil
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="absolute bottom-1 left-0 right-0 h-16 p-2 flex justify-center items-center">
+      <div className="absolute bottom-4 left-0 right-0 h-16 p-2 flex justify-center items-center">
         <Button
           onClick={() => { handleImageProcessing(null, 'camera') }}
           variant="outline"
           size="lg"
-          className="z-10 w-full rounded-lg py-7 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-500 text-white hover:text-white border-none shadow-lg font-bold transition-all duration-300 flex items-center justify-center gap-2"
+          className="z-10 w-full rounded-xl py-9 bg-gradient-to-r from-amber-400 to-yellow-500 
+          hover:from-amber-500 hover:to-yellow-500 text-white hover:text-white border-none shadow-lg 
+          font-bold transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.99]"
         >
           <Camera className="w-5 h-5" />
           <span className="text-xl">Snap It</span>

@@ -68,3 +68,33 @@ export const useScrollControls = (
     scroll
   };
 };
+
+export function useScrollVisibility(threshold = 20, initialVisibility = true) {
+  const [visible, setVisible] = useState(initialVisibility);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const controlVisibility = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && visible && currentScrollY > threshold) {
+        // Scrolling down & element is currently visible
+        setVisible(false);
+      } else if (currentScrollY < lastScrollY && !visible) {
+        // Scrolling up & element is currently hidden
+        setVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', controlVisibility);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', controlVisibility);
+    };
+  }, [lastScrollY, visible, threshold]);
+
+  return { visible };
+}

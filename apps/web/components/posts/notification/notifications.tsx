@@ -54,8 +54,8 @@ export function Notifications() {
   }
 
   return (
-    <div className="space-y-8 py-8">
-      <div className="flex justify-between items-center px-4 md:px-0">
+    <div className="space-y-8 py-2 md:py-8">
+      <div className="justify-between items-center px-4 md:px-0 hidden md:flex">
         <div className="flex gap-4 items-center">
           <Button
             variant="outline"

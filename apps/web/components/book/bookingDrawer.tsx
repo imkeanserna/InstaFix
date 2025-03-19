@@ -26,7 +26,7 @@ export const BookingDrawerWrapper = ({
   return (
     <>
       <Button variant="outline"
-        className="w-full px-8 text-sm py-6 rounded-xl font-medium hover:bg-yellow-500 bg-yellow-400 border border-gray-900 active:scale-95 transition-all"
+        className="w-full px-8 text-sm py-8 rounded-xl font-medium hover:bg-yellow-500 bg-yellow-400 border border-gray-900 active:scale-95 transition-all"
         onClick={() => setIsVisible(!isVisible)}
       >
         <Calendar1 className="h-4 w-4 mr-2" />

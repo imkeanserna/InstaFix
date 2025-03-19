@@ -9,7 +9,7 @@ const Page = ({ params }: { params: { postId: string, username: string, title: s
 
   return (
     <Suspense fallback={<PostContentSkeleton />}>
-      <div className="pt-8">
+      <div className="pt-4 md:pt-8">
         <PostContent postId={params.postId} username={params.username} />
       </div>
     </Suspense>

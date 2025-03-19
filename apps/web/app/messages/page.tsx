@@ -2,9 +2,7 @@ import { ChatContent } from "@/components/chat/chatContent";
 
 const Page = () => {
   return (
-    <div>
-      <ChatContent />
-    </div>
+    <ChatContent />
   );
 }
 

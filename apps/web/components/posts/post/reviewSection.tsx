@@ -401,7 +401,7 @@ export function ReviewSection({
                 Show all {totalReviews} reviews
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-5xl h-full md:h-[90vh] py-8">
+            <DialogContent className="max-w-5xl h-full md:h-[90vh] py-8 !rounded-2xl">
               <DialogClose className="absolute left-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
                 <X className="h-5 w-5" />
                 <span className="sr-only">Close</span>

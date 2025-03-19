@@ -114,12 +114,12 @@ export function LocationDialog({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="w-[90%] max-w-5xl py-2">
+      <DialogContent className="w-full md:w-[90%] max-w-5xl py-2 !rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-semibold">
+          <DialogTitle className="text-xl md:text-2xl font-semibold text-start">
             Select your location
           </DialogTitle>
-          <DialogDescription className="text-sm text-gray-500">
+          <DialogDescription className="text-xs md:text-sm text-gray-500 text-start">
             Select a location to find freelancers near you or within your preferred area.
           </DialogDescription>
           <div className="w-full pt-4">
