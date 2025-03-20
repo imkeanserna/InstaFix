@@ -1,7 +1,7 @@
 "use client";
 
 import { CategorySelector } from "@/components/categories/categorySelector";
-import { FilterDrawerWrapper } from "@/components/ui/filters";
+import { FilterDialogWrapper } from "@/components/ui/filters";
 import { usePosts } from "@/hooks/posts/usePosts";
 import { EngagementType, PricingType, ServicesIncluded, TargetAudience } from "@prisma/client/edge";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -223,7 +223,7 @@ export function PostsPage() {
             {showMobileFilters ? 'Hide filters' : 'See All'}
           </button>
           <div className={`md:hidden ${showMobileFilters ? 'flex justify-end gap-2' : 'hidden'}`}>
-            <FilterDrawerWrapper
+            <FilterDialogWrapper
               initialState={getInitialState()}
               onFilterChange={updateUrlParams}
             />
@@ -243,7 +243,7 @@ export function PostsPage() {
               />
             </div>
             <div className="hidden md:flex gap-5">
-              <FilterDrawerWrapper
+              <FilterDialogWrapper
                 initialState={getInitialState()}
                 onFilterChange={updateUrlParams}
               />

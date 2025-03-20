@@ -74,22 +74,29 @@ export function ToggleGroupSelection({
           "grid gap-3",
           toggleGroupClassName
         )}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gridAutoRows: '1fr'
+        }}
       >
         {options.map(({ value, label, description, icon }) => (
           <motion.div
             key={value}
             variants={itemVariants}
+            className="h-full" // Ensure motion div takes full height
           >
             <ToggleGroupItem
               value={value}
               className={cn(
-                "group relative w-full h-full rounded-2xl border-2 p-6",
+                "group relative w-full h-full rounded-2xl border-2 p-3 sm:p-4",
                 "hover:border-yellow-500 hover:shadow-xl",
                 "data-[state=on]:border-yellow-500 data-[state=on]:bg-yellow-50/50",
+                "flex flex-col", // Add flex column layout
                 itemClassName
               )}
             >
-              <div className="flex items-center space-x-4 sm:space-x-6 p-4 sm:p-6">
+              <div className="flex items-center space-x-3 h-full">
                 {icon && (
                   <motion.div
                     className="flex-shrink-0"
@@ -100,10 +107,10 @@ export function ToggleGroupSelection({
                   </motion.div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-gray-900">
+                  <p className="text-sm font-medium text-gray-900 group-hover:text-gray-900">
                     {label}
                   </p>
-                  <p className="mt-1 text-xs sm:text-sm text-gray-500 group-hover:text-gray-600">
+                  <p className="mt-1 text-xs text-gray-500 group-hover:text-gray-600">
                     {description}
                   </p>
                 </div>

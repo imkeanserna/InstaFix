@@ -6,6 +6,7 @@ import { AnimatePresence, motion, PanInfo, useAnimation } from 'framer-motion'
 import { Button } from "@repo/ui/components/ui/button";
 import { BookingForm } from "../posts/post/bookingForm";
 import { User } from "next-auth";
+import { PricingType } from "@prisma/client/edge";
 
 export const BookingDrawerWrapper = ({
   className,
@@ -13,7 +14,8 @@ export const BookingDrawerWrapper = ({
   user,
   rate,
   username,
-  freelancerId
+  freelancerId,
+  pricingType
 }: {
   className?: string;
   postId: string,
@@ -21,6 +23,7 @@ export const BookingDrawerWrapper = ({
   rate: number
   username: string
   freelancerId: string
+  pricingType: PricingType
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   return (
@@ -42,6 +45,7 @@ export const BookingDrawerWrapper = ({
             freelancerId={freelancerId}
             user={user}
             username={username}
+            pricingType={pricingType}
           />
         )}
       </AnimatePresence>
@@ -56,7 +60,8 @@ export const Drawer = React.memo(({
   user,
   rate,
   username,
-  freelancerId
+  freelancerId,
+  pricingType
 }:
   {
     className?: string;
@@ -66,6 +71,7 @@ export const Drawer = React.memo(({
     rate: number
     username: string
     freelancerId: string
+    pricingType: PricingType
   }
 ) => {
   // Drawer state
@@ -183,6 +189,7 @@ export const Drawer = React.memo(({
               rate={rate}
               username={username}
               freelancerId={freelancerId}
+              pricingType={pricingType}
             />
           </div>
         </motion.div>

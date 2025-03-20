@@ -4,6 +4,7 @@ import { errorResponse } from '@/lib/errorResponse';
 import { User } from "next-auth";
 import { currentUser } from '@/lib';
 import { z } from 'zod';
+import { findOrCreateLocation } from '../_action/posts/location';
 
 // export const runtime = 'edge'
 
@@ -28,6 +29,22 @@ export async function PATCH(request: NextRequest) {
     const body: any = await request.json();
     const validatedData = UpdateUserSchema.parse(body);
 
+    let locationData = {};
+    if (validatedData.location?.latitude && validatedData.location?.longitude) {
+      const location = await findOrCreateLocation({
+        address: validatedData.location.fullAddress,
+        lat: validatedData.location.latitude,
+        lng: validatedData.location.longitude
+      });
+      locationData = {
+        location: {
+          connect: {
+            id: location.id
+          }
+        }
+      };
+    }
+
     const updatedUser = await prisma.user.update({
       where: {
         id: user.id,
@@ -36,16 +53,7 @@ export async function PATCH(request: NextRequest) {
         ...(validatedData.name && { name: validatedData.name }),
         ...(validatedData.email && { email: validatedData.email }),
         ...(validatedData.image && { image: validatedData.image }),
-        ...(validatedData.location && {
-          location: {
-            create: {
-              fullAddress: validatedData.location.fullAddress,
-              normalizedAddress: validatedData.location.fullAddress,
-              latitude: validatedData.location.latitude,
-              longitude: validatedData.location.longitude,
-            }
-          }
-        }),
+        ...locationData,
         updatedAt: new Date(),
       },
       include: {

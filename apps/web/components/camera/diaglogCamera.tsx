@@ -4,7 +4,7 @@ import { Button } from "@repo/ui/components/ui/button";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, Grid, Instagram, SlidersHorizontal, SwitchCamera, X } from "lucide-react";
 import { cn } from "@repo/ui/lib/utils";
-import { Filters } from "../ui/filters";
+import { ModifiedFilters } from "../ui/filters";
 import { CubeLoader } from "../ui/cubeLoading";
 import { Alert } from "@repo/ui/components/ui/alert";
 import { MobileControlPanel } from "../mobile/mobileControlPanel";
@@ -341,7 +341,7 @@ export function DiaglogCamera() {
             <div className="max-w-xl mx-auto p-4 md:p-8">
               <AnimatePresence>
                 {isFiltersOpen && (
-                  <Filters
+                  <ModifiedFilters
                     initialState={getInitialState()}
                     onFilterChange={updateUrlParams}
                     onClose={handleFiltersClick}

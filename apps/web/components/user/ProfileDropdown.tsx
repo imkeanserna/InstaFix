@@ -140,6 +140,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
                     text: 'Messages',
                     hoverClass: 'hover:text-amber-500',
                     badge: totalUnreadCount > 0 ? totalUnreadCount.toString() : null,
+                    badgeClass: 'text-[10px] text-gray-500',
                     url: '/messages'
                   },
                   {
@@ -147,12 +148,15 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
                     text: 'Favorites',
                     hoverClass: 'hover:text-amber-500',
                     badge: 10,
+                    badgeClass: 'text-[10px] text-gray-500',
                     url: null
                   },
                   {
                     icon: <UserIcon className="menu-icon" />,
                     text: 'Profile',
                     hoverClass: 'hover:text-amber-500',
+                    badge: 'Coming soon',
+                    badgeClass: 'text-[10px] text-gray-500',
                     url: null
                   },
                   {
@@ -160,7 +164,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
                     text: 'Settings',
                     hoverClass: 'hover:text-amber-500',
                     badge: 'Coming soon',
-                    badgeClass: 'text-xs text-gray-500',
+                    badgeClass: 'text-[10px] text-gray-500',
                     url: null
                   },
                   {
@@ -169,7 +173,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
                     hoverClass: 'hover:text-amber-500',
                     url: '/become-a-freelancer'
                   },
-                ].map(({ icon, text, hoverClass, badge, url }) => (
+                ].map(({ icon, text, hoverClass, badge, url, badgeClass }) => (
                   <DropdownMenuItem
                     key={text}
                     className={`cursor-pointer py-3 px-4 transition-all group relative flex text-gray-900 items-center
@@ -187,7 +191,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
                       {text}
                     </span>
                     {badge && (
-                      <span className="absolute right-4 text-xs text-amber-700">
+                      <span className={`absolute right-4 text-amber-700 ${badgeClass}}`}>
                         {badge}
                       </span>
                     )}

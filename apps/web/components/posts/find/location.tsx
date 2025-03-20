@@ -114,7 +114,7 @@ export function LocationDialog({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="w-full md:w-[90%] max-w-5xl py-2 !rounded-2xl">
+      <DialogContent className="w-full md:w-[90%] max-w-5xl py-2 !rounded-none md:!rounded-2xl max-h-screen overflow-auto">
         <DialogHeader>
           <DialogTitle className="text-xl md:text-2xl font-semibold text-start">
             Select your location
@@ -133,7 +133,7 @@ export function LocationDialog({
             <Button
               onClick={handleSubmitLocation}
               disabled={!selectedLocation || updateLocationMutation.isPending}
-              className="w-full md:w-auto p-6 bg-yellow-400 hover:bg-yellow-500 text-gray-900 rounded-lg shadow-sm transition-colors border border-gray-600"
+              className="w-full md:w-auto py-8 md:p-6 bg-yellow-400 hover:bg-yellow-500 text-gray-900 rounded-2xl md:rounded-lg shadow-sm transition-colors border border-gray-600"
             >
               {updateLocationMutation.isPending ? 'Saving...' : 'Save Location'}
             </Button>

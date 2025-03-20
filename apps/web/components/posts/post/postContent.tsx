@@ -110,8 +110,9 @@ export function PostContent({ postId, username }: {
             <div className='flex justify-between items-center gap-52'>
               <div className='px-6 md:px-0'>
                 <h3 className='text-2xl font-medium mt-8'>
-                  {`${staticData?.post.tags[0].subcategory.name} in ${staticData?.post.location?.city} ${staticData?.post.location?.state},
-                ${staticData?.post.location?.country === "Pilipinas" ? "Philippines" : staticData?.post.location?.country} (${dynamicData?.title})`}
+                  {`${staticData?.post.tags[0].subcategory.name} in ${staticData?.post.location?.city} 
+                  ${staticData?.post.location?.state ? staticData?.post.location?.state : ""},
+                  ${staticData?.post.location?.country === "Pilipinas" ? "Philippines" : staticData?.post.location?.country} (${dynamicData?.title})`}
                 </h3>
               </div>
               {staticData.post.userId !== session?.user?.id && (
@@ -122,6 +123,7 @@ export function PostContent({ postId, username }: {
                     rate={dynamicData.pricingType === PricingType.FIXED_PRICE ? dynamicData.fixedPrice || 0 : dynamicData.hourlyRate || 0}
                     username={username}
                     freelancerId={staticData.post.user.id}
+                    pricingType={dynamicData.pricingType!}
                   />
                 </div>
               )}
@@ -272,6 +274,7 @@ export function PostContent({ postId, username }: {
               rate={dynamicData.pricingType === PricingType.FIXED_PRICE ? dynamicData.fixedPrice || 0 : dynamicData.hourlyRate || 0}
               username={username}
               freelancerId={staticData.post.user.id}
+              pricingType={dynamicData.pricingType!}
             />
           )}
         </div>

@@ -148,7 +148,7 @@ export default function Footer() {
       : null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t bg-white py-4 px-16 z-10">
+    <div className="fixed bottom-0 left-0 right-0 border-t bg-white py-4 px-4 md:px-16 z-10">
       <div className="flex justify-between mx-auto">
         {prevStep && (
           <Link
@@ -158,7 +158,7 @@ export default function Footer() {
             }
           >
             <Button variant="ghost"
-              className='group duration-200 underline rounded-xl px-6 py-6 transform active:scale-95'
+              className='group duration-200 underline rounded-xl px-0 md:px-6 py-6 transform active:scale-95'
             >
               <ChevronLeft className="w-4 h-4 mr-2 transform transition-transform group-hover:-translate-x-1 active:-translate-x-0.5" />
               Back

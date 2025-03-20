@@ -118,7 +118,7 @@ export default function ServiceNavigation() {
 
   return (
     <motion.div
-      className="min-h-screen w-full bg-gradient-to-b from-white to-yellow-50 py-20 md:py-24"
+      className="min-h-screen w-full bg-gradient-to-b from-white to-yellow-50 py-28 md:py-36"
       initial="hidden"
       animate="visible"
       variants={staggerContainer}

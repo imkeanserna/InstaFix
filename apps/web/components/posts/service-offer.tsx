@@ -168,7 +168,13 @@ export function ToggleGrid({
         type="multiple"
         value={selectedValues}
         onValueChange={onValueChange}
-        className="w-full grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 p-2 sm:p-0"
+        className="w-full p-2 sm:p-0"
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridAutoRows: '1fr'
+        }}
       >
         {options.map(({ value, label, description, icon: Icon, color, bgColor }) => (
           <motion.div
@@ -176,16 +182,17 @@ export function ToggleGrid({
             variants={itemVariants}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            className="h-full"
           >
             <ToggleGroupItem
               value={value}
               className="group relative p-4 h-full w-full rounded-xl border-2 data-[state=on]:shadow-lg transition-all duration-200
-                hover:border-gray-300 data-[state=on]:border-yellow-500"
+                hover:border-gray-300 data-[state=on]:border-yellow-500 flex flex-col"
             >
-              <div className="flex items-center space-x-4">
+              <div className="flex items-start space-x-4 h-full">
                 <motion.div
                   className={`p-2 rounded-lg ${bgColor} ${color} transition-colors duration-200
-                    group-hover:scale-110 group-data-[state=on]:scale-110`}
+                    group-hover:scale-110 group-data-[state=on]:scale-110 flex-shrink-0`}
                   whileHover={{ rotate: 360 }}
                   transition={{ duration: 0.5 }}
                 >
