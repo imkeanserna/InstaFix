@@ -5,6 +5,7 @@ export * from './src/postTypes';
 export * from './src/searchTypes'
 export * from './src/bookingTypes'
 export * from './src/notificationTypes'
+export * from './src/favoriteTypes'
 export * from './src/chatMessageTypes'
 export * from './src/helper/booking'
 export * from './src/schemas/chatSchemas'
