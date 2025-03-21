@@ -84,7 +84,7 @@ export function ToggleGroupSelection({
           <motion.div
             key={value}
             variants={itemVariants}
-            className="h-full" // Ensure motion div takes full height
+            className="h-full"
           >
             <ToggleGroupItem
               value={value}
@@ -92,7 +92,7 @@ export function ToggleGroupSelection({
                 "group relative w-full h-full rounded-2xl border-2 p-3 sm:p-4",
                 "hover:border-yellow-500 hover:shadow-xl",
                 "data-[state=on]:border-yellow-500 data-[state=on]:bg-yellow-50/50",
-                "flex flex-col", // Add flex column layout
+                "flex flex-col",
                 itemClassName
               )}
             >

@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import { getStoredLocation } from "@/lib/sessionUtils";
 import { toast } from "@repo/ui/components/ui/sonner";
 import { usePathname } from "next/navigation";
+import { X } from "lucide-react";
 
 const LocationSchema = z.object({
   address: z.string().min(1, "Full address is required"),
@@ -115,6 +116,13 @@ export function LocationDialog({
         {children}
       </DialogTrigger>
       <DialogContent className="w-full md:w-[90%] max-w-5xl py-2 !rounded-none md:!rounded-2xl max-h-screen overflow-auto">
+        <Button
+          variant="outline"
+          onClick={() => setOpen(false)}
+          className="absolute right-2 sm:right-4 top-2 sm:top-4 rounded-full p-2 sm:px-3 sm:py-4 border-none hover:bg-gray-100 transition-colors"
+        >
+          <X className="h-5 w-5 text-gray-500" />
+        </Button>
         <DialogHeader>
           <DialogTitle className="text-xl md:text-2xl font-semibold text-start">
             Select your location

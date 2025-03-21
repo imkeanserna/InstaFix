@@ -18,6 +18,7 @@ import { selectedConversationState } from "@repo/store";
 import { useRecoilValue } from "recoil";
 import { useConversations } from "@/hooks/chat/useConversations";
 import { NotificationIcon } from "../posts/notificationBell";
+import Image from "next/image";
 
 export function FindNavbar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -181,7 +182,26 @@ export function FindNavbar({ user }: { user: User | undefined }) {
               }
             </motion.div>
 
-            <p className="text-lg truncate w-[200px] text-center">{displayText}</p>
+            {pageType === "default"
+              ?
+              <div className={`relative transition-all duration-300 h-12 w-12`}>
+                <div className="absolute inset-0 z-10"></div>
+                <Image
+                  src={`${!scrolled
+                    ?
+                    "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/instafix-logo-yellow.svg"
+                    :
+
+                    "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/instafix-logo-black.svg"
+                    }`}
+                  alt="Instafix Logo"
+                  layout="fill"
+                  className="object-cover mix-blend-multiply scale-110"
+                />
+              </div>
+              :
+              <p className="text-lg truncate w-[200px] text-center">{displayText}</p>
+            }
 
             {pageType === 'messages' && conversationState.conversations.length > 0 && (
               <div className="text-yellow-600 flex justify-center items-center gap-1 rounded-xl bg-yellow-50 p-1">
@@ -251,7 +271,20 @@ export function FindNavbar({ user }: { user: User | undefined }) {
       border-b-gray-200 px-24 transition-all duration-300 ease-in-out
       ${scrolled ? "shadow-lg py-2" : "shadow-sm pt-6 pb-4"}`}
     >
-      <h1>Find</h1>
+      <div className="flex items-center gap-3">
+        <div className={`relative transition-all duration-300 ${scrolled ? "h-12 w-12" : "h-16 w-16"} rounded-[8px] bg-yellow-400`}>
+          <div className="absolute inset-0 z-10"></div>
+          <Image
+            src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/instafix-logo-black.svg"
+            alt="Instafix Logo"
+            layout="fill"
+            className="object-cover mix-blend-multiply scale-110"
+          />
+        </div>
+        <h1 className={`transition-all duration-300 font-bold  ${scrolled ? "text-xl" : "text-2xl"}`}>
+          <span className="text-gray-900">Instafix</span>
+        </h1>
+      </div>
       <div className="flex gap-44 justify-center items-center">
         {!shouldHideSearch &&
           <SearchEngine>
