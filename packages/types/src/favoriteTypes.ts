@@ -7,6 +7,11 @@ const favoritesSelect = {
     select: {
       id: true,
       title: true,
+      user: {
+        select: {
+          name: true
+        }
+      },
       location: {
         select: {
           city: true,
@@ -18,12 +23,24 @@ const favoritesSelect = {
       coverPhoto: true
     }
   },
+  user: {
+    select: {
+      id: true,
+      email: true,
+      name: true
+    }
+  },
   createdAt: true
 } as const;
 
 export type TypeFavorite = Prisma.LikeGetPayload<{
   select: typeof favoritesSelect
 }>;
+
+export type TypeActionFavorite = {
+  favorite: TypeFavorite;
+  isLike: boolean;
+}
 
 export type FavoritesResponseWithCursor = {
   favorites: TypeFavorite[];
