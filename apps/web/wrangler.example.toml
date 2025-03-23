@@ -1,3 +1,10 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "web"
+compatibility_date = "2024-12-05"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+[vars]
 DATABASE_URL="prisma://your_prisma_url_here"
 DIRECT_URL="postgresql://your_postgres_user:your_password@your_host/your_db?sslmode=require"
 NEXTAUTH_SECRET="your_nextauth_secret_here"
@@ -28,3 +35,11 @@ R2_ACCESS_KEY_ID="your_r2_access_key_id_here"
 R2_SECRET_ACCESS_KEY="your_r2_secret_access_key_here"
 R2_PUBLIC_URL="your_r2_public_url_here"
 R2_BUCKET_NAME="your_r2_bucket_name_here"
+
+######## PREVIEW environment config ########
+# [env.preview.vars]
+# API_KEY = "your_preview_api_key_here"
+
+######## PRODUCTION environment config ########
+# [env.production.vars]
+# API_KEY = "your_production_api_key_here"

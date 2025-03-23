@@ -276,7 +276,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
       border-b-gray-200 px-24 transition-all duration-300 ease-in-out
       ${scrolled ? "shadow-lg py-2" : "shadow-sm pt-6 pb-4"}`}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <div className={`relative transition-all duration-300 ${scrolled ? "h-12 w-12" : "h-16 w-16"} rounded-[8px] bg-yellow-400`}>
           <div className="absolute inset-0 z-10"></div>
           <Image
@@ -286,8 +286,8 @@ export function FindNavbar({ user }: { user: User | undefined }) {
             className="object-cover mix-blend-multiply scale-110"
           />
         </div>
-        <h1 className={`transition-all duration-300 font-bold  ${scrolled ? "text-xl" : "text-2xl"}`}>
-          <span className="text-gray-900">Instafix</span>
+        <h1 className={`transition-all duration-300 font-bold ${scrolled ? "text-xl" : "text-2xl"}`}>
+          <span className="text-gray-900">Insta<span className="bg-yellow-400 rounded-lg px-1 shadow-sm ms-[2px] font-extrabold">Fix</span></span>
         </h1>
       </div>
       <div className="flex gap-44 justify-center items-center">
