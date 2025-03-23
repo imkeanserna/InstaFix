@@ -18,6 +18,7 @@ export default auth((req) => {
     '/book',
     '/messages',
     '/notifications',
+    '/favorites',
     '/profile'
   ];
 
@@ -62,7 +63,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const protectedPaths = ['/book', '/messages', '/notifications', '/profile'];
+  const protectedPaths = ['/book', '/messages', '/notifications', '/favorites', '/profile'];
   const isProtectedRoute = protectedPaths.some(path =>
     request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(`${path}/`)
   );
@@ -160,6 +161,7 @@ export const config = {
     "/book/:path*",
     "/messages/:path*",
     "/notifications/:path*",
+    "/favorites/:path*",
     "/profile/:path*"
   ],
 };

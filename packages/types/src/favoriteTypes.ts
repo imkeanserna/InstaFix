@@ -45,4 +45,5 @@ export type TypeActionFavorite = {
 export type FavoritesResponseWithCursor = {
   favorites: TypeFavorite[];
   pagination: CursorPagination;
+  totalCount: number;
 }

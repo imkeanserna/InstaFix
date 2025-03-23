@@ -33,6 +33,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
   const ROUTES = {
     MESSAGES: '/messages',
     NOTIFICATIONS: '/notifications',
+    FAVORITES: '/favorites',
     ACCOUNT_SETTINGS: '/account-settings',
     FIND: '/find/',
     BOOK: '/book/',
@@ -48,6 +49,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
     if (pathname.startsWith(ROUTES.BOOK) && pathSegments.length > 1) return 'booking';
     if (pathname.startsWith(ROUTES.MESSAGES)) return 'messages';
     if (pathname.startsWith(ROUTES.NOTIFICATIONS)) return 'notifications';
+    if (pathname.startsWith(ROUTES.FAVORITES)) return 'favorites';
     if (pathname.startsWith(ROUTES.ACCOUNT_SETTINGS)) return 'account-settings';
     return 'default';
   }, [pathname]);
@@ -72,6 +74,9 @@ export function FindNavbar({ user }: { user: User | undefined }) {
       case 'notifications':
         text = "Notifications";
         break;
+      case 'favorites':
+        text = "Recently Favorites";
+        break;
       case 'account-settings':
         text = "Account Settings";
         break;
@@ -81,7 +86,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
   }, [pageType, pathname]);
 
   const shouldHideSearch = useMemo(() => {
-    return [ROUTES.MESSAGES, ROUTES.NOTIFICATIONS].includes(pathname) ||
+    return [ROUTES.MESSAGES, ROUTES.NOTIFICATIONS, ROUTES.FAVORITES].includes(pathname) ||
       pathname.includes(`${ROUTES.NOTIFICATIONS}/`);
   }, [pathname]);
 
@@ -95,7 +100,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
   }, [pathname, isMobile, selectedConversationId]);
 
   const isSpecialPage = useMemo(() => {
-    return ['specific-post', 'booking', 'messages', 'notifications', 'account-settings'].includes(pageType);
+    return ['specific-post', 'booking', 'messages', 'notifications', 'favorites', 'account-settings'].includes(pageType);
   }, [pageType]);
 
   const updateUrlParams = useCallback((updates: Partial<{

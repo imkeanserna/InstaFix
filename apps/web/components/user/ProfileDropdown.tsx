@@ -28,6 +28,7 @@ import { useConversations } from "@/hooks/chat/useConversations"
 import { useRouter } from "next/navigation"
 import { useAuthModal } from "@repo/ui/context/AuthModalProvider"
 import { useMediaQuery } from "@/hooks/useMedia"
+import { useFavorites } from "@/hooks/favorites/useFavorites"
 
 interface ProfileDropdownProps {
   user?: User | null;
@@ -41,6 +42,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
   const router = useRouter();
   const { openModal } = useAuthModal();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { totalFavorites } = useFavorites();
 
   const handleAuth = () => {
     if (!user) {
@@ -140,16 +142,16 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
                     text: 'Messages',
                     hoverClass: 'hover:text-amber-500',
                     badge: totalUnreadCount > 0 ? totalUnreadCount.toString() : null,
-                    badgeClass: 'text-[10px] text-gray-500',
+                    badgeClass: 'text-[12px] text-gray-500',
                     url: '/messages'
                   },
                   {
                     icon: <Heart className="menu-icon" />,
                     text: 'Favorites',
                     hoverClass: 'hover:text-amber-500',
-                    badge: 10,
-                    badgeClass: 'text-[10px] text-gray-500',
-                    url: null
+                    badge: totalFavorites > 0 ? totalFavorites.toString() : null,
+                    badgeClass: 'text-[12px] text-gray-500',
+                    url: '/favorites'
                   },
                   {
                     icon: <UserIcon className="menu-icon" />,

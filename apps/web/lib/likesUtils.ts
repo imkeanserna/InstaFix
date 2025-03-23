@@ -1,8 +1,9 @@
 import { Like } from "@prisma/client/edge";
+import { TypeActionFavorite } from "@repo/types";
 
 type AddLikeResponse = {
   success: boolean;
-  data: Like | null;
+  data: TypeActionFavorite | null;
   error?: string;
 }
 

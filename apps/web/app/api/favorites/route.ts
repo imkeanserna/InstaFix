@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { cursor, take } = validatedQuery.data;
-    const { favorites, pagination }: FavoritesResponseWithCursor = await getFavorites({
+    const { favorites, pagination, totalCount }: FavoritesResponseWithCursor = await getFavorites({
       userId: user.id,
       cursor,
       take
@@ -45,7 +45,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         favorites,
-        pagination
+        pagination,
+        totalCount
       }
     });
   } catch (error) {

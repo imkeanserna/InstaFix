@@ -328,7 +328,7 @@ export const PostCard = memo(function PostCard({
 PostsGrid.displayName = 'PostsGrid';
 PostCard.displayName = 'PostCard';
 
-const TextSkeleton = ({ width = "w-24", height = "h-4" }: { width?: string, height?: string }) => (
+export const TextSkeleton = ({ width = "w-24", height = "h-4" }: { width?: string, height?: string }) => (
   <div className={`${width} ${height} bg-gray-200 animate-pulse rounded-md`} />
 );
 

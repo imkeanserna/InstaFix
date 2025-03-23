@@ -42,7 +42,10 @@ export async function POST(
       });
       return NextResponse.json({
         success: true,
-        data: result
+        data: {
+          favorite: result,
+          isLike: false
+        }
       })
     } else {
       const result = await prisma.like.create({
@@ -50,13 +53,48 @@ export async function POST(
           postId: postId,
           userId: user.id,
         },
+        select: {
+          id: true,
+          post: {
+            select: {
+              id: true,
+              title: true,
+              user: {
+                select: {
+                  name: true
+                }
+              },
+              location: {
+                select: {
+                  city: true,
+                  state: true,
+                  country: true
+                }
+              },
+              averageRating: true,
+              coverPhoto: true
+            }
+          },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true
+            }
+          },
+          createdAt: true
+        }
       });
       return NextResponse.json({
         success: true,
-        data: result
+        data: {
+          favorite: result,
+          isLike: true
+        }
       })
     }
   } catch (error) {
+    console.log(error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return errorResponse('Something went wrong, Try again', errorMessage);
   }

@@ -17,6 +17,12 @@ export async function getFavorites({
       throw new Error('User Id is required');
     }
 
+    const totalCount: number = await prisma.like.count({
+      where: {
+        userId: userId
+      }
+    });
+
     const favorites: TypeFavorite[] = await prisma.like.findMany({
       take: take + 1,
       where: {
@@ -29,6 +35,11 @@ export async function getFavorites({
           select: {
             id: true,
             title: true,
+            user: {
+              select: {
+                name: true
+              }
+            },
             location: {
               select: {
                 city: true,
@@ -38,6 +49,13 @@ export async function getFavorites({
             },
             averageRating: true,
             coverPhoto: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true
           }
         },
         createdAt: true
@@ -56,7 +74,8 @@ export async function getFavorites({
       pagination: {
         hasNextPage,
         endCursor
-      }
+      },
+      totalCount
     };
   } catch (error) {
     throw error;

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib";
 import { Suspense } from "react";
+import { Favorite } from "@/components/favorite/favorite";
+import { FavoriteSkeleton } from "@/components/favorite/skeleton";
 
 const Page = async () => {
   const user = await currentUser();
@@ -10,10 +12,8 @@ const Page = async () => {
   }
 
   return (
-    <Suspense fallback={<div>Loading....</div>}>
-      <div>
-        <h1>Favorites</h1>
-      </div>
+    <Suspense fallback={<FavoriteSkeleton />}>
+      <Favorite />
     </Suspense>
   );
 }
