@@ -286,8 +286,31 @@ export function FindNavbar({ user }: { user: User | undefined }) {
             className="object-cover mix-blend-multiply scale-110"
           />
         </div>
-        <h1 className={`transition-all duration-300 font-bold ${scrolled ? "text-xl" : "text-2xl"}`}>
-          <span className="text-gray-900">Insta<span className="bg-yellow-400 rounded-lg px-1 shadow-sm ms-[2px] font-extrabold">Fix</span></span>
+        <h1 className={`transition-all duration-300 font-extrabold ${scrolled ? "text-2xl" : "text-3xl"}`}>
+          <span className="text-gray-900 inline-block transform -skew-x-12">
+            insta
+            <span
+              className={`
+              bg-yellow-400 
+              px-1 
+              rounded-lg
+              text-gray-900 
+              relative 
+              inline-block
+              transform
+              transition-all
+              duration-500
+            ${scrolled
+                  ? "skew-x-12 rotate-0 translate-y-0 ms-0"
+                  : "skew-x-12 ms-1 hover:ms-0 -rotate-12 hover:rotate-0 translate-y-0 hover:translate-y-0"
+                }
+            `}
+            >
+              {/* Nail dot in the top right */}
+              <span className="absolute -top-1 -right-1 h-[6px] w-[6px] bg-gray-500 rounded-full shadow-sm"></span>
+              fix
+            </span>
+          </span>
         </h1>
       </div>
       <div className="flex gap-44 justify-center items-center">
