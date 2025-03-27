@@ -18,7 +18,13 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        cocogoose: ['Cocogoose', 'sans-serif'],
+      },
       colors: {
+        gradientStart: "hsl(48, 100%, 85%)",
+        gradientMiddle: "hsl(42, 100%, 70%)",
+        gradientEnd: "hsl(54, 100%, 60%)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -75,6 +81,19 @@ const config = {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
+        "scrollLeft": {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+        "scrollRight": {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        "gradientMove": {
+          '0%': { transform: 'rotate(0deg) translate(0, 0)' },
+          '50%': { transform: 'rotate(180deg) translate(50px, 50px)' },
+          '100%': { transform: 'rotate(360deg) translate(0, 0)' },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -97,7 +116,12 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        'message-appear': 'message-appear 0.3s ease-out forwards'
+        'message-appear': 'message-appear 0.3s ease-out forwards',
+        'gradient-move': 'gradientMove 8s infinite alternate',
+        "background-size": "200% 200%",
+        "animation": "gradient-x 15s ease infinite",
+        'scroll-left': 'scrollLeft 10s linear infinite',
+        'scroll-right': 'scrollRight 10s linear infinite'
       },
     },
   },

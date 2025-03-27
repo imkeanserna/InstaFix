@@ -28,8 +28,8 @@ const Effect3D = ({ urlImage }: {
 
     const w = container.scrollWidth;
     const h = container.scrollHeight;
-    const limit = 15;
-    const sensitivity = 100;
+    const limit = 10;
+    const sensitivity = 200;
 
     const rect = container.getBoundingClientRect();
     const mouseX = Math.round(mousePosition.x - rect.left);
@@ -59,7 +59,8 @@ const Effect3D = ({ urlImage }: {
     <div className="page-container">
       <div
         ref={containerRef}
-        className="effect3d__container moveable-3d relative h-[80vh] w-[1200px] overflow-hidden z-10 rounded-xl border-[6px] border-gray-800"
+        className="effect3d__container moveable-3d relative h-[80vh] w-[1200px] 
+            overflow-hidden z-10 rounded-xl border-[6px] border-gray-800"
       >
         <div
           ref={shineRef}

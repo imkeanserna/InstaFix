@@ -19,6 +19,7 @@ import { useRecoilValue } from "recoil";
 import { useConversations } from "@/hooks/chat/useConversations";
 import { NotificationIcon } from "../posts/notificationBell";
 import Image from "next/image";
+import { LOGO } from "@/lib/landingPageUtils";
 
 export function FindNavbar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -192,13 +193,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
               <div className={`relative transition-all duration-300 h-12 w-12`}>
                 <div className="absolute inset-0 z-10"></div>
                 <Image
-                  src={`${!scrolled
-                    ?
-                    "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/instafix-logo-yellow.svg"
-                    :
-
-                    "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/instafix-logo-black.svg"
-                    }`}
+                  src={scrolled ? LOGO["black-logo"] : LOGO["yellow-logo"]}
                   alt="Instafix Logo"
                   layout="fill"
                   className="object-cover mix-blend-multiply scale-110"
@@ -280,7 +275,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
         <div className={`relative transition-all duration-300 ${scrolled ? "h-12 w-12" : "h-16 w-16"} rounded-[8px] bg-yellow-400`}>
           <div className="absolute inset-0 z-10"></div>
           <Image
-            src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/instafix-logo-black.svg"
+            src={LOGO["black-logo"]}
             alt="Instafix Logo"
             layout="fill"
             className="object-cover mix-blend-multiply scale-110"

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { ThemeProvider } from "@repo/ui/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthProvider";
 import { Toaster } from "@repo/ui/components/ui/sonner";
@@ -14,8 +13,12 @@ import { currentUser } from "@/lib";
 import { AuthModalProvider } from "@repo/ui/context/AuthModalProvider";
 import { AuthModal } from "@repo/ui/components/auth/auth-modal";
 import { NavigationBar } from "@/components/navbar/NavigationBar";
+import { Open_Sans } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"] });
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  variable: '--font-open-sans'
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -30,7 +33,7 @@ export default async function RootLayout({
   const user = await currentUser();
   return (
     <html lang="en" className="bg-background text-black dark:text-white">
-      <body className={inter.className}>
+      <body className={openSans.className}>
         <ThemeProvider>
           <AuthModalProvider>
             <AuthProvider>
