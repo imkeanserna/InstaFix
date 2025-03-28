@@ -3,7 +3,7 @@ import HomeContent from "@/components/home/homeContent";
 
 const Home = () => {
   return (
-    <div>
+    <div className="bg-background">
       <HomeContent />
       <ChatBotAi />
     </div>
