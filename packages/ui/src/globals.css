@@ -27,7 +27,7 @@
   }
 
   .dark {
-    --background: 54 100% 97%;
+    --background: 54 100% 90%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
@@ -50,6 +50,10 @@
 }
 
 @layer utilities {
+  .bg-custom-gradient {
+    background: linear-gradient(to bottom, #facc15, #ca8a04);
+  }
+
   .translate-animation {
     transition: transform 0.2s;
   }
@@ -201,7 +205,7 @@
   }
 
   .page-container {
-    height: 80vh;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;

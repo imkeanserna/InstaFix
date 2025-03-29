@@ -18,6 +18,7 @@ import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { ScrollingText } from "../ui/scrollingText";
 import { HomeFooter } from "./footer";
 import { useRouter } from "next/navigation";
+import { useMediaQuery } from "@/hooks/useMedia";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -48,31 +49,43 @@ export function DiscoverComponent({
 }) {
   const [isHoveredFirst, setIsHoveredFirst] = useState(false);
   const [isHoveredSecond, setIsHoveredSecond] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  useEffect(() => {
+    if (isMobile) {
+      setIsHoveredFirst(true);
+      setIsHoveredSecond(true);
+    }
+  }, [isMobile]);
 
   const { config } = DISCOVER_SECTION;
 
   return (
-    <div className={'h-full w-full mt-0 mb-20 flex flex-col items-center font-cocogoose px-48 space-y-28'}>
-      <h1 className={'w-1/2 text-center text-[3.5rem] font-light leading-[1.3]'}>
+    <div className="h-full w-full mt-0 mb-10 md:mb-20 flex flex-col items-center 
+        font-cocogoose px-4 md:px-12 lg:px-48 space-y-16 md:space-y-24 lg:space-y-28"
+    >
+      <h1 className={'w-full lg:w-[52%] text-center text-[2.0rem] md:text-[3.5rem] font-light leading-[1.3]'}>
         Discover your{" "}
-        <span className="italic">personalized benefits.</span>
+        <span className="italic">personalized benefits 🙌</span>
       </h1>
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-5">
         {config.sections.map((section, index) => (
           <div
             key={section.type}
             onClick={handleClickButton}
-            className={`group flex relative h-[450px] bg-gray-950/50 justify-between rounded-3xl p-8 overflow-hidden transition-all duration-500 ease-in-out 
+            className={`group flex relative h-[640px] md:h-[450px] bg-gray-950/50 justify-between 
+              rounded-3xl p-8 overflow-hidden transition-all duration-500 ease-in-out 
               hover:ring-4  hover:ring-offset-4 hover:ring-offset-transparent 
               ${section.accentColor === 'orange' ? 'hover:ring-orange-400/50' : 'hover:ring-yellow-400/50'}
-              hover:-translate-y-4 transform hover:shadow-2xl cursor-pointer`}
+              hover:-translate-y-4 transform hover:shadow-2xl cursor-pointer
+            `}
             onMouseEnter={() => index === 0 ? setIsHoveredFirst(true) : setIsHoveredSecond(true)}
             onMouseLeave={() => index === 0 ? setIsHoveredFirst(false) : setIsHoveredSecond(false)}
           >
+            {/*Rings*/}
             <div
               className={`
-                absolute bottom-[-200px] -right-16 w-[500px] h-[500px] 
-                bg-transparent border-[60px] 
+                absolute bottom-[-200px] -right-16 w-[500px] h-[500px] bg-transparent border-[60px] 
                 ${section.accentColor === 'orange' ? 'border-orange-400' : 'border-yellow-400'}
                 rounded-full transition-all duration-500 ease-in-out
                 ${index === 0
@@ -104,21 +117,21 @@ export function DiscoverComponent({
               }`}
             ></div>
 
-            <div className="space-y-12 w-[60%] relative z-10">
+            <div className="space-y-4 md:space-y-12 w-full md:w-[60%] relative z-10">
               <Button
-                className="bg-white text-[0.92rem] group hover:bg-white text-yellow-600 
-                px-10 py-6 rounded-full font-light flex items-center gap-3 active:scale-[0.98]"
+                className="bg-white text-sm md:text-[0.92rem] group hover:bg-white text-yellow-600 
+                px-6 md:px-10 py-4 md:py-6 rounded-full font-light flex items-center gap-3 active:scale-[0.98]"
                 onClick={handleClickButton}
               >
                 <Diamond size={16} className="fill-yellow-600 text-yellow-600" />
                 {section.buttonText}
               </Button>
               <div className="space-y-3 text-white">
-                <p className="text-3xl/10 font-light leading-[1.5] tracking-wide">
+                <p className="text-3xl/10 font-light md:leading-[1.5] tracking-normal md:tracking-wide">
                   {section.description}
                 </p>
                 {section.subDescription && (
-                  <p className={`text-lg ${openSans.className}`}>
+                  <p className={`text-sm md:text-lg ${openSans.className}`}>
                     {section.subDescription}
                   </p>
                 )}
@@ -144,26 +157,30 @@ export function DiscoverComponent({
 
 export function ShowMobileContent() {
   return (
-    <div className={`h-full w-full mt-60 mb-20 gap-24 grid grid-cols-2 px-48 ${openSans.className}`}>
-      <div className="flex flex-col space-y-8">
-        <h1 className="text-start text-5xl font-bold leading-[1.3]">
+    <div className={`h-full w-full mt-32 md:mt-60 mb-0 gap-4 md:gap-8 lg:gap-24 grid grid-cols-1 
+          md:grid-cols-2 px-4 md:px-12 lg:px-48 ${openSans.className}`}
+    >
+      <div className="flex flex-col space-y-8 mb-16">
+        <h1 className="text-center md:text-start text-[2.2rem] md:text-5xl font-bold leading-[1.3]">
           {MOBILE_SECTION.title.main}{" "}
           <span className="italic">
             {MOBILE_SECTION.title.highlighted}
           </span>
         </h1>
-        <p className="text-lg leading-8 w-3/4 text-gray-700">
+        <p className="text-sm md:text-base lg:text-lg leading-[1.8] md:leading-8 w-full lg:w-3/4 text-gray-700 text-center md:text-start">
           {MOBILE_SECTION.description}
         </p>
-        <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-6 md:space-y-4">
           {MOBILE_SECTION.features.map((feature, index) => (
-            <div key={index} className="flex gap-6 items-start">
-              <div className="h-8 w-8 flex-shrink-0 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 flex items-center justify-center">
+            <div key={index} className="flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-start">
+              <div className="h-8 w-8 flex-shrink-0 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 
+                to-amber-500 flex items-center justify-center"
+              >
                 <Check className="text-white w-6 h-6 opacity-70" strokeWidth={5} />
               </div>
               <div className="w-full space-y-3">
                 <p className="text-lg font-bold">{feature.title}</p>
-                <p className="text-lg leading-[1.8] text-gray-800">{feature.description}</p>
+                <p className="text-sm md:text-base lg:text-lg leading-[1.8] text-gray-800">{feature.description}</p>
               </div>
             </div>
           ))}
@@ -196,10 +213,10 @@ const InstafixRequestCard = ({
   isThinking = false
 }: InstafixRequestCardProps) => {
   return (
-    <div className="px-12 space-y-4">
+    <div className="ps-12 md:px-12 space-y-4">
       <div
-        className="w-[500px] overflow-hidden backdrop-blur 
-       border-l-4 border-l-yellow-500 bg-gray-800 rounded-r-2xl border-y border-y-white/20 border-e border-e-white/20"
+        className="max-w-sm md:w-auto overflow-hidden backdrop-blur border-l-4 border-l-yellow-500 
+          bg-gray-800 rounded-r-2xl border-y border-y-white/20 border-e border-e-white/20"
       >
         <div className="rounded-2xl flex gap-4 px-3 py-2 relative">
           <Image
@@ -273,11 +290,10 @@ export function IntroductionAI() {
         }}
       />
       {/* Gradient Circles */}
-      <div className="absolute -top-[600px] inset-x-0 
-        mx-auto w-[1000px] h-[1000px] bg-gradient-to-tr 
-        from-[#1100ff]/60 via-[#5500aa]/60 to-[#ff00f2]/20
-        rounded-full blur-[140px] 
-        animate-[gradientMove_12s_infinite_alternate] z-10"
+      <div className="absolute -top-[200px] md:-top-[600px] inset-x-0 
+        mx-auto w-[500px] md:w-[1000px] h-[500px] md:h-[1000px] bg-gradient-to-tr 
+        from-[#1100ff] md:from-[#1100ff]/60 via-[#5500aa] md:via-[#5500aa]/60 to-[#ff00f2]/20 md:to-[#ff00f2]/20
+        rounded-full blur-[140px] animate-[gradientMove_12s_infinite_alternate] z-10"
       />
       <div
         className="absolute bottom-[28rem] -left-48
@@ -286,26 +302,30 @@ export function IntroductionAI() {
           blur-[140px] -translate-x-1/4 translate-y-1/4 
           animate-[gradientMove_12s_infinite_alternate] z-10"
       />
-      <div className="space-y-16 relative z-20">
-        <div className="space-y-6">
+      <div className="space-y-16 relative z-20 px-4 md:px-12 lg:px-0">
+        <div className="space-y-6 hidden md:block">
           <h1 className="font-bold text-center text-white text-5xl tracking-wide">
             {HEADING_AI_SECTION.heading}
           </h1>
-          <h1 className="text-center text-white text-3xl tracking-wide">
+          <h1 className="text-center text-white text-3xl tracking-wide flex gap-2 justify-center">
             {HEADING_AI_SECTION.subheading.split('personal AI assistant,').map((part, index) =>
               index === 0 ? (
-                <>{part}</>
+                <div key={index}>{part}</div>
               ) : (
-                <>
+                <div key={index}>
                   <span className="italic text-yellow-400 text-4xl font-cocogoose font-light">personal AI assistant,</span>
                   {part}
-                </>
+                </div>
               )
             )}
           </h1>
         </div>
+        <div
+          className="font-bold block md:hidden text-center text-white text-[1.9rem] leading-[1.3]"
+          dangerouslySetInnerHTML={{ __html: HEADING_AI_SECTION.mobileHeading }}
+        />
         <div className="">
-          <div className="max-w-4xl mx-auto rounded-xl p-6 space-y-6">
+          <div className="max-w-4xl mx-auto rounded-xl p-0 md:p-6 space-y-6">
             <div className="space-y-6">
               {AI_MESSAGES.map((message, index) => (
                 <div
@@ -314,8 +334,12 @@ export function IntroductionAI() {
                 >
                   {message.sender === 'AI' ? (
                     <div className="ps-1 relative">
-                      <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-200" />
-                      <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 via-yellow-600 to-yellow-700 flex items-center justify-center ring-1 ring-violet-500/50 shadow-sm">
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 
+                          rounded-full blur opacity-75 group-hover:opacity-100 transition duration-200"
+                      />
+                      <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 
+                            via-yellow-600 to-yellow-700 flex items-center justify-center ring-1 ring-violet-500/50 shadow-sm"
+                      >
                         <div className="text-sm font-medium text-white/90 select-none">
                           AI
                         </div>
@@ -329,11 +353,13 @@ export function IntroductionAI() {
                     </div>
                   )}
                   <div
-                    className={`px-6 py-4 text-white max-w-full leading-8 tracking-wide border border-gray-200/10 ${message.sender === "AI"
-                      ? "rounded-tl-3xl rounded-br-3xl rounded-tr-3xl bg-gray-800"
-                      : "rounded-tr-full rounded-tl-full rounded-bl-full bg-gray-950/50 text-right"
-                      }`}
-                  >
+                    className={`px-6 py-4 text-white max-w-full leading-8 tracking-wide border border-gray-200/10 
+                      ${message.sender === "AI"
+                        ? `rounded-tl-3xl rounded-br-3xl rounded-tr-3xl bg-gray-800`
+                        : `rounded-tr-3xl md:rounded-tr-full rounded-tl-3xl md:rounded-tl-full 
+                        rounded-bl-3xl md:rounded-bl-full bg-gray-950/50 text-right`
+                      }`
+                    }>
                     <p>{message.text}</p>
                   </div>
                 </div>
@@ -351,10 +377,10 @@ export function IntroductionAI() {
           </div>
         </div>
       </div>
-      <div className={`mt-48 mb-12 w-full ${openSans.className}`}>
+      <div className={`mt-48 mb-6 md:mb-12 w-full ${openSans.className}`}>
         <ScrollingText />
       </div>
-      <HomeFooter />
+      <HomeFooter isHome={true} />
     </div>
   );
 }

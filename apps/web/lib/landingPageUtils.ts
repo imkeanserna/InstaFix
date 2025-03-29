@@ -1,3 +1,4 @@
+import { HomeFooter } from "@/components/home/footer";
 import { DiscoverComponent } from "@/components/home/homeContent";
 
 export const LOGO = {
@@ -15,10 +16,13 @@ export const HERO_SECTION_CONFIG = {
   rotatingTexts: HERO_TEXTS,
   staticText: 'Experts for',
   description: 'Connect instantly with AI-powered experts who fix your problems fast, easy and hassle-free',
+  smallDescription: 'AI-powered - fast, easy and hassle-free.',
   button: {
     text: 'Find out more',
+    mobileText: 'Get Started for free',
     variant: 'ghost',
-    className: 'relative font-cocogoose bg-amber-950 hover:bg-amber-950 flex items-center justify-center border-none rounded-full py-8 px-10 active:scale-[0.98]'
+    className: `relative font-cocogoose bg-amber-950 hover:bg-amber-950 flex text-xs md:text-base
+            items-center justify-center border-none rounded-2xl md:rounded-full py-8 px-6 md:px-10 active:scale-[0.98]`
   }
 };
 
@@ -63,7 +67,8 @@ export const SECTION_CONFIG = [
 
 export const HEADING_AI_SECTION = {
   "heading": "Introducing InstaFix Assistant",
-  "subheading": "your personal AI assistant, connecting you with expert freelancers instantly."
+  "subheading": "your personal AI assistant, connecting you with expert freelancers instantly.",
+  "mobileHeading": "Introducing InstaFix Assistant your <span class='text-yellow-400 italic text-[2.3rem]'>personal AI assistant</span>, connecting you with expert freelancers instantly."
 }
 
 export const AI_MESSAGES = [
@@ -114,7 +119,7 @@ export const LOOPING_BANNER_TEXTS = [
 export const MOBILE_SECTION = {
   title: {
     main: "Freelance and",
-    highlighted: "earn money."
+    highlighted: "earn money 💸"
   },
   description: "Enhance your freelancing experience, grow your income, and enjoy a seamless, user-friendly app that effortlessly connects you with clients.",
   features: [
@@ -136,19 +141,19 @@ export const MOBILE_SECTION = {
 export const DISCOVER_SECTION = {
   component: DiscoverComponent,
   config: {
-    title: 'Discover your personalized benefits.',
+    title: 'Discover your personalized benefits. 🔍',
     sections: [
       {
         type: 'Users',
         buttonText: 'Users',
-        description: 'Get your problems fixed quickly and affordably by skilled freelancers.',
+        description: 'Get your problems fixed quickly and affordably by skilled freelancers 🛠️.',
         image: FREELANCERS_IMAGE["freelancer-woman"],
         accentColor: 'yellow'
       },
       {
         type: 'Freelancers',
         buttonText: 'Freelancers',
-        description: 'Boost your earnings while doing what you do best!',
+        description: 'Boost your earnings while doing what you do best! 🚀',
         subDescription: '+ Unlock exclusive job opportunities based on your skills and experience.',
         image: FREELANCERS_IMAGE["freelancer-man"],
         accentColor: 'orange'
@@ -156,3 +161,22 @@ export const DISCOVER_SECTION = {
     ]
   }
 };
+
+export const FOOTER_SECTION = {
+  component: HomeFooter,
+  config: {
+    sections: [
+      {
+        type: 'instafix-description',
+        description: 'Get more done in less time with ai.',
+        subdescription: 'Crafted by skilled freelancers who know the hustle balancing speed, quality, and efficiency.'
+      },
+      {
+        type: 'form',
+        heading: 'The latest Instafix insights delivered to your inbox',
+        subdescription: 'By submitting this form, you consent to Instafix processing your data and contacting you to fulfill your request. For more information on how we are committed to protecting and respecting your privacy, please review our Privacy Policy.',
+        buttonText: 'Subscribe'
+      }
+    ]
+  }
+}

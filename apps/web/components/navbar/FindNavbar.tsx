@@ -271,7 +271,10 @@ export function FindNavbar({ user }: { user: User | undefined }) {
       border-b-gray-200 px-24 transition-all duration-300 ease-in-out
       ${scrolled ? "shadow-lg py-2" : "shadow-sm pt-6 pb-4"}`}
     >
-      <div className="flex items-center gap-4">
+      <div
+        className="flex items-center gap-4 cursor-pointer group"
+        onClick={() => router.push("/find")}
+      >
         <div className={`relative transition-all duration-300 ${scrolled ? "h-12 w-12" : "h-16 w-16"} rounded-[8px] bg-yellow-400`}>
           <div className="absolute inset-0 z-10"></div>
           <Image
@@ -297,7 +300,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
               duration-500
             ${scrolled
                   ? "skew-x-12 rotate-0 translate-y-0 ms-0"
-                  : "skew-x-12 ms-1 hover:ms-0 -rotate-12 hover:rotate-0 translate-y-0 hover:translate-y-0"
+                  : "skew-x-12 ms-1 group-hover:ms-0 -rotate-12 group-hover:rotate-0 translate-y-0 group-hover:translate-y-0"
                 }
             `}
             >

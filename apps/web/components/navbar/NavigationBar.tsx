@@ -32,7 +32,7 @@ export function NavigationBar({ user }: { user: User | undefined }) {
     pathname !== '/find/search';
 
   if (isSpecificNotificationPage || isSpecificFindPage || selectedConversationId ||
-    pathname.includes("/auth") || pathname.includes("/book") || pathname.includes("/become-a-freelancer")) {
+    pathname.includes("/auth") || pathname.includes("/book") || pathname.includes("/become-a-freelancer") || pathname === "/") {
     return null;
   }
 

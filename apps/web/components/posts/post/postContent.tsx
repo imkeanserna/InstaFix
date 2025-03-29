@@ -234,7 +234,7 @@ export function PostContent({ postId, username }: {
             </div>
             <Divider />
           </div>
-          <div className='lg:px-60 md:py-12'>
+          <div className='lg:px-60 md:pt-12 md:pb-28'>
             <LocationDisplay
               freelancerName={staticData.post.user.name!}
               freelancerImage={staticData.post.user.image!}

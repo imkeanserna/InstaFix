@@ -56,10 +56,10 @@ const Effect3D = ({ urlImage }: {
   }, [mousePosition]);
 
   return (
-    <div className="page-container">
+    <div className="page-container w-full">
       <div
         ref={containerRef}
-        className="effect3d__container moveable-3d relative h-[80vh] w-[1200px] 
+        className="effect3d__container moveable-3d relative h-[250px] w-full md:h-[60vh] lg:h-[80vh] md:w-[800px] lg:w-[1200px] 
             overflow-hidden z-10 rounded-xl border-[6px] border-gray-800"
       >
         <div

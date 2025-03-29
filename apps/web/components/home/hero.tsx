@@ -5,7 +5,6 @@ import {
   FREELANCERS_IMAGE,
   HERO_IMAGE,
   HERO_SECTION_CONFIG,
-  HERO_TEXTS,
   OVER_ALL_TESTIMONIAL,
   SECTION_CONFIG,
   TESTIMONIALS,
@@ -18,6 +17,7 @@ import Image from "next/image";
 import HomeNavbar from "../navbar/HomeNavbar";
 import { LoopingBanner } from "../ui/loopingBanner";
 import { Open_Sans } from "next/font/google";
+import { useMediaQuery } from "@/hooks/useMedia";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -37,22 +37,22 @@ export function HeroSection({
     showOverallTestimonial,
     isReturningToSecond,
   } = useTestimonialCarousel();
-
-  const { button, description, staticText } = HERO_SECTION_CONFIG;
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const { button, description, smallDescription, staticText } = HERO_SECTION_CONFIG;
 
   return (
-    <div className="relative min-h-screen bg-background overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden">
       <GradientBlobHero />
       <div className="relative z-10">
         <HomeNavbar />
         <LoopingBanner />
-        <div className="flex justify-between w-full px-64 items-center py-24">
-          <div className="font-cocogoose w-1/2 pe-24 space-y-8">
-            <div className="space-y-10">
-              <div className="space-y-3 w-full">
-                <h1 className="text-7xl font-light leading-[1.2]">{staticText}</h1>
+        <div className="flex justify-between w-full px-0 md:px-12 lg:px-64 items-center py-16 md:py-24 flex-col lg:flex-row">
+          <div className="font-cocogoose w-full lg:w-1/2 pe-0 lg:pe-24 space-y-10 md:space-y-8 flex flex-col items-center lg:items-start">
+            <div className="space-y-6 md:space-y-10">
+              <div className="space-y-1 md:space-y-3 w-full text-center lg:text-left">
+                <h1 className="font-light md:text-7xl md:leading-[1.2] text-[2.5rem] leading-none">{staticText}</h1>
                 <div className="flex justify-start">
-                  <div className="min-h-[80px] flex items-center">
+                  <div className="min-h-[60px] flex items-center justify-center w-full">
                     <AnimatePresence mode="wait">
                       <motion.h1
                         key={currentText}
@@ -60,7 +60,7 @@ export function HeroSection({
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -40, opacity: 0 }}
                         transition={{ duration: 0.5, ease: "easeInOut" }}
-                        className="text-7xl font-light leading-[1.2]"
+                        className="font-light md:text-7xl md:leading-[1.2] text-[2.5rem] leading-none"
                       >
                         {currentText}
                       </motion.h1>
@@ -68,8 +68,10 @@ export function HeroSection({
                   </div>
                 </div>
               </div>
-              <p className={`text-xl/8 ${openSans.className} text-gray-600 w-full tracking-wider`}>
-                {description}
+              <p className={`text-xl/8 ${openSans.className} text-gray-900 
+                md:text-gray-600 w-full text-center md:text-left tracking-normal md:tracking-wider`}
+              >
+                {isMobile ? smallDescription : description}
               </p>
             </div>
             <Button
@@ -78,13 +80,15 @@ export function HeroSection({
               className={button.className}
             >
               <p className="text-lg transition-all text-white font-light">
-                {button.text}
+                {isMobile ? button.mobileText : button.text}
               </p>
             </Button>
           </div>
-          <div className="relative rounded-3xl h-[615px] w-[700px] 
-          shadow-[0_10px_50px_rgba(255,255,255,0.4)] border border-white/10 bg-white/5 backdrop-blur-xl">
-            <div className="absolute top-0 right-0 rounded-xl w-[700px] h-[615px]">
+          <div className="relative flex px-4 md:px-0 justify-center mt-28 lg:mt-0 items-center rounded-3xl h-auto w-full 
+            md:h-[500px] md:w-[670px] lg:h-[615px] lg:w-[700px] shadow-none md:shadow-[0_10px_50px_rgba(255,255,255,0.4)]
+            border-none md:border border-white/10 bg-white/5 backdrop-blur-xl"
+          >
+            <div className="rounded-xl w-full h-[470px] md:h-[500px] md:w-[670px] lg:w-[700px] lg:h-[615px]">
               <Image
                 src={HERO_IMAGE["car-behind"]}
                 alt="Living Room Background"
@@ -94,14 +98,14 @@ export function HeroSection({
                 className="h-full w-full object-cover z-0 rounded-3xl"
               />
             </div>
-            <div className="absolute right-2 -bottom-[1px] w-[420px] h-[670px]">
+            <div className="absolute right-2 z-20 -bottom-[1px] w-[355px] md:w-[400px] md:h-[600px] lg:w-[420px] lg:h-[670px]">
               <Image
                 src={FREELANCERS_IMAGE["freelancer-woman"]}
                 alt="Be a Instafix Freelancer"
                 width={420}
                 height={1000}
                 quality={100}
-                className="h-full w-full object-cover z-0 "
+                className="h-full w-full object-cover"
               />
             </div>
             <AnimatePresence mode="wait">
@@ -128,7 +132,7 @@ export function HeroSection({
                     damping: 10,
                     duration: 0.6
                   }}
-                  className="absolute -top-20 -left-28 -space-y-4"
+                  className="absolute -top-12 left-8 md:-top-10 md:-left-16 lg:-top-20 lg:-left-28 -space-y-4"
                 >
                   {TESTIMONIALS.map((src, idx) => (
                     <motion.div
@@ -163,18 +167,18 @@ export function HeroSection({
                           times: [0, 0.5, 1]
                         }}
                       >
-                        <div className="relative">
+                        <div className="relative z-0">
                           <Image
                             src={src}
                             alt={`testimonial hero ${idx + 1}`}
                             width={650}
                             height={200}
                             quality={100}
-                            className={`h-24 w-80 object-cover ${idx === activeIndex ? 'rounded-2xl' : 'rounded-none'}`}
+                            className={`md:h-24 w-64 md:w-80 object-cover ${idx === activeIndex ? 'rounded-2xl' : 'rounded-none'}`}
                           />
                           <div
-                            className="absolute inset-0 bg-yellow-100 mix-blend-multiply opacity-30 
-                            pointer-events-none rounded-3xl"
+                            className="absolute inset-0 bg-yellow-100 mix-blend-multiply 
+                            opacity-30 pointer-events-none rounded-3xl"
                           ></div>
                         </div>
                       </motion.div>
@@ -208,7 +212,7 @@ export function HeroSection({
                     damping: 10,
                     duration: 0.6
                   }}
-                  className="absolute bottom-32 left-20"
+                  className="absolute bottom-28 left-[40%] -translate-x-1/2 md:bottom-32 md:left-80 lg:bottom-32 lg:left-20 z-20"
                 >
                   <div className="relative">
                     <Image
@@ -217,7 +221,7 @@ export function HeroSection({
                       width={650}
                       height={1000}
                       quality={100}
-                      className="h-32 w-auto object-cover z-0"
+                      className="h-24 md:h-28 lg:h-32 w-auto object-cover z-0"
                     />
                     <div
                       className="absolute inset-0 bg-yellow-100 mix-blend-multiply opacity-30 
@@ -230,19 +234,22 @@ export function HeroSection({
           </div>
         </div>
       </div >
-      <div className="flex items-center justify-center mt-48 relative w-full mb-64">
+      <div className="flex items-center justify-center mt-20 md:mt-24 lg:mt-48 relative w-full mb-40 md:mb-48 lg:mb-64">
         <GradientBlobSelection />
-        <div className={`flex flex-col w-full items-center ${openSans.className} justify-center z-10 gap-12`}>
+        <div className={`flex flex-col w-full items-center ${openSans.className} justify-center z-10 gap-4 md:gap-12 px-4 md:px-0`}>
           <SectionSelector
             sections={SECTION_CONFIG}
             selectedSection={selectedSection}
             onSectionChange={setSelectedSection}
           />
-          <Effect3D
-            urlImage={
-              SECTION_CONFIG.find(s => s.id === selectedSection)?.image || ''
-            }
-          />
+          <div className="relative w-full min-h-[250px] md:min-h-[60vh] lg:min-h-[80vh] 
+            flex items-center justify-center transition-all duration-300 ease-in-out"
+          >
+            <Effect3D
+              key={selectedSection}
+              urlImage={SECTION_CONFIG.find(s => s.id === selectedSection)?.image || ""}
+            />
+          </div>
         </div>
       </div>
     </div >
@@ -258,8 +265,8 @@ const SectionSelector = ({
   selectedSection: string,
   onSectionChange: (id: string) => void
 }) => (
-  <div className="w-auto bg-gray-900/30 rounded-full text-white text-base font-semibold">
-    <div className="flex justify-center items-center gap-2 p-2 relative">
+  <div className="w-auto bg-gray-900/30 rounded-3xl md:rounded-full text-white text-base font-semibold">
+    <div className="flex flex-wrap justify-center items-center gap-2 p-2 relative">
       {sections.map((section) => (
         <div key={section.id} className="relative">
           {selectedSection === section.id && (
@@ -301,12 +308,14 @@ const GradientBlobSelection = () => {
     <div>
       {/* Bottom Left Gradient Blob */}
       <div
-        className="absolute bottom-80 left-1/2 
+        className="absolute -bottom-[18rem] md:bottom-80 md:left-1/2 
           -translate-x-1/2 
-          w-[1500px] h-[1000px] 
+          w-[1500px] h-[1200px] md:h-[1000px] 
           bg-gradient-to-tr 
-          from-yellow-300/10 
-          via-yellow-600/50 
+          from-yellow-300/70
+          via-yellow-600/80 
+          md:from-yellow-300/10 
+          md:via-yellow-600/50 
           to-black/10 
           rounded-full 
           blur-[140px] 
@@ -315,7 +324,7 @@ const GradientBlobSelection = () => {
       />
       {/* Top Right Gradient Blob */}
       <div
-        className="absolute top-0 right-20
+        className="absolute hidden md:block top-0 right-20
             w-[700px] h-[80vh] 
             bg-gradient-to-br 
             from-yellow-300/10 
@@ -329,7 +338,7 @@ const GradientBlobSelection = () => {
       />
       {/* Top Left Gradient Blob */}
       <div
-        className="absolute top-0 left-20 
+        className="absolute hidden md:block top-0 left-20 
             w-[700px] h-[80vh] 
             bg-gradient-to-br 
             from-yellow-300/10 
@@ -364,7 +373,7 @@ const GradientBlobHero = () => {
     <div>
       {/* Top Right Gradient Blob */}
       <div
-        className="absolute top-0 right-0 
+        className="absolute hidden md:block  md:top-0 md:right-0 
             w-[700px] h-[700px] 
             bg-gradient-to-br 
             from-yellow-300/10 
@@ -376,9 +385,23 @@ const GradientBlobHero = () => {
             translate-y-1/4 
             animate-[gradientMove_12s_infinite_alternate]"
       />
+
+      <div
+        className="absolute block md:hidden top-80 left-1/2 
+            -translate-x-1/2 
+            w-[350px] h-[350px] 
+            bg-gradient-to-tr 
+            from-yellow-400
+            via-yellow-500
+            to-black/10 
+            rounded-full 
+            blur-[40px] 
+            -translate-y-1/4 
+            animate-[gradientMove_12s_infinite_alternate_reverse]"
+      />
       {/* Top Left Gradient Blob */}
       <div
-        className="absolute top-0 -left-20
+        className="absolute hidden md:block top-0 -left-20
             w-[500px] h-[500px] 
             bg-gradient-to-br 
             from-yellow-300/10 
@@ -392,7 +415,7 @@ const GradientBlobHero = () => {
       />
       {/* Bottom Center Gradient Blob */}
       <div
-        className="absolute bottom-48 left-1/2 
+        className="absolute hidden md:block bottom-48 left-1/2 
             -translate-x-1/2 
             w-[1000px] h-[1000px] 
             bg-gradient-to-tr 

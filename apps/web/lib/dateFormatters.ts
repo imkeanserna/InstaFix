@@ -52,13 +52,29 @@ export const getFormattedTime = (date: Date): string => {
 };
 
 export const calculateRemainingDays = (createdAt: Date, maxDays: number = 3) => {
-  const utcCreatedDate = new Date(Date.UTC(createdAt.getUTCFullYear(), createdAt.getUTCMonth(), createdAt.getUTCDate()));
+  const safeCreatedAt = new Date(createdAt);
+
+  // Normalize to start of the day in UTC
+  const utcCreatedDate = new Date(Date.UTC(
+    safeCreatedAt.getUTCFullYear(),
+    safeCreatedAt.getUTCMonth(),
+    safeCreatedAt.getUTCDate()
+  ));
+
+  // Calculate deadline by adding max days
   const deadlineDate = new Date(utcCreatedDate.getTime() + (maxDays * 24 * 60 * 60 * 1000));
 
+  // Current date normalized to UTC start of day
   const now = new Date();
-  const utcNow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const utcNow = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
+  ));
 
+  // Remaining days
   const remainingDays = differenceInDays(deadlineDate, utcNow);
+  // Ensure non-negative result
   return Math.max(0, remainingDays);
 };
 

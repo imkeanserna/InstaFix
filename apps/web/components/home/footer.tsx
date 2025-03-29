@@ -1,18 +1,33 @@
 "use client";
 
-import { LOGO } from "@/lib/landingPageUtils";
+import { FOOTER_SECTION, LOGO } from "@/lib/landingPageUtils";
 import { Button } from "@repo/ui/components/ui/button";
 import { Input } from "@repo/ui/components/ui/input";
 import { Instagram, Linkedin } from "lucide-react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
-export function HomeFooter({ className }: {
-  className?: string
+export function HomeFooter({ className, isHome }: {
+  className?: string;
+  isHome?: boolean;
 }) {
+  const pathname = usePathname();
+  const shouldShowFooter = useMemo(() => {
+    const isFind = pathname.includes("/find") || pathname.startsWith("/find/");
+    return isFind;
+  }, [pathname]);
+
+  const { config } = FOOTER_SECTION;
+
+  if (!shouldShowFooter && !isHome) {
+    return null;
+  }
+
   return (
-    <div className={`px-48 py-16 relative ${className} space-y-12 z-20`}>
-      <div className="flex items-start justify-between">
-        <div className="space-y-4 w-[560px]">
+    <div className={`px-4 md:px-12 lg:px-48 py-10 md:py-16 relative ${className} space-y-12 z-20`}>
+      <div className="flex flex-col gap-12 md:gap-0 md:flex-row items-start justify-between">
+        <div className="space-y-4 w-full md:w-[560px]">
           <div className="flex items-center gap-4 cursor-pointer group">
             <div className={`relative  transition-all duration-300 ${"h-10 w-10"} rounded-[8px] bg-yellow-400`}>
               <div className="absolute inset-0 z-10"></div>
@@ -42,12 +57,12 @@ export function HomeFooter({ className }: {
             </h1>
           </div>
           <div className="text-white/70 space-y-3">
-            <p>Get more done in less time with AI.</p>
-            <p>Crafted by skilled freelancers who know the hustle balancing speed, quality, and efficiency.</p>
+            <p>{config.sections[0].description}</p>
+            <p>{config.sections[0].subdescription}</p>
           </div>
         </div>
-        <div className="max-w-[440px] bg-yellow-400/50 rounded-3xl p-5 space-y-4">
-          <p className="text-white font-semibold">The latest Instafix insights delivered to your inbox</p>
+        <div className="max-w-[440px] bg-yellow-400/50 rounded-2xl md:rounded-3xl p-5 space-y-4">
+          <p className="text-white font-semibold">{config.sections[1].heading}</p>
           <div className="space-y-2">
             <div className="flex gap-3">
               <Input
@@ -57,14 +72,16 @@ export function HomeFooter({ className }: {
                 className="py-2 px-6 bg-white rounded-full"
               />
               <Button className="rounded-full py-2 px-6 text-gray-900 text-base font-semibold bg-yellow-400 hover:bg-yellow-500">
-                Subscribe
+                {config.sections[1].buttonText}
               </Button>
             </div>
-            <p className="text-[0.6rem] text-white/50">By submitting this form, you consent to Bloomreach processing your data and contacting you to fulfill your request. For more information on how we are committed to protecting and respecting your privacy, please review our Privacy Policy.</p>
+            <p className="text-[0.6rem] text-white/50">
+              {config.sections[1].subdescription}
+            </p>
           </div>
         </div>
       </div>
-      <div className="text-white/70 space-y-6">
+      <div className="text-white/70 space-y-0 md:space-y-6 flex flex-row md:flex-col justify-between">
         <div className="flex gap-4 items-start">
           <Instagram className="h-5 w-5 cursor-pointer hover:text-white" />
           <div className="p-[0.8px] bg-white/70">

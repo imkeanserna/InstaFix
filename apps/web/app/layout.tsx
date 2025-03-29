@@ -14,6 +14,7 @@ import { AuthModalProvider } from "@repo/ui/context/AuthModalProvider";
 import { AuthModal } from "@repo/ui/components/auth/auth-modal";
 import { NavigationBar } from "@/components/navbar/NavigationBar";
 import { Open_Sans } from "next/font/google";
+import { HomeFooter } from "@/components/home/footer";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -32,7 +33,7 @@ export default async function RootLayout({
 }>) {
   const user = await currentUser();
   return (
-    <html lang="en" className="bg-background text-black dark:text-white">
+    <html lang="en" className="text-black dark:text-white">
       <body className={openSans.className}>
         <ThemeProvider>
           <AuthModalProvider>
@@ -46,6 +47,9 @@ export default async function RootLayout({
                         <NavigationBar user={user} />
                         {children}
                         <AuthModal />
+                        <HomeFooter
+                          className="bg-gradient-to-b relative from-yellow-500 to-yellow-900 overflow-hidden"
+                        />
                       </FormDataProvider>
                     </ReactQueryProvider>
                   </ChatProvider>

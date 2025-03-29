@@ -9,14 +9,14 @@ export default function HomeNavbar() {
   const router = useRouter();
 
   return (
-    <div className="sticky px-48 top-0 z-20 flex items-center justify-between py-4">
+    <div className="sticky px-4 md:px-48 top-0 z-20 w-full flex items-center justify-between py-4">
       <div
-        className="flex items-center gap-4 cursor-pointer group"
+        className="flex items-center gap-2 md:gap-4 cursor-pointer group"
         onClick={() => {
           router.push("/");
         }}
       >
-        <div className={`relative  transition-all duration-300 ${"h-16 w-16"} rounded-[8px] bg-yellow-400`}>
+        <div className={`relative  transition-all duration-300 h-12 w-12 md:h-16 md:w-16 rounded-[8px] bg-yellow-400`}>
           <div className="absolute inset-0 z-10"></div>
           <Image
             src={LOGO["black-logo"]}
@@ -25,7 +25,7 @@ export default function HomeNavbar() {
             className="object-cover mix-blend-multiply scale-100 rounded-[8px]"
           />
         </div>
-        <h1 className={`transition-all duration-300 font-extrabold ${"text-3xl"}`}>
+        <h1 className={`transition-all duration-300 font-extrabold text-2xl md:text-3xl`}>
           <span className="text-gray-900 inline-block transform -skew-x-12">
             insta
             <span
@@ -49,7 +49,7 @@ export default function HomeNavbar() {
         onClick={() => router.push("/find")}
         variant="ghost"
         className="relative font-cocogoose bg-amber-950 hover:bg-amber-950 
-        flex items-center justify-center border-none rounded-full py-7 px-8 active:scale-[0.98]"
+        hidden md:flex items-center justify-center border-none rounded-full py-7 px-8 active:scale-[0.98]"
       >
         <p className="text-lg transition-all text-white font-light">Get Started</p>
       </Button>
