@@ -4,7 +4,7 @@ import { startOfDay, endOfDay } from "date-fns";
 import { CreateBookingInput } from '../handlers/booking-manager';
 import { validateBookingCancellation } from '@repo/types';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function addBooking({
   data,

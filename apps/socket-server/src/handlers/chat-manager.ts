@@ -19,7 +19,7 @@ import {
 import { getOrCreateConversation } from "../action/chat";
 import { getOrCreateSystemUser } from "../action/system";
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export interface ChatEvent {
   type: ChatEventType;
@@ -178,7 +178,7 @@ export class ChatManager {
 
       const systemUser = await getOrCreateSystemUser();
 
-      const message = prisma.chatMessage.create({
+      const message = await prisma.chatMessage.create({
         data: {
           conversationId,
           senderId: systemUser.id,
@@ -199,7 +199,7 @@ export class ChatManager {
       })
 
       // Update conversation's lastMessageAt
-      prisma.conversation.update({
+      await prisma.conversation.update({
         where: { id: conversationId },
         data: { lastMessageAt: new Date() }
       })

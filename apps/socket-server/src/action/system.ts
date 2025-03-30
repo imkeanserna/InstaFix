@@ -2,7 +2,7 @@ import { SYSTEM_EMAIL, SYSTEM_PASSWORD } from '../config/config';
 import { prisma } from '../db/index';
 import bcrypt from "bcryptjs";
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function getOrCreateSystemUser() {
   const systemEmail = SYSTEM_EMAIL;

@@ -1,7 +1,7 @@
 import { Post } from '@prisma/client/edge';
 import { prisma } from '../db/index';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function getPostById({ postId }: { postId: string }) {
   try {
