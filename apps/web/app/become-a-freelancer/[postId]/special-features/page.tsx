@@ -1,5 +1,7 @@
 import ServiceOffer from "@/components/posts/service-offer";
 
+export const runtime = 'edge'
+
 export default function Page() {
   return (
     <div className="h-full w-full py-24 sm:py-16 md:py-28">

@@ -1,5 +1,7 @@
 import RequestConfirmation from "@/components/posts/service-engagement";
 
+export const runtime = 'edge'
+
 export default function Page() {
   return (
     <div className="h-[90vh] bg-gradient-to-b from-white to-yellow-50 flex justify-center items-center px-4">

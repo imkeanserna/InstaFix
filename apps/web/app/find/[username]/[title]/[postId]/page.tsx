@@ -2,6 +2,8 @@ import { PostContent, PostContentSkeleton } from "@/components/posts/post/postCo
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+export const runtime = 'edge'
+
 const Page = ({ params }: { params: { postId: string, username: string, title: string } }) => {
   if (!params.postId) return notFound();
   if (!params.username) return notFound();

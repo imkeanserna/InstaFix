@@ -157,10 +157,10 @@ export function DiscoverComponent({
 
 export function ShowMobileContent() {
   return (
-    <div className={`h-full w-full mt-32 md:mt-60 mb-0 gap-4 md:gap-8 lg:gap-24 grid grid-cols-1 
+    <div className={`h-full w-full relative mt-32 md:mt-60 mb-0 gap-4 md:gap-8 lg:gap-36 grid grid-cols-1 
           md:grid-cols-2 px-4 md:px-12 lg:px-48 ${openSans.className}`}
     >
-      <div className="flex flex-col space-y-8 mb-16">
+      <div className="flex flex-col space-y-8 mb-4 md:mb-16">
         <h1 className="text-center md:text-start text-[2.2rem] md:text-5xl font-bold leading-[1.3]">
           {MOBILE_SECTION.title.main}{" "}
           <span className="italic">
@@ -186,8 +186,15 @@ export function ShowMobileContent() {
           ))}
         </div>
       </div>
-      <div className="w-1/2 bg-gray-950 h-32">
-
+      <div className="w-full flex justify-center md:justify-start">
+        <Image
+          src={MOBILE_SECTION.mobileImage}
+          alt="Living Room Background"
+          width={700}
+          height={1200}
+          quality={100}
+          className={`h-auto w-48 md:w-96 object-cover block md:absolute md:-top-40 -rotate-12`}
+        />
       </div>
     </div>
   );
@@ -308,12 +315,14 @@ export function IntroductionAI() {
             {HEADING_AI_SECTION.heading}
           </h1>
           <h1 className="text-center text-white text-3xl tracking-wide flex gap-2 justify-center">
-            {HEADING_AI_SECTION.subheading.split('personal AI assistant,').map((part, index) =>
+            {HEADING_AI_SECTION.subheading.split('personal AI assistant 🤖,').map((part, index) =>
               index === 0 ? (
                 <div key={index}>{part}</div>
               ) : (
                 <div key={index}>
-                  <span className="italic text-yellow-400 text-4xl font-cocogoose font-light">personal AI assistant,</span>
+                  <span className="italic text-yellow-400 text-4xl font-cocogoose font-light">personal AI assistant
+                    <span className="not-italic">{" "} 🤖,</span>
+                  </span>
                   {part}
                 </div>
               )
@@ -380,7 +389,10 @@ export function IntroductionAI() {
       <div className={`mt-48 mb-6 md:mb-12 w-full ${openSans.className}`}>
         <ScrollingText />
       </div>
-      <HomeFooter isHome={true} />
+      <HomeFooter
+        className={"px-4 md:px-12 lg:px-48 py-10 md:py-16"}
+        isHome={true}
+      />
     </div>
   );
 }

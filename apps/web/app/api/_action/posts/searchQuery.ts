@@ -2,7 +2,7 @@ import { PopularSearch, Category, Subcategory } from '@prisma/client/edge';
 import { SearchSuggestion } from '@repo/types';
 import { prisma } from '@/server/index';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function getSearchSuggestions(
   partialQuery: string,

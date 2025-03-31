@@ -187,7 +187,7 @@ export function FavoriteCard({ favorite, router }: {
               <Heart
                 className={`w-8 h-8 md:w-5 md:h-5 transition-all duration-300 ${isFavorited
                   ? "fill-yellow-500 stroke-yellow-500"
-                  : "fill-none stroke-gray-500"
+                  : "fill-gray-950/40 stroke-gray-500"
                   }`}
               />
             </motion.div>

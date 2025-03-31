@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { Post, PricingType } from "@prisma/client/edge";
 import { Currency, useCurrency } from "@/hooks/useCurrency";
+import Link from "next/link";
 
 export function FinalSetup() {
   const router = useRouter();
@@ -119,9 +120,7 @@ export function FinalSetup() {
             imageUrl={post.coverPhoto}
             title={post.title}
             buttonText="Show preview"
-            onButtonClick={() => {
-              router.push(`/find/${post.user.name}/${post.title}/${postId}`);
-            }}
+            url={`/find/${post.user.name}/${post.title}/${postId}`}
             currency={currency}
             pricing={post.hourlyRate || post.fixedPrice}
             pricingType={post.pricingType as PricingType}
@@ -173,7 +172,7 @@ interface ImageCardProps {
   imageUrl: string;
   title: string;
   buttonText: string;
-  onButtonClick: () => void;
+  url: string;
   currency: Currency;
   pricing: number;
   pricingType: PricingType;
@@ -183,7 +182,7 @@ export function ImageCard({
   imageUrl,
   title,
   buttonText,
-  onButtonClick,
+  url,
   currency,
   pricing = 0,
   pricingType
@@ -199,13 +198,14 @@ export function ImageCard({
             className="object-cover"
           />
         </div>
-        <Button
-          onClick={onButtonClick}
-          variant="outline"
-          className="absolute top-4 left-4 z-10 px-3 rounded-lg text-xs shadow-lg"
+        <Link
+          href={url}
+          className="absolute top-4 left-4 z-10 px-3 py-3 rounded-lg text-xs font-semibold shadow-lg bg-white text-gray-900 hover:bg-gray-100 active:scale-[.98]"
+          target="_blank"
+          rel="noopener noreferrer"
         >
           {buttonText}
-        </Button>
+        </Link>
       </CardContent>
       <CardFooter className="px-0 pt-4 pb-0">
         <div className="w-full">

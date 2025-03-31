@@ -147,7 +147,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
       <motion.div
         className={`sticky top-0 z-20
         ${scrolled && !isSpecialPage
-            ? "bg-gradient-to-r border-b-2 from-amber-400 to-yellow-500 border-b-yellow-500 shadow-md"
+            ? "border-b-2 bg-gradient-to-t from-yellow-500 to-yellow-600 border-b-yellow-500 shadow-md"
             : "border-b bg-white border-b-gray-300 shadow-sm"} rounded-b-3xl`}
         animate={{
           height: scrolled || isSpecialPage ? "72px" : "180px",
@@ -176,14 +176,31 @@ export function FindNavbar({ user }: { user: User | undefined }) {
                   onClick={() => router.push(user ? "/account-settings" : "/auth/login")}
                   className="h-12 w-12 border-transparent border-2 border-amber-500 transition-all cursor-pointer active:scale-[0.97]"
                 >
-                  <AvatarImage
-                    src={user?.image || "https://github.com/shadcn.png"}
-                    alt={user?.name || "User Profile"}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-neutral-700 text-neutral-300 group-hover:bg-amber-900/30 transition-all">
-                    {user?.name?.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
+                  {user ? (
+                    <>
+                      <AvatarImage
+                        src={user.image || "https://github.com/shadcn.png"}
+                        alt={user.name || "User Profile"}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="bg-neutral-700 text-neutral-300 group-hover:bg-amber-900/30 transition-all">
+                        {user?.name?.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </>
+                  ) : (
+                    <AvatarFallback className="bg-neutral-700 text-amber-400 group-hover:bg-amber-900/30 transition-all">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 32 32"
+                        style={{ display: "block", height: "100%", width: "100%", fill: "currentcolor" }}
+                        aria-hidden="true"
+                        role="presentation"
+                        focusable="false"
+                      >
+                        <path d="M16 .7C7.56.7.7 7.56.7 16S7.56 31.3 16 31.3 31.3 24.44 31.3 16 24.44.7 16 .7zm0 28c-4.02 0-7.6-1.88-9.93-4.81a12.43 12.43 0 0 1 6.45-4.4A6.5 6.5 0 0 1 9.5 14a6.5 6.5 0 0 1 13 0 6.51 6.51 0 0 1-3.02 5.5 12.42 12.42 0 0 1 6.45 4.4A12.67 12.67 0 0 1 16 28.7z"></path>
+                      </svg>
+                    </AvatarFallback>
+                  )}
                 </Avatar>
               }
             </motion.div>
@@ -247,7 +264,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
                   <SearchEngine>
                     <Button
                       variant="outline"
-                      className="relative h-9 justify-start bg-gradient-to-r from-amber-400/70 to-yellow-500/80 
+                      className="relative h-9 justify-start bg-gradient-to-t from-yellow-500 to-yellow-600 
                         text-gray-600 text-sm group border-none w-full py-9 pe-6 ps-6 rounded-full"
                     >
                       <div className="me-4">
@@ -267,9 +284,9 @@ export function FindNavbar({ user }: { user: User | undefined }) {
 
   return (
     <div
-      className={`sticky top-0 z-20 bg-white flex items-center justify-between 
+      className={`sticky top-0 z-20 flex items-center justify-between border-b
       border-b-gray-200 px-24 transition-all duration-300 ease-in-out
-      ${scrolled ? "shadow-lg py-2" : "shadow-sm pt-6 pb-4"}`}
+      ${scrolled ? "shadow-lg py-2 bg-gradient-to-t from-yellow-500 to-yellow-600" : "bg-white shadow-sm pt-6 pb-4"}`}
     >
       <div
         className="flex items-center gap-4 cursor-pointer group"

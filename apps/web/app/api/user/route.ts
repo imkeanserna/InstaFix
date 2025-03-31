@@ -6,15 +6,15 @@ import { currentUser } from '@/lib';
 import { z } from 'zod';
 import { findOrCreateLocation } from '../_action/posts/location';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
-export const LocationSchema = z.object({
+const LocationSchema = z.object({
   fullAddress: z.string().min(1, "Full address is required"),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
 });
 
-export const UpdateUserSchema = z.object({
+const UpdateUserSchema = z.object({
   name: z.string().optional(),
   email: z.string().email().optional(),
   image: z.string().url().optional(),

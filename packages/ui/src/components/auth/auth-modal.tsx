@@ -21,7 +21,7 @@ export const AuthModal: FC = () => {
         <div className="absolute top-28 -right-12 transform -translate-y-1/2 h-64 w-64 bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300 z-0 rounded-full"></div>
         <div className="relative">
           <Image
-            src={"https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/screenshot-20250316-073248Z-selected-removebg-preview(1).png"}
+            src={"/auth/login-logo.avif"}
             alt={`Message attachment`}
             width={500}
             height={500}

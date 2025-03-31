@@ -3,7 +3,7 @@ import { BookingNotification } from '@prisma/client/edge';
 import { TypeBookingNotification, TypeBookingNotificationById } from "@repo/types";
 import { canReviewNotification, sortNotificationsByPriority } from '../helper/bookingUtils';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function getBookingNotifications({
   userId,

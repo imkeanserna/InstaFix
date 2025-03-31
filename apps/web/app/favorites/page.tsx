@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import { Favorite } from "@/components/favorite/favorite";
 import { FavoriteSkeleton } from "@/components/favorite/skeleton";
 
+export const runtime = 'edge'
+
 const Page = async () => {
   const user = await currentUser();
 

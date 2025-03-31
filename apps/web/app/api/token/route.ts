@@ -1,6 +1,3 @@
-
-// export const runtime = 'edge';
-
 import { NextResponse } from "next/server";
 import jwt from 'jsonwebtoken'
 import { currentUser } from "@/lib";

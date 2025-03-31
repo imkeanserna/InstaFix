@@ -111,7 +111,7 @@ export const PostsGrid = memo(function PostsGrid({
   return (
     <div className="space-y-6 mx-auto pb-56">
       <motion.div
-        className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-12 md:gap-6"
+        className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-12 md:gap-6 md:gap-y-12"
         variants={containerVariants}
         initial="hidden"
         animate="show"
@@ -276,7 +276,7 @@ export const PostCard = memo(function PostCard({
           >
             <Heart className={`w-8 h-8 md:w-5 md:h-5 ${isLiked
               ? 'fill-yellow-500 stroke-yellow-500'
-              : 'fill-white stroke-none'
+              : 'fill-gray-950/40 stroke-none'
               } transition-colors duration-200`} />
           </Button>
         </div>

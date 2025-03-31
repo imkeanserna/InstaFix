@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/server/index';
 import { Prisma } from "@prisma/client/edge";
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 type PostInclude = {
   media: true;

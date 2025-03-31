@@ -5,6 +5,8 @@ import { User } from "next-auth";
 import { uploadMultipleFiles } from "@repo/services/src/storage/mediaUpload";
 import { currentUser } from "@/lib";
 
+export const runtime = 'edge'
+
 export async function POST(
   request: NextRequest
 ) {

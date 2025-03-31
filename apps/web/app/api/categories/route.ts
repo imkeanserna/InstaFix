@@ -2,7 +2,7 @@ import { errorResponse } from "@/lib/errorResponse";
 import { prisma } from '@/server/index';
 import { NextResponse } from "next/server";
 
-// export const runtime = "edge";
+export const runtime = "edge";
 
 export async function GET() {
   try {

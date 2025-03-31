@@ -7,7 +7,7 @@ import { z } from "zod";
 import { getBookingNotificationsById, updateBookingNotification } from "../../_action/notification/booking";
 import { prisma } from "@/server";
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 const notificationQuerySchema = z.object({
   type: z.enum([MessageType.BOOKING, MessageType.CHAT])

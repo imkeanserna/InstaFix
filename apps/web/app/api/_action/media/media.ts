@@ -1,6 +1,6 @@
 import { prisma } from '@/server/index';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function getCurrentMediaUrls(postId: string): Promise<string[]> {
   const post = await prisma.post.findUnique({

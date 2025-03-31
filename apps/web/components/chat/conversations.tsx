@@ -71,6 +71,8 @@ export function Conversations({
   isLoadingMore: boolean;
   user: User;
 }) {
+  console.log("CONVERSATIONNNNNNNNNNNNNNs")
+  console.log(conversationState);
   const [selectedConversationId, setSelectedConversationId] = useRecoilState(selectedConversationState);
 
   // Ref for the sentinel element (for infinite scrolling)

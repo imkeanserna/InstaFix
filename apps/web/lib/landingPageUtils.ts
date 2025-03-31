@@ -7,9 +7,9 @@ export const LOGO = {
 }
 
 export const HERO_TEXTS = [
-  "when things break",
-  "home and beyond",
-  "everyday problems",
+  "when things break 🔧",
+  "home and beyond 🏠🚀",
+  "everyday problems ⚡",
 ];
 
 export const HERO_SECTION_CONFIG = {
@@ -67,8 +67,8 @@ export const SECTION_CONFIG = [
 
 export const HEADING_AI_SECTION = {
   "heading": "Introducing InstaFix Assistant",
-  "subheading": "your personal AI assistant, connecting you with expert freelancers instantly.",
-  "mobileHeading": "Introducing InstaFix Assistant your <span class='text-yellow-400 italic text-[2.3rem]'>personal AI assistant</span>, connecting you with expert freelancers instantly."
+  "subheading": "your personal AI assistant 🤖, connecting you with expert freelancers instantly.",
+  "mobileHeading": "Introducing InstaFix Assistant your <span class='text-yellow-400 italic text-[2.3rem]'>personal AI assistant</span> 🤖, connecting you with expert freelancers instantly."
 }
 
 export const AI_MESSAGES = [
@@ -122,6 +122,7 @@ export const MOBILE_SECTION = {
     highlighted: "earn money 💸"
   },
   description: "Enhance your freelancing experience, grow your income, and enjoy a seamless, user-friendly app that effortlessly connects you with clients.",
+  mobileImage: "/home-page/mobile-view.avif",
   features: [
     {
       title: "Skill Up, earn more",

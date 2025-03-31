@@ -7,7 +7,7 @@ import { trackPopularSearch } from "../_action/posts/searchQuery";
 import { CursorPaginationOptions, ResponseDataWithCursor, ResponseDataWithLocationAndCursor } from "@repo/types";
 import { sanitizeSearchQuery } from "../_action/helper/searchUtil";
 
-// export const runtime = "edge";
+export const runtime = "edge";
 
 export async function GET(request: NextRequest) {
   try {

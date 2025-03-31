@@ -5,7 +5,7 @@ import { User } from "next-auth";
 import { currentUser } from "@/lib";
 import { prisma } from '@/server/index';
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 const QuerySchema = z.object({
   freelancerId: z.string({

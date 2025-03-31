@@ -12,7 +12,7 @@ import { getLocationBasedQuery, getNonLocationQuery, processLocationBasedPosts }
 import { DEFAULT_INCLUDE, DEFAULT_ORDER_BY, DENSITY_CONFIG } from '../constant/queryPost';
 import { buildBaseConditions, buildSearchQuery } from '../helper/postUtils';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export type PostWithRelations = Post & {
   user: User;

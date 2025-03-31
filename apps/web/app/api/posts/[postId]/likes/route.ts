@@ -4,7 +4,7 @@ import { prisma } from '@/server/index';
 import { User } from "next-auth";
 import { currentUser } from "@/lib";
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 export async function POST(
   request: NextRequest,

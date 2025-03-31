@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Sparkles } from 'lucide-react';
 import { motion, Variants } from "framer-motion";
+import { FINISH_POST_IMAGE } from '@/lib/bookUtils';
 
 export function FinishSetup() {
   const fadeUpVariants = {
@@ -108,7 +109,7 @@ export function FinishSetup() {
                 transition={{ delay: 0.5, duration: 0.7 }}
               >
                 <Image
-                  src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/create-post-finish.png"
+                  src={FINISH_POST_IMAGE}
                   alt="Service Preview"
                   fill
                   className="object-cover rounded-xl h-full w-full"

@@ -25,7 +25,7 @@ export function HomeFooter({ className, isHome }: {
   }
 
   return (
-    <div className={`px-4 md:px-12 lg:px-48 py-10 md:py-16 relative ${className} space-y-12 z-20`}>
+    <div className={`relative ${className} space-y-12 z-20`}>
       <div className="flex flex-col gap-12 md:gap-0 md:flex-row items-start justify-between">
         <div className="space-y-4 w-full md:w-[560px]">
           <div className="flex items-center gap-4 cursor-pointer group">

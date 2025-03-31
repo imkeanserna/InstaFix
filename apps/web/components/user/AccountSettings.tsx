@@ -85,7 +85,7 @@ const FreelancerCard = memo(({ onClick }: { onClick: () => void }) => (
       <p className="text-sm text-gray-700">Turn your skills into income, start freelancing today!</p>
     </div>
     <Image
-      src={"https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/screenshot-20250319-053607Z-selected.png"}
+      src={"/book/become-a-freelancer.webp"}
       alt={"Be a Instafix Freelancer"}
       width={150}
       height={150}

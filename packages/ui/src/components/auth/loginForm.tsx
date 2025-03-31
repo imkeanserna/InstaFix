@@ -6,11 +6,11 @@ import Image from "next/image";
 
 export const LoginForm: FC = () => {
   return (
-    <div className="h-full w-full relative flex flex-col justify-between pt-[90px] pb-16 
+    <div className="h-full w-full relative flex flex-col justify-between pt-[82px] pb-16 
       overflow-clip bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300">
       <div className="relative">
         <Image
-          src={"https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/screenshot-20250316-073248Z-selected-removebg-preview(1).png"}
+          src={"/auth/login-logo.avif"}
           alt={`Message attachment`}
           width={500}
           height={500}

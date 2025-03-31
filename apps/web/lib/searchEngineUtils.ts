@@ -69,3 +69,36 @@ export async function getPopularSearchSuggestions({ limit = 10, signal }: {
     throw error;
   }
 }
+
+export const SEARCH_SUGGESTIONS = {
+  popular: {
+    src: "/search-engine/popular-search.webp",
+    alt: "Popular",
+    width: 56,
+    height: 62
+  },
+  post: {
+    src: "/search-engine/post-search.webp",
+    alt: "Post",
+    width: 56,
+    height: 62
+  },
+  category: {
+    src: "/search-engine/category-search.webp",
+    alt: "Category",
+    width: 56,
+    height: 62
+  },
+  subcategory: {
+    src: "/search-engine/subcategory-search.webp",
+    alt: "Subcategory",
+    width: 56,
+    height: 62
+  },
+  default: {
+    src: "/search-engine/default-search.webp",
+    alt: "Default",
+    width: 56,
+    height: 62
+  }
+};

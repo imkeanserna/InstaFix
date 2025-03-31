@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { errorResponse } from "@/lib/errorResponse";
 import { prisma } from '@/server/index';
-import { Post, Prisma } from "@prisma/client/edge";
 import { getPostByUser } from "@/app/api/_action/posts/getPosts";
 import { PostWithUserInfo, StaticPostWithIncludes } from "@repo/types";
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 export async function GET(
   request: NextRequest,

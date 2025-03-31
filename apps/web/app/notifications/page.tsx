@@ -1,6 +1,8 @@
 import { Notifications, NotificationsSkeleton } from "@/components/posts/notification/notifications";
 import { Suspense } from "react";
 
+export const runtime = 'edge'
+
 const Page = () => {
   return (
     <Suspense fallback={<NotificationsSkeleton />}>

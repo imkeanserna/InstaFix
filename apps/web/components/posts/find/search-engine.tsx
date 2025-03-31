@@ -2,7 +2,7 @@
 
 import { SearchSuggestion, SearchSuggestionType } from "@repo/types";
 import { useDebounce } from "@/hooks/useDebounce";
-import { getPopularSearchSuggestions, getSearchSuggestions } from "@/lib/searchEngineUtils";
+import { getPopularSearchSuggestions, getSearchSuggestions, SEARCH_SUGGESTIONS } from "@/lib/searchEngineUtils";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@repo/ui/components/ui/command";
 import { Dialog, DialogContent, DialogTrigger } from "@repo/ui/components/ui/dialog";
 import { Skeleton } from "@repo/ui/components/ui/skeleton";
@@ -142,48 +142,16 @@ export function SearchEngine({ children }: {
   }, [suggestions, debouncedValue]);
 
   const getSuggestionImage = (type: SearchSuggestionType) => {
-    switch (type) {
-      case 'popular':
-        return <Image
-          src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/popular-search.jpg"
-          alt="Popular"
-          className="rounded-xl h-full object-cover"
-          width={56}
-          height={62}
-        />;
-      case 'post':
-        return <Image
-          src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/post-search.jpg"
-          alt="Post"
-          className="rounded-xl h-full object-cover"
-          width={56}
-          height={62}
-        />;
-      case 'category':
-        return <Image
-          src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/category-search.jpg"
-          alt="Category"
-          className="rounded-xl h-full object-cover"
-          width={56}
-          height={62}
-        />;
-      case 'subcategory':
-        return <Image
-          src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/subcategory-search.jpg"
-          alt="Subcategory"
-          className="rounded-xl h-full object-cover"
-          width={56}
-          height={62}
-        />;
-      default:
-        return <Image
-          src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/deafult-search.jpg"
-          alt="Default"
-          className="rounded-xl h-full object-cover"
-          width={56}
-          height={62}
-        />;
-    }
+    const config = SEARCH_SUGGESTIONS[type] || SEARCH_SUGGESTIONS.default;
+    return (
+      <Image
+        src={config.src}
+        alt={config.alt}
+        className="rounded-xl h-full object-cover"
+        width={config.width}
+        height={config.height}
+      />
+    );
   };
 
   const getSuggestionDescription = (type: SearchSuggestionType) => {

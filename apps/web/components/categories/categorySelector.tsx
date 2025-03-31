@@ -81,7 +81,7 @@ export function CategorySelector({ initialState, onCategoryChange }: CategorySel
 
   if (isCategoriesLoading || categoriesError) {
     return (
-      <div className="bg-white shadow-lg rounded-2xl p-4 sm:p-8">
+      <div className="shadow-lg rounded-2xl p-4 sm:p-8">
         <div className="flex items-center justify-center">
           <div className="space-y-4 w-full">
             <CategorySkeleton />
@@ -123,7 +123,7 @@ export function CategorySelector({ initialState, onCategoryChange }: CategorySel
   };
 
   return (
-    <div className="bg-white rounded-2xl">
+    <div className="rounded-2xl">
       <div className="flex gap-2">
         <div className={`relative ${selectedCategory ? 'w-auto' : 'overflow-x-auto'}`}>
           {!selectedCategory && showLeftCategoryButton && (

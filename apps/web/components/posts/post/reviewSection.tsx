@@ -115,7 +115,7 @@ export function RatingSection({
         <RatingBars reviews={reviews} isLoading={isLoading} />
         <div className="hidden md:block w-px h-56 bg-gradient-to-b from-transparent via-amber-200 to-transparent"></div>
         <div className="w-full md:w-[400px] text-center space-y-4">
-          {!isNewProfile
+          {!isNewProfile || showRatingsAndReviews
             ?
             <>
               {showRatingsAndReviews

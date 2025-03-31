@@ -1,7 +1,7 @@
 import { prisma } from '@/server/index';
 import { FavoritesResponseWithCursor, TypeFavorite } from '@repo/types';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function getFavorites({
   userId,

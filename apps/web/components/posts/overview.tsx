@@ -2,26 +2,9 @@
 
 import Image from "next/image";
 import { motion } from 'framer-motion';
+import { ABOUT_YOUR_SERVICE } from "@/lib/bookUtils";
 
 export default function Overview() {
-  const steps = [
-    {
-      title: "Share Your Expertise",
-      description: "Tell us about your skills and services. Highlight your strengths and let clients know what you do best.",
-      imageSrc: "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/about-your-service-pic1.png"
-    },
-    {
-      title: "Showcase Your Work",
-      description: "Upload 5 or more samples of your past work, add a compelling title, and write a description that sets you apart.",
-      imageSrc: "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/about-your-service-pic3.png"
-    },
-    {
-      title: "Finalize Your Profile and Start Earning",
-      description: "Set your pricing, complete a quick verification process, and make your profile live to attract clients and secure your first project.",
-      imageSrc: "https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/about-your-service-pic2.png"
-    },
-  ];
-
   // For animation and it uses framer-motion
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -68,7 +51,7 @@ export default function Overview() {
           animate="visible"
           className="flex-1 w-full"
         >
-          {steps.map(({ title, description, imageSrc }, key) => {
+          {ABOUT_YOUR_SERVICE.map(({ title, description, imageSrc }, key) => {
             return (
               <motion.div
                 key={key}

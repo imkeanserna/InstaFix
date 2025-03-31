@@ -2,6 +2,8 @@ import { BookPage, BookPageSkeleton } from "@/components/book/bookPage";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+export const runtime = 'edge'
+
 const Page = async ({ params }: { params: { postId: string, username: string } }) => {
   if (!params.postId) return notFound();
   if (!params.username) return notFound();

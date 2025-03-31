@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getFavorites } from "../_action/favorites/favorites";
 import { FavoritesResponseWithCursor } from "@repo/types";
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 const favoritesQuerySchema = z.object({
   cursor: z.string().nullable().optional().transform(value => value ?? undefined),

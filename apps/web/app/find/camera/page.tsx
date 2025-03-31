@@ -4,6 +4,8 @@ import { PostsPageLoading } from "@/components/posts/find/postsCard";
 import { PostsPage } from "@/components/posts/find/postsPage";
 import { Suspense } from "react";
 
+export const runtime = 'edge'
+
 const Page = () => {
   return (
     <Suspense fallback={<PostsPageLoading />}>
