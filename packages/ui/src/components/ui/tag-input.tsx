@@ -22,7 +22,7 @@ export function TagInput({
   const [inputValue, setInputValue] = useState('');
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if ((e.key === ' ' || e.key === 'Enter') && inputValue.trim()) {
+    if ((e.key === 'Enter') && inputValue.trim()) {
       e.preventDefault();
       const newTag = inputValue.trim();
       if (!tags.includes(newTag) && newTag.length > 2) {

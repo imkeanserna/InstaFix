@@ -9,8 +9,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@repo/ui/components/ui/carousel"
+import { useCurrency } from '@/hooks/useCurrency';
 
 export function FeaturePosts({ highlightsPosts, name }: { highlightsPosts: PostWithUserInfo[], name: string }) {
+  const { currency } = useCurrency();
   return (
     <div className='space-y-8 sm:space-y-10'>
       <h3 className="text-xl sm:text-2xl font-medium">
@@ -31,6 +33,7 @@ export function FeaturePosts({ highlightsPosts, name }: { highlightsPosts: PostW
               <PostCard
                 post={{ ...post, distance: null }}
                 isFeatured={true}
+                currency={currency}
               />
             </CarouselItem>
           ))}

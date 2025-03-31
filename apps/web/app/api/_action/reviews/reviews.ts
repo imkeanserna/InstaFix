@@ -1,7 +1,7 @@
 import { prisma } from '@/server/index';
 import { z } from 'zod';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function addReview({
   userId,

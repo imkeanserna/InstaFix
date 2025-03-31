@@ -50,13 +50,17 @@ export function ServiceEngagement() {
   };
 
   return (
-    <ToggleGroupSelection
-      options={engagementTypes}
-      selectedValue={selectedType}
-      onSelect={handleTypeSelect}
-      toggleGroupClassName="grid-cols-1 md:grid-cols-2 gap-4"
-      itemClassName="hover:scale-[1.02] transition-transform duration-200"
-    />
+    <div className="w-full flex justify-center items-center">
+      <div className="w-full md:w-[750px]">
+        <ToggleGroupSelection
+          options={engagementTypes}
+          selectedValue={selectedType}
+          onSelect={handleTypeSelect}
+          toggleGroupClassName="grid-cols-1 md:grid-cols-2 gap-4"
+          itemClassName="hover:scale-[1.02] transition-transform duration-200"
+        />
+      </div>
+    </div>
   );
 }
 

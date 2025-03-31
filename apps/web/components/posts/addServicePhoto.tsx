@@ -179,7 +179,7 @@ export function AddServicePhoto({
 
   return (
     <div className="p-0 md:p-6 space-y-6">
-      <div className={`space-y-8 ${media.length === 0 ? 'text-start' : 'flex justify-between items-center'}`}>
+      <div className={`space-y-4 md:space-y-8 ${media.length === 0 ? 'text-start' : 'flex flex-col md:flex-row justify-between items-end md:items-center'}`}>
         {media.length === 0 ? (
           <div className="space-y-2">
             <h2 className="text-2xl sm:text-3xl font-bold">
@@ -190,7 +190,7 @@ export function AddServicePhoto({
             </p>
           </div>
         ) : (
-          <div className="text-start space-y-1 sm:space-y-2">
+          <div className="text-start space-y-1 sm:space-y-2 w-full md:w-auto">
             <h2 className="text-2xl sm:text-3xl font-bold">
               {`Ta-da! How does this look`}
             </h2>
@@ -213,7 +213,7 @@ export function AddServicePhoto({
                 <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. {maxFileSize / (1024 * 1024)}MB)</p>
               </div>
             ) : (
-              <div className="flex items-center">
+              <div className="flex items-center text-sm md:text-base py-1 md:py-2 px-1 md:px-2 active:scale-[0.98]">
                 <Plus className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-125" />
                 <span>Add more</span>
               </div>

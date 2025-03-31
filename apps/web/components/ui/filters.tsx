@@ -3,7 +3,7 @@
 import { DualRangeSlider } from '@repo/ui/components/ui/dual-range-slider';
 import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, X } from "lucide-react";
 import LocationNavigation, { Location } from "./locationNavigation";
 import { engagementTypes } from "../posts/service-engagement";
 import { SelectTargetAudience } from "../posts/service-description";
@@ -20,6 +20,7 @@ import {
 import { AnimatePresence, motion, PanInfo, useAnimation } from 'framer-motion'
 import { Button } from "@repo/ui/components/ui/button";
 import { useMediaQuery } from "@/hooks/useMedia";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@repo/ui/components/ui/dialog';
 
 export interface FiltersProps {
   initialState: {
@@ -35,39 +36,103 @@ export interface FiltersProps {
   className?: string;
 }
 
-export const FilterDrawerWrapper = ({ initialState, onFilterChange, className }: FiltersProps) => {
-  const [isVisible, setIsVisible] = useState(false);
+export const FilterDialogWrapper = ({ initialState, onFilterChange, className }: FiltersProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const isLargeScreen = useMediaQuery('(min-width: 1024px)');
+
+  const handleFilterChange = (filters: any) => {
+    onFilterChange(filters);
+    setIsOpen(false);
+  };
+
   return (
     <>
-      <Button
-        variant="ghost"
-        size="lg"
-        onClick={() => setIsVisible(!isVisible)}
-        className="whitespace-nowrap border text-xs border-gray-300 md:hover:border-gray-900 
-              dark:border-slate-700 rounded-xl shadow-sm md:hover:bg-yellow-400 dark:hover:bg-slate-800
+      {isLargeScreen ? (
+        // Dialog for large screens
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="lg"
+              className="whitespace-nowrap w-12 h-12 md:w-28 md:h-12 border-0 md:border text-xs md:border-gray-300 bg-gray-100 md:bg-white md:hover:border-gray-900 
+        dark:md:border-slate-700 rounded-xl shadow-sm md:hover:bg-yellow-400 dark:hover:bg-slate-800
+        p-2 md:p-6 group transition-transform active:scale-95"
+            >
+              <SlidersHorizontal className="md:mr-2 h-4 w-4" />
+              <span className="hidden md:inline">Filters</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-xl !rounded-3xl p-0 flex flex-col max-h-[90vh] overflow-auto gap-0">
+            <DialogHeader className="sticky top-0 z-10 bg-white p-4 border-b border-gray-300">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(false)}
+                className="absolute left-2 p-2 rounded-full active:scale-95"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <DialogTitle className="text-lg font-semibold text-gray-800 text-center">
+                Filters
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-y-auto">
+              <ModifiedFilters
+                initialState={initialState}
+                onFilterChange={handleFilterChange}
+                className={className}
+                onClose={() => setIsOpen(false)}
+                isDialog={true}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        // Drawer for mobile/smaller screens
+        <>
+          <Button
+            variant="ghost"
+            size="lg"
+            onClick={() => setIsOpen(!isOpen)}
+            className="whitespace-nowrap w-12 h-12 md:w-28 md:h-12 border-0 md:border text-xs md:border-gray-300 bg-gray-100 md:bg-white md:hover:border-gray-900 
+              dark:md:border-slate-700 rounded-xl shadow-sm md:hover:bg-yellow-400 dark:hover:bg-slate-800
               p-2 md:p-6 group transition-transform active:scale-95"
-      >
-        <SlidersHorizontal className="md:mr-2 h-4 w-4 md:h5 md:w-5" />
-        <span className="hidden md:inline">Filters</span>
-      </Button>
-      <AnimatePresence>
-        {isVisible && (
-          <Filters
-            initialState={initialState}
-            onFilterChange={onFilterChange}
-            className={className}
-            onClose={() => setIsVisible(false)}
-          />
-        )}
-      </AnimatePresence>
+          >
+            <SlidersHorizontal className="md:mr-2 h-4 w-4" />
+            <span className="hidden md:inline">Filters</span>
+          </Button>
+          <AnimatePresence>
+            {isOpen && (
+              <ModifiedFilters
+                initialState={initialState}
+                onFilterChange={onFilterChange}
+                className={className}
+                onClose={() => setIsOpen(false)}
+                isDialog={false}
+              />
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </>
   );
 };
 
-export const Filters = React.memo(({ initialState, onFilterChange, className, onClose }:
-  FiltersProps &
-  { onClose: () => void; }
-) => {
+export function Separator({ className }: { className?: string }) {
+  return <div className={`w-full h-px bg-gray-200 ${className}`} />;
+}
+
+export const ModifiedFilters = React.memo(({
+  initialState,
+  onFilterChange,
+  className,
+  onClose,
+  isDialog = false
+}: FiltersProps & {
+  onClose: () => void;
+  isDialog?: boolean;
+}) => {
+  // All your existing state and handlers remain the same
   const [isMapInteracting, setIsMapInteracting] = useState(false);
   const [values, setValues] = useState([
     initialState.priceMin ?? 5,
@@ -90,16 +155,12 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
     initialState.servicesIncluded
   );
 
-  // Drawer state
-  const [isOpen, setIsOpen] = useState(false);
+  // Only use these if it's a drawer (mobile)
   const controls = useAnimation();
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Drawer heights
-  const isLargeScreen = useMediaQuery('(min-width: 1024px)');
   const minHeight = 100;
-  const mediumHeight = window.innerHeight * 0.5;
-  const maxHeight = isLargeScreen ? '90vh' : '100vh';
+  const mediumHeight = typeof window !== 'undefined' ? window.innerHeight * 0.5 : 500;
+  const maxHeight = '100vh';
 
   const springTransition = {
     type: "spring",
@@ -125,30 +186,35 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
     }
   };
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const velocity = info.velocity.y;
-    const currentOffset = info.offset.y;
 
-    if (isMapInteracting) {
+  const handleClearFilters = () => {
+    setSelectedLocation(null);
+    setValues([5, 250]);
+    setMinMax([5, 250]);
+    setSelectedPricingType(null);
+    setSelectedType(null);
+    setSelectedTargetAudience(null);
+    setSelectedSpecialOffers([]);
+  };
+
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isDialog || isMapInteracting) {
       return;
     }
 
+    const velocity = info.velocity.y;
+    const currentOffset = info.offset.y;
+
     if (velocity > 500 || currentOffset > 200) {
-      // Close the drawer completely if swiped down fast or far enough
       onClose();
     } else if (velocity < -500 || currentOffset < -200) {
-      // Open fully if swiped up fast or far enough
       controls.start({ height: maxHeight });
-      setIsOpen(true);
     } else {
-      // Snap to nearest position
       const currentHeight = containerRef.current?.getBoundingClientRect().height || 0;
       if (currentHeight < mediumHeight) {
         controls.start({ height: minHeight });
-        setIsOpen(false);
       } else {
         controls.start({ height: maxHeight });
-        setIsOpen(true);
       }
     }
   };
@@ -169,7 +235,6 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
   const handlePricingTypeChange = (type: PricingType) => {
     if (selectedPricingType === type) {
       setSelectedPricingType(null);
-      // Reset to default values when deselecting
       setMinMax([5, 250]);
       setValues([5, 250]);
       return;
@@ -191,7 +256,6 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
     }
   };
 
-  // for location
   const [pendingLocation, setPendingLocation] = useState<Location | null>(null);
   const handleLocationSelect = (value: Location | null) => {
     const newValue = value?.lat === selectedLocation?.lat
@@ -206,41 +270,164 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
     if (newValue) {
       if (selectedType) {
       } else {
-        // Store the location for when type is selected
         setPendingLocation(newValue);
       }
     }
   };
 
-  // service description
   const handleTargetAudienceChange = (value: TargetAudience) => {
     const newValue = value === selectedTargetAudience ? null : value;
     setSelectedTargetAudience(newValue);
   };
 
-  // Work type ToggleGroupSelection
   const handleTypeSelect = (value: EngagementType) => {
     const newValue = value === selectedType ? null : value;
     setSelectedType(newValue);
   };
 
-  // Speciial offer ToggleGrid
   const handleValueChange = (value: ServicesIncluded[]) => {
     setSelectedSpecialOffers(value);
   };
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose]);
+    if (!isDialog) {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [onClose, isDialog]);
 
+  if (isDialog) {
+    return (
+      <div className={`flex flex-col h-full ${className}`}>
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800">Location</h3>
+            <p className="text-sm text-gray-500">
+              Select a location to find freelancers near you or within your preferred area.
+            </p>
+            <LocationNavigation
+              selectedLocation={selectedLocation}
+              setSelectedLocation={handleLocationSelect}
+              maptilerKey={process.env.MAPTILER_API_KEY}
+              setIsMapInteracting={setIsMapInteracting}
+            />
+          </div>
+
+          <div className="py-3">
+            <Separator />
+          </div>
+
+          <div className="space-y-6 pb-8">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-800">Pricing Type</h3>
+              <p className="text-sm text-gray-500">
+                {`Choose how you'd like to see pricing: by hourly rates or total project budget.`}
+              </p>
+              <PricingSelectionType
+                selectedPricingType={selectedPricingType}
+                setSelectedPricingType={handlePricingTypeChange}
+              />
+            </div>
+
+            {selectedPricingType && (
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-500">
+                    {selectedPricingType === PricingType.HOURLY
+                      ? "Hourly rate range"
+                      : "Project budget range"}
+                  </p>
+                </div>
+                <div className="px-4">
+                  <DualRangeSlider
+                    value={[values[0], values[1]]}
+                    onValueChange={setValues}
+                    min={minMax[0]}
+                    max={minMax[1]}
+                    formatLabel={(value) => `$${value}`}
+                    showTooltip={true}
+                    className="[&_.slider-thumb]:bg-yellow-500 [&_.slider-track]:bg-yellow-500"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Accordion type="multiple" className="w-full">
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="text-lg font-semibold text-gray-800 hover:no-underline py-8 border-t">
+                Engagement Type
+              </AccordionTrigger>
+              <AccordionContent className="overflow-visible px-1 pt-4 pb-12">
+                <div className="p-1">
+                  <ToggleGroupSelection
+                    options={engagementTypes}
+                    selectedValue={selectedType}
+                    onSelect={handleTypeSelect}
+                    toggleGroupClassName="grid-cols-1 md:grid-cols-2 gap-4"
+                    itemClassName="hover:scale-[1.02] transition-transform duration-200"
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2">
+              <AccordionTrigger className="text-lg font-semibold text-gray-800 hover:no-underline py-8">
+                Target Audience
+              </AccordionTrigger>
+              <AccordionContent className="pt-4 pb-12">
+                <SelectTargetAudience
+                  selectedTargetAudience={selectedTargetAudience}
+                  setSelectedTargetAudience={handleTargetAudienceChange}
+                />
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3" className="border-none">
+              <AccordionTrigger className="text-lg font-semibold text-gray-800 hover:no-underline py-8">
+                Services Included
+              </AccordionTrigger>
+              <AccordionContent className="pt-4 pb-12">
+                <div className="p-1">
+                  <ToggleGrid
+                    options={specialOffers}
+                    selectedValues={selectedSpecialOffers}
+                    onValueChange={handleValueChange}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+
+        {/* Fixed footer with Apply Filters button */}
+        <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 px-6 z-10">
+          <div className="flex gap-4 justify-between items-center">
+            <Button
+              onClick={handleClearFilters}
+              variant="outline"
+              className="w-auto rounded-xl py-6 border-none text-gray-700 hover:bg-gray-100 font-semibold active:scale-[0.98]"
+            >
+              Clear all
+            </Button>
+            <Button
+              onClick={handleApplyFilters}
+              className="rounded-xl py-7 px-8 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold shadow-sm transition-colors active:scale-[0.98]"
+            >
+              Apply Filters
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Drawer mode - your existing drawer implementation
   return (
     <motion.div
       ref={containerRef}
@@ -249,10 +436,10 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
       animate="visible"
       exit="exit"
       drag={!isMapInteracting ? "y" : false}
-      dragConstraints={{ top: 0, bottom: window.innerHeight - minHeight }}
+      dragConstraints={{ top: 0, bottom: typeof window !== 'undefined' ? window.innerHeight - minHeight : 0 }}
       dragElastic={0.2}
       onDragEnd={handleDragEnd}
-      className="fixed border-t-2 border-gray-100 bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl"
+      className="fixed border-t-2 border-gray-300 bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl"
     >
       {/* Drawer Handle */}
       <div
@@ -276,6 +463,7 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
             </CardTitle>
           </CardHeader>
           <CardContent className={`space-y-6 py-6 lg:py-10 px-6 lg:px-36 ${className}`}>
+            {/* All your existing filter content here */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-800">Location</h3>
               <p className="text-sm text-gray-500">
@@ -298,7 +486,7 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-800">Pricing Type</h3>
                 <p className="text-sm text-gray-500">
-                  Choose how you’d like to see pricing: by hourly rates or total project budget.
+                  {`Choose how you'd like to see pricing: by hourly rates or total project budget.`}
                 </p>
                 <PricingSelectionType
                   selectedPricingType={selectedPricingType}
@@ -379,24 +567,29 @@ export const Filters = React.memo(({ initialState, onFilterChange, className, on
 
       {/* Apply Filters Button */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-100 p-2"
+        className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-100 px-8 py-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.3 }}
       >
-        <Button
-          onClick={handleApplyFilters}
-          className="w-full py-8 bg-yellow-500 text-lg hover:bg-yellow-600 text-white font-semibold rounded-lg shadow-sm transition-colors"
-        >
-          Apply Filters
-        </Button>
+        <div className="flex gap-4 justify-between items-center">
+          <Button
+            onClick={handleClearFilters}
+            variant="outline"
+            className="w-auto rounded-xl py-6 border-none text-gray-700 hover:bg-gray-100 font-semibold active:scale-[0.98]"
+          >
+            Clear all
+          </Button>
+          <Button
+            onClick={handleApplyFilters}
+            className="rounded-xl py-7 px-8 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold shadow-sm transition-colors active:scale-[0.98]"
+          >
+            Apply Filters
+          </Button>
+        </div>
       </motion.div>
     </motion.div>
   );
 });
 
-Filters.displayName = "Filters";
-
-export function Separator({ className }: { className?: string }) {
-  return <div className={`w-full h-px bg-gray-200 ${className}`} />;
-}
+ModifiedFilters.displayName = "ModifiedFilters";

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getConversations } from "../_action/conversations/conversations";
 import { GetConversationsResult } from "@repo/types";
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 const conversationQuerySchema = z.object({
   cursor: z.string().nullable().optional().transform(value => value ?? undefined),

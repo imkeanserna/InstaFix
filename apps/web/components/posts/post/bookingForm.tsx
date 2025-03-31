@@ -12,6 +12,10 @@ import { z } from 'zod';
 import { useBookingData } from "@/hooks/posts/useBookingData";
 import { User } from "next-auth";
 import { formatPrice } from "@/lib/postUtils";
+import { useAuthModal } from "@repo/ui/context/AuthModalProvider";
+import { useMediaQuery } from "@/hooks/useMedia";
+import { useCurrency } from "@/hooks/useCurrency";
+import { PricingType } from "@prisma/client/edge";
 
 export const createBookingSchema = z.object({
   date: z.date(),
@@ -27,22 +31,27 @@ export function BookingForm({
   user,
   rate,
   username,
-  freelancerId
+  freelancerId,
+  pricingType
 }: {
   postId: string,
   user: User | null
   rate: number
   username: string
   freelancerId: string
+  pricingType: PricingType
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [description, setDescription] = useState<string>("");
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [quantity, setQuantity] = useState<number>(1);
   const [error, setError] = useState("");
   const dateParam = searchParams.get('date');
   const selectedDate = dateParam ? new Date(dateParam) : undefined;
   const [inputDate, setInputDate] = useState<string>('');
+  const { currency } = useCurrency();
+  const { openModal } = useAuthModal();
 
   const { bookingData, isLoading, isError } = useBookingData(postId);
 
@@ -96,6 +105,15 @@ export function BookingForm({
   const handleSubmit = async () => {
     setError("");
 
+    if (user == null) {
+      if (isMobile) {
+        router.push("/auth/login");
+        return;
+      }
+      openModal();
+      return;
+    }
+
     try {
       if (!selectedDate) {
         setError("Please select a date");
@@ -124,7 +142,6 @@ export function BookingForm({
         numberOfItems: bookingData.quantity.toString()
       }).toString();
       const fullUrl = `${baseUrl}?${queryParams}`;
-      console.log('Query params:', fullUrl);
       router.push(fullUrl);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create booking";
@@ -193,8 +210,8 @@ export function BookingForm({
 
   return <div className={`flex flex-col rounded-xl p-6 shadow-2xl`}>
     <div className="flex gap-2 items-end mb-6">
-      <p className="text-2xl font-medium">₱{formatPrice(rate)}</p>
-      <span>hour</span>
+      <p className="text-2xl font-medium">{currency === "PHP" ? "₱" : "$"}{formatPrice(rate)}</p>
+      <span>{pricingType === PricingType.HOURLY ? "Hour" : "Fixed"}</span>
     </div>
     <div className={`${error ? 'border-2 border-red-400 rounded-xl' : ''}`}>
       <Popover>
@@ -270,7 +287,7 @@ export function BookingForm({
       </div>
     </div>
     <Button
-      className="py-7 mt-6 text-sm font-medium text-white rounded-xl bg-yellow-500 hover:bg-yellow-500 active:scale-[0.98] transition duration-75"
+      className="py-9 mt-6 text-sm font-medium text-white rounded-xl bg-yellow-500 hover:bg-yellow-500 active:scale-[0.98] transition duration-75"
       onClick={handleSubmit}
     >
       Book Now

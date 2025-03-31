@@ -5,7 +5,7 @@ import { InfiniteData } from "@tanstack/react-query";
 import { motion } from 'framer-motion'
 import { PostWithUserInfo } from "@repo/types";
 import { PricingType } from "@prisma/client/edge";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, CarouselDots } from "@repo/ui/components/ui/carousel";
 import { Heart, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,8 @@ import { LazyAvatarImage, LazyPostImage } from "../lazyImage";
 import { differenceInDays } from "date-fns";
 import { formatPrice } from "@/lib/postUtils";
 import { useLike } from "@/hooks/posts/useLike";
+import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more";
+import { Currency, useCurrency } from "@/hooks/useCurrency";
 
 interface PostsGridProps {
   postsData: InfiniteData<PostPage> | undefined
@@ -49,6 +51,42 @@ export const PostsGrid = memo(function PostsGrid({
     ) || [],
     [postsData]
   );
+  const { currency } = useCurrency();
+
+  // Ref for the sentinel element (for infinite scrolling)
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Intersection observer for infinite scrolling
+  const setupObserver = useCallback(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+  }, [hasNextPage, isFetchingNextPage, onLoadMore]);
+
+  // Connect observer when component mounts or when dependencies change
+  useEffect(() => {
+    setupObserver();
+    // Cleanup observer on unmount
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [setupObserver, allPosts.length]);
 
   if (!postsData) {
     return <motion.div
@@ -60,14 +98,8 @@ export const PostsGrid = memo(function PostsGrid({
     </motion.div>
   }
 
-  if (isLoading || isFetchingNextPage || error) {
-    return <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6 mx-auto"
-    >
-      <PostsGridSkeleton />
-    </motion.div>
+  if (isLoading || error) {
+    return <PostsPageLoading />
   }
 
   if (allPosts.length === 0) {
@@ -77,9 +109,9 @@ export const PostsGrid = memo(function PostsGrid({
   }
 
   return (
-    <div className="space-y-6 mx-auto">
+    <div className="space-y-6 mx-auto pb-56">
       <motion.div
-        className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-12 md:gap-6"
+        className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-12 md:gap-6 md:gap-y-12"
         variants={containerVariants}
         initial="hidden"
         animate="show"
@@ -101,40 +133,39 @@ export const PostsGrid = memo(function PostsGrid({
             }}
             className="h-full"
           >
-            <PostCard post={post} />
+            <PostCard
+              currency={currency}
+              post={post}
+            />
           </motion.div>
         ))}
       </motion.div>
-
-      {hasNextPage && (
-        <motion.div
-          className="text-center mt-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: allPosts.length * 0.1 + 0.3 }}
-        >
-          <button
-            onClick={onLoadMore}
-            disabled={isFetchingNextPage}
-            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 
-              disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isFetchingNextPage ? 'Loading more...' : 'Load more'}
-          </button>
-        </motion.div>
-      )}
+      <div
+        ref={loadMoreRef}
+        className="h-10 w-full flex justify-center items-center py-6"
+      >
+        {isFetchingNextPage ? (
+          <LoadingSpinnerMore className="w-6 h-6" />
+        ) : hasNextPage ? (
+          <div className="h-4"></div>
+        ) : (
+          <div className="text-sm text-gray-500">No more posts</div>
+        )}
+      </div>
     </div>
   )
 });
 
 export const PostCard = memo(function PostCard({
   post,
-  isFeatured
+  isFeatured,
+  currency
 }: {
   post: (PostWithUserInfo & {
     distance: number | null
   }),
-  isFeatured?: boolean
+  isFeatured?: boolean,
+  currency: Currency
 }) {
   const [isImageLoading, setIsImageLoading] = useState(true);
   const [isAvatarLoading, setIsAvatarLoading] = useState(true);
@@ -245,7 +276,7 @@ export const PostCard = memo(function PostCard({
           >
             <Heart className={`w-8 h-8 md:w-5 md:h-5 ${isLiked
               ? 'fill-yellow-500 stroke-yellow-500'
-              : 'fill-white stroke-none'
+              : 'fill-gray-950/40 stroke-none'
               } transition-colors duration-200`} />
           </Button>
         </div>
@@ -283,7 +314,7 @@ export const PostCard = memo(function PostCard({
           ) : (
             <>
               <span className="font-semibold">
-                ${formatPrice(post.hourlyRate || post.fixedPrice || 0)}
+                {currency === "PHP" ? "₱" : "$"}{formatPrice(post.hourlyRate || post.fixedPrice || 0)}
               </span>
               <span>{post.pricingType === PricingType.HOURLY ? "hour" : "fixed"}</span>
             </>
@@ -297,7 +328,7 @@ export const PostCard = memo(function PostCard({
 PostsGrid.displayName = 'PostsGrid';
 PostCard.displayName = 'PostCard';
 
-const TextSkeleton = ({ width = "w-24", height = "h-4" }: { width?: string, height?: string }) => (
+export const TextSkeleton = ({ width = "w-24", height = "h-4" }: { width?: string, height?: string }) => (
   <div className={`${width} ${height} bg-gray-200 animate-pulse rounded-md`} />
 );
 
@@ -372,3 +403,15 @@ const PostsGridSkeleton = () => {
     </div>
   );
 };
+
+export function PostsPageLoading() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6 mx-auto"
+    >
+      <PostsGridSkeleton />
+    </motion.div>
+  );
+}

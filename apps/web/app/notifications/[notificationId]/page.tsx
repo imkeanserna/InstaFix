@@ -2,6 +2,8 @@ import { NotificationContent, NotificationContentSkeleton } from "@/components/p
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+export const runtime = 'edge'
+
 const Page = ({ params }: { params: { notificationId: string } }) => {
   if (!params.notificationId) return notFound();
 

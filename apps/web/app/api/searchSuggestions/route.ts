@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { getSearchSuggestions } from "../_action/posts/searchQuery";
 import { SearchSuggestion } from '@repo/types';
 
-// export const runtime = "edge";
+export const runtime = "edge";
 
 const searchQuerySchema = z.object({
   q: z.string().min(3).max(100),

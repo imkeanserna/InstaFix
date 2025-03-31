@@ -13,7 +13,20 @@ const { auth } = NextAuth(authConfig);
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
 
-  if (!isLoggedIn && req.nextUrl.pathname == profileRoute) {
+  const protectedRoutes = [
+    '/become-a-freelancer',
+    '/book',
+    '/messages',
+    '/notifications',
+    '/favorites',
+    '/profile'
+  ];
+
+  const isProtectedRoute = protectedRoutes.some(route =>
+    req.nextUrl.pathname === route || req.nextUrl.pathname.startsWith(`${route}/`)
+  );
+
+  if (!isLoggedIn && isProtectedRoute) {
     return Response.redirect(new URL("/auth/login", req.nextUrl.origin));
   }
 
@@ -43,6 +56,23 @@ export async function middleware(request: NextRequest) {
       // Handle the specific /become-a-freelancer redirect
       if (request.nextUrl.pathname === '/become-a-freelancer') {
         return NextResponse.redirect(new URL('/become-a-freelancer/overview', request.url));
+      }
+    } catch (error) {
+      console.error('[Auth Error]', error);
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
+  }
+
+  const protectedPaths = ['/book', '/messages', '/notifications', '/favorites', '/profile'];
+  const isProtectedRoute = protectedPaths.some(path =>
+    request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(`${path}/`)
+  );
+
+  if (isProtectedRoute) {
+    try {
+      const user = await currentUser();
+      if (!user) {
+        return NextResponse.redirect(new URL('/auth/login', request.url));
       }
     } catch (error) {
       console.error('[Auth Error]', error);
@@ -127,6 +157,11 @@ const profileRoute = "/profile";
 export const config = {
   matcher: [
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
-    "/become-a-freelancer/:path*"
+    "/become-a-freelancer/:path*",
+    "/book/:path*",
+    "/messages/:path*",
+    "/notifications/:path*",
+    "/favorites/:path*",
+    "/profile/:path*"
   ],
 };

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader } from "@repo/ui/components/ui/card";
 import Confetti from 'react-confetti';
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Divider } from "./postContent";
 import { Award, Clock, Crown, Grip, Loader2, MapPin, PartyPopper, Rocket, Sparkles, Star, Trophy, X } from "lucide-react";
 import { useInView } from "framer-motion";
@@ -18,6 +18,7 @@ import { Review } from "@prisma/client/edge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@repo/ui/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { useMediaQuery } from "@/hooks/useMedia";
+import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more";
 
 interface RatingSectionProps {
   rate: number | null;
@@ -114,7 +115,7 @@ export function RatingSection({
         <RatingBars reviews={reviews} isLoading={isLoading} />
         <div className="hidden md:block w-px h-56 bg-gradient-to-b from-transparent via-amber-200 to-transparent"></div>
         <div className="w-full md:w-[400px] text-center space-y-4">
-          {!isNewProfile
+          {!isNewProfile || showRatingsAndReviews
             ?
             <>
               {showRatingsAndReviews
@@ -301,13 +302,52 @@ export function ReviewSection({
     Autoplay({ delay: 3000, stopOnInteraction: true })
   );
 
+  // Ref for the sentinel element (for infinite scrolling)
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Get all reviews from all pages
+  const allReviews = useMemo(() =>
+    reviewData?.pages.flatMap((page) =>
+      Array.isArray(page.reviews) ? page.reviews : page.reviews.reviews
+    ) || [],
+    [reviewData]
+  );
+
+  // Intersection observer for infinite scrolling in the dialog
+  const setupObserver = useCallback(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    observerRef.current = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (loadMoreRef.current) {
+      observerRef.current.observe(loadMoreRef.current);
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Connect observer when component mounts or when dependencies change
+  useEffect(() => {
+    setupObserver();
+    // Cleanup observer on unmount
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [setupObserver, allReviews.length]);
+
   if (isLoading || isFetchingNextPage || error || !reviewData) {
     return <ReviewSectionSkeleton />;
   }
-
-  const allReviews = reviewData.pages.flatMap((page) =>
-    Array.isArray(page.reviews) ? page.reviews : page.reviews.reviews
-  );
 
   const displayedReviews = allReviews.slice(0, 6);
   const totalReviews = allReviews.length;
@@ -361,12 +401,12 @@ export function ReviewSection({
                 Show all {totalReviews} reviews
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-5xl h-full md:h-[90vh] py-8">
+            <DialogContent className="max-w-5xl h-full md:h-[90vh] py-8 !rounded-2xl">
               <DialogClose className="absolute left-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
                 <X className="h-5 w-5" />
                 <span className="sr-only">Close</span>
               </DialogClose>
-              {isFetchingNextPage ? (
+              {isLoading ? (
                 <ReviewDialogSkeleton />
               ) : (
                 <>
@@ -397,13 +437,18 @@ export function ReviewSection({
                       {allReviews.map((review) => (
                         <ReviewCard key={review.id} review={review} typeLocation="longLocation" />
                       ))}
-                      {hasNextPage && (
-                        <LoadMoreButton
-                          onClick={() => fetchNextPage()}
-                          isFetchingNextPage={isFetchingNextPage}
-                          hasNextPage={hasNextPage}
-                        />
-                      )}
+                      <div
+                        ref={loadMoreRef}
+                        className="h-10 w-full flex justify-center items-center py-6"
+                      >
+                        {isFetchingNextPage ? (
+                          <LoadingSpinnerMore className="w-6 h-6" />
+                        ) : hasNextPage ? (
+                          <div className="h-4"></div>
+                        ) : (
+                          <div className="text-sm text-gray-500">No more reviews</div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </>

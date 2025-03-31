@@ -90,7 +90,7 @@ export function ChatBotAi() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-10">
+    <div className={`fixed right-0 ${isOpen ? "bottom-4" : "bottom-20 md:bottom-4"} sm:right-4 z-50`}>
       <AnimatePresence mode="wait">
         {isOpen ? (
           <motion.div
@@ -117,7 +117,7 @@ export function ChatBotAi() {
               },
             }}
           >
-            <Card className="w-[500px] h-[90vh] flex flex-col rounded-3xl border border-gray-200">
+            <Card className="w-screen h-[97vh] sm:w-[500px] sm:h-[90vh] flex flex-col rounded-3xl border border-gray-200">
               <CardHeader className="flex flex-row items-center p-4 rounded-t-3xl border-b border-gray-700 shadow-xl bg-gradient-to-b from-gray-900 to-gray-800">
                 <div className="flex flex-row justify-start items-center gap-4">
                   <div className="relative">
@@ -260,6 +260,6 @@ export function ChatBotAi() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </div >
   );
 }

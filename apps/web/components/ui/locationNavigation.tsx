@@ -489,12 +489,12 @@ export default function LocationNavigation({
 
           {/* Selected Location Info */}
           {selectedLocation && (
-            <div className={`p-4 bg-white/90 backdrop-blur-sm rounded-md ${isFullscreen ? 'absolute bottom-4 left-4 right-4 z-10' : ''
+            <div className={`p-0 md:p-4 bg-white/90 backdrop-blur-sm rounded-md ${isFullscreen ? 'absolute bottom-4 left-4 right-4 z-10' : ''
               }`}>
-              <h3 className="font-medium">Selected Location:</h3>
-              <div className='flex items-center space-x-1 text-gray-600'>
+              <h3 className="text-sm md:text-base font-medium text-start">Selected Location:</h3>
+              <div className='flex items-start md:items-center space-x-1 text-gray-600 text-sm'>
                 <MapPin className='h-6 w-6 sm:h-4 sm:w-4' />
-                <p >{selectedLocation.address}</p>
+                <p>{selectedLocation.address}</p>
               </div>
             </div>
           )}

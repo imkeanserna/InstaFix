@@ -8,7 +8,7 @@ import { startOfDay, endOfDay } from "date-fns";
 import { TypedBooking } from "@repo/types";
 import { Booking } from "@prisma/client/edge";
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 const createBookingSchema = z.object({
   date: z.string().datetime(),

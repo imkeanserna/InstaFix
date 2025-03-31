@@ -19,12 +19,14 @@ import { capitalizeFirstLetter } from "@/lib/notificationUtils";
 import React, { useState } from "react";
 import { ReviewDrawerWrapper, ReviewModal } from "../review/reviewModalDrawer";
 import { useMediaQuery } from "@/hooks/useMedia";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function NotificationContent({ notificationId }: { notificationId: string }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [showReviewModal, setShowReviewModal] = useState(true);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { currency } = useCurrency();
 
   const {
     notification,
@@ -157,7 +159,7 @@ export function NotificationContent({ notificationId }: { notificationId: string
             </div>
             <div className="flex justify-between mb-2">
               <p className="underline">Price per item</p>
-              <p>₱{formatPrice((notification.booking.post.pricingType === PricingType.HOURLY ? notification.booking.post.hourlyRate || 0 : notification.booking.post.fixedPrice || 0))}.00</p>
+              <p>{currency === "PHP" ? "₱" : "$"}{formatPrice((notification.booking.post.pricingType === PricingType.HOURLY ? notification.booking.post.hourlyRate || 0 : notification.booking.post.fixedPrice || 0))}.00</p>
             </div>
             <div className="flex justify-between mb-2">
               <p className="underline">Quantity</p>
@@ -166,8 +168,8 @@ export function NotificationContent({ notificationId }: { notificationId: string
           </div>
           <Divider marginY="my-10" />
           <div className="flex justify-between font-medium">
-            <p>Total(PHP)</p>
-            <p>₱{formatPrice(notification.booking.totalAmount)}.00</p>
+            <p>Total({currency === "PHP" ? "PHP" : "USD"})</p>
+            <p>{currency === "PHP" ? "₱" : "$"}{formatPrice(notification.booking.totalAmount)}.00</p>
           </div>
           <div className="mt-4">
             <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
@@ -396,20 +398,54 @@ export const UserMessage = ({
   );
 }
 
-const CancellationPolicy = ({ createdAt, maxDays }: {
-  createdAt: Date;
+const CancellationPolicy = ({ createdAt, maxDays = 3 }: {
+  createdAt: Date | string;
   maxDays?: number
 }) => {
-  const remainingDays = calculateRemainingDays(createdAt, maxDays);
+  const safeCreatedAt = createdAt instanceof Date
+    ? createdAt
+    : new Date(createdAt);
+  const remainingDays = calculateRemainingDays(createdAt as Date, maxDays);
+
   const getDaysText = () => {
-    if (remainingDays === 0) {
-      return "less than a day";
+    if (remainingDays > 1) {
+      return `${remainingDays} days`;
     }
     if (remainingDays === 1) {
       return "1 day";
     }
-    return `${remainingDays} days`;
+
+    // Calculate remaining hours when less than a day
+    const now = new Date();
+    const deadline = new Date(safeCreatedAt.getTime() + (maxDays * 24 * 60 * 60 * 1000));
+    const remainingHours = Math.ceil((deadline.getTime() - now.getTime()) / (60 * 60 * 1000));
+
+    if (remainingHours > 0) {
+      return remainingHours === 1 ? "1 hour" : `${remainingHours} hours`;
+    }
+
+    return "a few moments";
   };
+
+  const canCancel = () => {
+    const now = new Date();
+    const deadline = new Date(safeCreatedAt.getTime() + (maxDays * 24 * 60 * 60 * 1000));
+    return now < deadline;
+  };
+
+  if (!canCancel()) {
+    return (
+      <div>
+        <h2 className="text-xl font-semibold text-text-red-500">Cancellation Not Allowed</h2>
+        <div className="mt-3 space-y-3">
+          <div className="text-xs text-red-500 bg-red-50 p-3 rounded-lg">
+            The cancellation window has expired. This request can no longer be canceled.
+            Please contact support if you have any urgent concerns.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -417,6 +453,9 @@ const CancellationPolicy = ({ createdAt, maxDays }: {
       <div className="mt-3 space-y-3">
         <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
           {`You have ${getDaysText()} to accept this request. If you do not respond within this timeframe, the request may be canceled or reassigned. Repeated cancellations or failure to respond may result in restrictions on your account, including temporary suspension or loss of eligibility for new bookings.`}
+          <div className="mt-2 font-semibold text-red-500">
+            Note: After the deadline, this request cannot be canceled.
+          </div>
         </div>
       </div>
     </div>

@@ -65,7 +65,7 @@ export function QRDialog({ qrValue, children }: QRDialogProps) {
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md !rounded-2xl">
         <DialogHeader>
           <DialogTitle>QR Code</DialogTitle>
           <DialogDescription>

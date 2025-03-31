@@ -31,8 +31,8 @@ export function ConversationContent({
 }) {
   return (
     <div className="flex flex-col overflow-auto">
-      <div className="space-y-6 py-6 border-b px-6 border-b-gray-200 shadow-sm">
-        <div className="flex justify-between items-center">
+      <div className="space-y-6 pt-0 pb-4 md:py-6 border-b px-6 border-b-gray-200 shadow-sm">
+        <div className="justify-between items-center hidden md:flex">
           <p className="text-xl font-medium">Contacts</p>
           {conversationState.conversations.length > 0 &&
             <div className="text-yellow-600 flex justify-center items-center gap-1 rounded-xl bg-yellow-50 p-1">
@@ -71,6 +71,8 @@ export function Conversations({
   isLoadingMore: boolean;
   user: User;
 }) {
+  console.log("CONVERSATIONNNNNNNNNNNNNNs")
+  console.log(conversationState);
   const [selectedConversationId, setSelectedConversationId] = useRecoilState(selectedConversationState);
 
   // Ref for the sentinel element (for infinite scrolling)

@@ -4,7 +4,7 @@ import { getCreatePostById, updatePost } from "../../_action/posts/getPosts";
 import { currentUser } from "@/lib";
 import { User } from "next-auth";
 
-// export const runtime = "edge";
+export const runtime = "edge";
 
 export async function PATCH(
   request: NextRequest,

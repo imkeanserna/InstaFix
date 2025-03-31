@@ -1,8 +1,10 @@
 import { ServiceEngagement } from "@/components/posts/service-engagement";
 
+export const runtime = 'edge'
+
 export default function Page() {
   return (
-    <div className="h-full w-full py-20 sm:py-16 md:py-48">
+    <div className="h-[90vh] w-full flex justify-center items-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-8">
           <div className="text-start space-y-1 md:space-y-2">

@@ -6,7 +6,7 @@ import { MessageType, TypeBookingNotification } from "@repo/types";
 import { getBookingNotificationCount, getBookingNotifications } from "../_action/notification/booking";
 import { z } from "zod";
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 const notificationQuerySchema = z.object({
   type: z.enum([MessageType.BOOKING, MessageType.CHAT]),

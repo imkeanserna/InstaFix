@@ -4,7 +4,7 @@ import { draftPost } from "../_action/posts/getPosts";
 import { currentUser } from "@/lib";
 import { User } from "next-auth";
 
-// export const runtime = "edge";
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   try {

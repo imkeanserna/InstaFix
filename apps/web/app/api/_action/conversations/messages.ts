@@ -1,7 +1,7 @@
 import { prisma } from '@/server/index';
 import { ChatMessageWithSender } from '@repo/types';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export async function getMessages({
   conversationId,

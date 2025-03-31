@@ -58,13 +58,13 @@ export function TextPostInput({
   const sizeStyles = {
     title: {
       wrapper: 'max-w-3xl',
-      heading: 'text-3xl md:text-5xl',
+      heading: 'text-2xl md:text-5xl',
       subheading: 'text-sm',
       input: 'min-h-[200px] text-xl md:text-2xl p-8',
     },
     description: {
       wrapper: 'max-w-4xl',
-      heading: 'text-3xl md:text-5xl',
+      heading: 'text-2xl md:text-5xl',
       subheading: 'text-sm',
       input: 'min-h-[250px] text-lg md:text-xl p-6',
     }

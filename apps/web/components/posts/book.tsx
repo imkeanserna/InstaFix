@@ -20,6 +20,7 @@ import { addDays, format } from "date-fns";
 import { DotTypingLoading } from "@repo/ui/components/ui/dot-typing-loading";
 import { toast } from "@repo/ui/components/ui/sonner";
 import { QuerySchema } from "@/hooks/useBooking";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function BookPage({ postId }: { postId: string }) {
   const router = useRouter();
@@ -30,6 +31,7 @@ export function BookPage({ postId }: { postId: string }) {
   const [post, setPost] = useState<PostWithUserInfo | null>(null);
   const [bookSuccess, setBookSuccess] = useState(false);
   const [postError, setPostError] = useState<string | null>(null);
+  const { currency } = useCurrency();
 
   const checkout = searchParams.get('checkout');
   const description = searchParams.get('description');
@@ -352,7 +354,7 @@ export function BookPage({ postId }: { postId: string }) {
                   </div>
                   <div className="flex justify-between mb-2">
                     <p className="underline">Price per item</p>
-                    <p>₱{formatPrice((post?.pricingType === PricingType.HOURLY ? post?.hourlyRate || 0 : post?.fixedPrice || 0))}.00</p>
+                    <p>{currency === "PHP" ? "₱" : "$"}{formatPrice((post?.pricingType === PricingType.HOURLY ? post?.hourlyRate || 0 : post?.fixedPrice || 0))}.00</p>
                   </div>
                   <div className="flex justify-between mb-2">
                     <p className="underline">Quantity</p>
@@ -361,8 +363,8 @@ export function BookPage({ postId }: { postId: string }) {
                 </div>
                 <Divider marginY="my-6" />
                 <div className="flex justify-between font-medium">
-                  <p>Total(PHP)</p>
-                  <p>₱{formatPrice(totalPrice)}.00</p>
+                  <p>Total({currency === "PHP" ? "PHP" : "USD"})</p>
+                  <p>{currency === "PHP" ? "₱" : "$"}{formatPrice(totalPrice)}.00</p>
                 </div>
                 <div className="mt-4">
                   <p className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">

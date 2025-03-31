@@ -43,7 +43,7 @@ export default function ExpandableDescription({ title, description, maxLength = 
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl w-full sm:max-w-3xl sm:w-full pt-12 h-full sm:max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <DialogContent className="max-w-2xl w-full sm:max-w-3xl !rounded-2xl sm:w-full pt-12 h-full sm:max-h-[calc(100vh-4rem)] overflow-y-auto">
           <DialogClose className="absolute left-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
             <X className="h-5 w-5" />
             <span className="sr-only">Close</span>

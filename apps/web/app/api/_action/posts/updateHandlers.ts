@@ -5,7 +5,7 @@ import { deleteFilesFromR2, uploadMultipleFiles } from '@repo/services/src/stora
 import { Media } from '@prisma/client/edge';
 import { getCurrentMediaUrls } from '../media/media';
 
-// export const runtime = 'edge'
+export const runtime = 'edge'
 
 export class PostUpdateHandlers {
   static async updateTags(postId: string, data: UpdatePostData['tags']) {

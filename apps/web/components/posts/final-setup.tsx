@@ -1,6 +1,6 @@
 "use client";
 
-import { getPreviewPost } from "@/lib/postUtils";
+import { formatPrice, getPreviewPost } from "@/lib/postUtils";
 import { Button } from "@repo/ui/components/ui/button";
 import { Card, CardContent, CardFooter } from "@repo/ui/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +12,9 @@ import { QRDialog } from "@repo/ui/components/ui/qr-dialog";
 import { forwardRef, useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import Confetti from 'react-confetti';
+import { Post, PricingType } from "@prisma/client/edge";
+import { Currency, useCurrency } from "@/hooks/useCurrency";
+import Link from "next/link";
 
 export function FinalSetup() {
   const router = useRouter();
@@ -22,6 +25,7 @@ export function FinalSetup() {
   });
   const pathname = usePathname();
   const postId = pathname?.split('/')[2];
+  const { currency } = useCurrency();
 
   useEffect(() => {
     // Set initial dimensions
@@ -55,7 +59,7 @@ export function FinalSetup() {
     queryKey: ['post', postId],
     queryFn: async () => {
       if (!postId) return;
-      const data: any = await getPreviewPost(postId);
+      const data: Post | any = await getPreviewPost(postId);
       return data;
     },
     staleTime: 0,
@@ -116,9 +120,10 @@ export function FinalSetup() {
             imageUrl={post.coverPhoto}
             title={post.title}
             buttonText="Show preview"
-            onButtonClick={() => {
-              router.push(`${process.env.NEXT_BACKEND_URL}/post/${postId}`);
-            }}
+            url={`/find/${post.user.name}/${post.title}/${postId}`}
+            currency={currency}
+            pricing={post.hourlyRate || post.fixedPrice}
+            pricingType={post.pricingType as PricingType}
           />
         ) : (
           <SkeletonImageCard />
@@ -164,13 +169,24 @@ export function FinalSetup() {
 }
 
 interface ImageCardProps {
-  imageUrl: string
-  title: string
-  buttonText: string
-  onButtonClick: () => void
+  imageUrl: string;
+  title: string;
+  buttonText: string;
+  url: string;
+  currency: Currency;
+  pricing: number;
+  pricingType: PricingType;
 }
 
-export function ImageCard({ imageUrl, title, buttonText, onButtonClick }: ImageCardProps) {
+export function ImageCard({
+  imageUrl,
+  title,
+  buttonText,
+  url,
+  currency,
+  pricing = 0,
+  pricingType
+}: ImageCardProps) {
   return (
     <Card className="w-full sm:max-w-sm overflow-hidden p-4 rounded-3xl shadow-2xl">
       <CardContent className="p-0 relative">
@@ -182,13 +198,14 @@ export function ImageCard({ imageUrl, title, buttonText, onButtonClick }: ImageC
             className="object-cover"
           />
         </div>
-        <Button
-          onClick={onButtonClick}
-          variant="outline"
-          className="absolute top-4 left-4 z-10 px-3 rounded-lg text-xs shadow-lg"
+        <Link
+          href={url}
+          className="absolute top-4 left-4 z-10 px-3 py-3 rounded-lg text-xs font-semibold shadow-lg bg-white text-gray-900 hover:bg-gray-100 active:scale-[.98]"
+          target="_blank"
+          rel="noopener noreferrer"
         >
           {buttonText}
-        </Button>
+        </Link>
       </CardContent>
       <CardFooter className="px-0 pt-4 pb-0">
         <div className="w-full">
@@ -199,7 +216,12 @@ export function ImageCard({ imageUrl, title, buttonText, onButtonClick }: ImageC
               <Star className="w-3 h-3 fill-black" />
             </div>
           </div>
-          <p className="text-sm">$300 per hour</p>
+          <div>
+            <span className="font-semibold">
+              {currency === "PHP" ? "₱" : "$"} {formatPrice(pricing)} {" "}
+            </span>
+            <span>{pricingType === PricingType.HOURLY ? "hour" : "fixed"}</span>
+          </div>
         </div>
       </CardFooter>
     </Card>

@@ -8,7 +8,7 @@ import { addReview } from "@/app/api/_action/reviews/reviews";
 import { Review } from "@prisma/client/edge";
 import { ReviewsResponseWithCursor } from "@repo/types";
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 const ReviewSchema = z.object({
   rating: z.number({
