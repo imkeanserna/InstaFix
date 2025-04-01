@@ -59,7 +59,7 @@ const Effect3D = ({ urlImage }: {
     <div className="page-container w-full">
       <div
         ref={containerRef}
-        className="effect3d__container moveable-3d relative h-[250px] w-full md:h-[60vh] lg:h-[80vh] md:w-[800px] lg:w-[1200px] 
+        className="effect3d__container moveable-3d relative h-[250px] w-full md:h-[60vh] lg:h-[78vh] md:w-[800px] lg:w-[1300px] 
             overflow-hidden z-10 rounded-xl border-[6px] border-gray-800"
       >
         <div
@@ -71,7 +71,7 @@ const Effect3D = ({ urlImage }: {
           alt="testimonial overall"
           fill
           quality={100}
-          className="absolute h-full w-full object-cover z-0"
+          className="absolute h-full w-full object-cover lg:object-contain z-0"
           style={{
             transformStyle: 'preserve-3d',
             transform: 'translateZ(-1px)'

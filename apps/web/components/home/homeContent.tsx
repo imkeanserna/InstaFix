@@ -161,7 +161,7 @@ export function ShowMobileContent() {
           md:grid-cols-2 px-4 md:px-12 lg:px-48 ${openSans.className}`}
     >
       <div className="flex flex-col space-y-8 mb-4 md:mb-16">
-        <h1 className="text-center md:text-start text-[2.2rem] md:text-5xl font-bold leading-[1.3]">
+        <h1 className="text-center md:text-start text-[2.2rem] md:text-5xl font-bold leading-[1.3] whitespace-normal md:whitespace-nowrap">
           {MOBILE_SECTION.title.main}{" "}
           <span className="italic">
             {MOBILE_SECTION.title.highlighted}
@@ -193,7 +193,7 @@ export function ShowMobileContent() {
           width={700}
           height={1200}
           quality={100}
-          className={`h-auto w-48 md:w-96 object-cover block md:absolute md:-top-40 -rotate-12`}
+          className={`h-auto w-48 md:w-96 object-cover block md:absolute md:-top-52 -rotate-12`}
         />
       </div>
     </div>

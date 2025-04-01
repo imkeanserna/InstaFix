@@ -242,7 +242,7 @@ export function HeroSection({
             selectedSection={selectedSection}
             onSectionChange={setSelectedSection}
           />
-          <div className="relative w-full min-h-[250px] md:min-h-[60vh] lg:min-h-[80vh] 
+          <div className="relative w-full min-h-[250px] md:min-h-[60vh] lg:min-h-[78vh] 
             flex items-center justify-center transition-all duration-300 ease-in-out"
           >
             <Effect3D

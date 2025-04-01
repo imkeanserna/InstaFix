@@ -71,8 +71,6 @@ export function Conversations({
   isLoadingMore: boolean;
   user: User;
 }) {
-  console.log("CONVERSATIONNNNNNNNNNNNNNs")
-  console.log(conversationState);
   const [selectedConversationId, setSelectedConversationId] = useRecoilState(selectedConversationState);
 
   // Ref for the sentinel element (for infinite scrolling)
@@ -164,7 +162,7 @@ export function ConversationCard({
   isMobile: boolean;
 }) {
   const timeSent = new Date(conversation.chatMessages[0].createdAt);
-  const truncateTextValue = isMobile ? 40 : 50;
+  const truncateTextValue = isMobile ? 30 : 50;
 
   const handleClick = () => {
     onSelect(conversation.id);
@@ -203,9 +201,9 @@ export function ConversationCard({
         </div>
         <div className="text-sm flex gap-3 justify-between text-gray-500">
           {conversation.chatMessages[0].image ? (
-            <p className="w-[260px] md:w-[350px]">{`${conversation.chatMessages[0].senderId === user?.id ? 'You' : conversation.participants[0].user.name} sent an image`}</p>
+            <p className="w-[230px] md:w-[350px]">{`${conversation.chatMessages[0].senderId === user?.id ? 'You' : conversation.participants[0].user.name} sent an image`}</p>
           ) : (
-            <p className="w-[260px] md:w-[350px]">{truncateText(conversation.chatMessages[0].body!, truncateTextValue)}</p>
+            <p className="w-[230px] md:w-[350px]">{truncateText(conversation.chatMessages[0].body!, truncateTextValue)}</p>
           )}
           <p className="lowercase">{timeSent.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</p>
         </div>

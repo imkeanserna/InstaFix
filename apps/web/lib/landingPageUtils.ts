@@ -49,19 +49,19 @@ export const SECTION_CONFIG = [
     id: 'smartMatching',
     emoji: '📸',
     text: 'Smart Matching',
-    image: "/home-page/man-and-woman-discussing.avif"
+    image: "/home-page/feature/camera-feature.avif"
   },
   {
     id: 'instantAssistance',
     emoji: '⚡',
     text: 'Instant Assistance',
-    image: "/home-page/living-room.avif"
+    image: "/home-page/feature/ai-chat-feature.avif"
   },
   {
     id: 'seamlessCommunication',
     emoji: '💬',
     text: 'Seamless Communication',
-    image: "/home-page/seamless-communication.avif"
+    image: "/home-page/feature/in-house-chat.avif"
   }
 ];
 
