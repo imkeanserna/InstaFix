@@ -31,7 +31,6 @@
 !**/.env.example
 
 # Exclude other apps (only keep socket-server)
-/apps/hono-server/**
 /apps/web/**
 
 # Keep all shared packages

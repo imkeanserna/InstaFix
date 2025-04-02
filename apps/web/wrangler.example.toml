@@ -5,8 +5,8 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 [vars]
-DATABASE_URL="prisma://your_prisma_url_here"
-DIRECT_URL="postgresql://your_postgres_user:your_password@your_host/your_db?sslmode=require"
+DATABASE_URL="your_database_url_here"
+DIRECT_URL="your_direct_url_here"
 NEXTAUTH_SECRET="your_nextauth_secret_here"
 GOOGLE_CLIENT_ID="your_google_client_id_here"
 GOOGLE_CLIENT_SECRET="your_google_client_secret_here"
@@ -14,7 +14,7 @@ JWT_SECRET="your_jwt_secret_here"
 
 # Huggingface API key
 HUGGING_FACE_API_KEY="your_huggingface_api_key_here"
-HUGGING_FACE_URL="https://api-inference.huggingface.co/models/microsoft/git-base"
+HUGGING_FACE_URL="your_huggingface_model_here"
 HUGGING_CHATBOT_URL="your_chatbot_model_here"
 HUGGING_IMAGE_CLASSIFICATION_URL="your_image_classification_model_here"
 
@@ -23,7 +23,6 @@ GROQ_API_KEY="your_groq_api_key_here"
 
 # Backend URL
 NEXT_BACKEND_URL="http://localhost:3000"
-# SOCKET_SERVER_URL="wss://instafix-socket-server-production.up.railway.app"
 SOCKET_SERVER_URL="ws://localhost:3001"
 
 # MapTiler API key

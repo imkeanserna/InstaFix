@@ -9,6 +9,7 @@ if (process.env.NODE_ENV === 'development') {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   env: {
     NEXT_BACKEND_URL: process.env.NEXT_BACKEND_URL,
     MAPTILER_API_KEY: process.env.MAPTILER_API_KEY,
