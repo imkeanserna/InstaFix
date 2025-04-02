@@ -1,0 +1,88 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:alpine
+    container_name: instafix-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - instafix_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: instafix-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Database
+      - DATABASE_URL=${DATABASE_URL}
+      - DIRECT_URL=${DIRECT_URL}
+      # Auth
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      # AI Services
+      - HUGGING_FACE_API_KEY=${HUGGING_FACE_API_KEY}
+      - HUGGING_FACE_URL=${HUGGING_FACE_URL}
+      - HUGGING_CHATBOT_URL=${HUGGING_CHATBOT_URL}
+      - HUGGING_IMAGE_CLASSIFICATION_URL=${HUGGING_IMAGE_CLASSIFICATION_URL}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      # Service URLs
+      - NEXT_BACKEND_URL=http://localhost:3000
+      - SOCKET_SERVER_URL=ws://socket-server:3001
+      # Map Services
+      - MAPTILER_API_KEY=${MAPTILER_API_KEY}
+      # Storage
+      - R2_ENDPOINT=${R2_ENDPOINT}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_PUBLIC_URL=${R2_PUBLIC_URL}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+    depends_on:
+      redis:
+        condition: service_healthy
+      socket-server:
+        condition: service_started
+    networks:
+      - instafix_network
+
+  socket-server:
+    build:
+      context: .
+      dockerfile: apps/socket-server/Dockerfile
+    container_name: instafix-socket-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=${DATABASE_URL}
+      - FRONTEND_URL=http://web:3000
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - SYSTEM_EMAIL=${SYSTEM_EMAIL}
+      - SYSTEM_PASSWORD=${SYSTEM_PASSWORD}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - instafix_network
+
+volumes:
+  postgres_data:
+    name: instafix-postgres-data
+networks:
+  instafix_network:
+    name: instafix-network

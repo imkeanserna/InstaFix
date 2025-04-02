@@ -3,7 +3,7 @@ import { getPrisma } from '../src';
 
 const prisma: PrismaClient = getPrisma({ DATABASE_URL: process.env.DATABASE_URL! });
 async function main() {
-  console.log('Seeding data...');
+  console.log('Seeding categories and subcategories...');
 
   const categoriesData = [
     {
@@ -114,39 +114,8 @@ async function main() {
     });
   }
 
-  const subcategories = await prisma.subcategory.findMany();
-
-  const freelancers = await prisma.freelancer.createMany({
-    data: [
-      { name: 'John Doe' },
-      { name: 'Jane Smith' },
-      { name: 'Emily Davis' },
-    ],
-  });
-
-  const freelancerList = await prisma.freelancer.findMany();
-
-  for (const freelancer of freelancerList) {
-    for (const subcategory of subcategories) {
-      await prisma.post.create({
-        data: {
-          title: `Expert ${subcategory.name}`,
-          description: `I am a professional ${subcategory.name} with years of experience.`,
-          freelancerId: freelancer.id,
-          tags: {
-            create: [
-              {
-                subcategoryId: subcategory.id,
-              },
-            ],
-          },
-        },
-      });
-    }
-  }
-  console.log('Data seeded successfully!');
+  console.log('Categories and subcategories seeded successfully!');
 }
-
 
 main()
   .then(async () => {
