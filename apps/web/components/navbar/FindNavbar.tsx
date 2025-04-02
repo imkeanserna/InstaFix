@@ -20,6 +20,7 @@ import { useConversations } from "@/hooks/chat/useConversations";
 import { NotificationIcon } from "../posts/notificationBell";
 import Image from "next/image";
 import { LOGO } from "@/lib/landingPageUtils";
+import { useNotFoundContext } from "@/context/NotFoundContext";
 
 export function FindNavbar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -30,6 +31,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const selectedConversationId = useRecoilValue(selectedConversationState);
   const { conversationState } = useConversations();
+  const { isNotFoundPage } = useNotFoundContext();
 
   const ROUTES = {
     MESSAGES: '/messages',
@@ -88,8 +90,8 @@ export function FindNavbar({ user }: { user: User | undefined }) {
 
   const shouldHideSearch = useMemo(() => {
     return [ROUTES.MESSAGES, ROUTES.NOTIFICATIONS, ROUTES.FAVORITES].includes(pathname) ||
-      pathname.includes(`${ROUTES.NOTIFICATIONS}/`);
-  }, [pathname]);
+      pathname.includes(`${ROUTES.NOTIFICATIONS}/`) || isNotFoundPage;
+  }, [pathname, isNotFoundPage]);
 
   const shouldHideNavbar = useMemo(() => {
     return pathname.includes(ROUTES.BECOME_FREELANCER) ||
@@ -101,8 +103,8 @@ export function FindNavbar({ user }: { user: User | undefined }) {
   }, [pathname, isMobile, selectedConversationId]);
 
   const isSpecialPage = useMemo(() => {
-    return ['specific-post', 'booking', 'messages', 'notifications', 'favorites', 'account-settings'].includes(pageType);
-  }, [pageType]);
+    return ['specific-post', 'booking', 'messages', 'notifications', 'favorites', 'account-settings'].includes(pageType) || isNotFoundPage;
+  }, [pageType, isNotFoundPage]);
 
   const updateUrlParams = useCallback((updates: Partial<{
     location: Location | null;

@@ -15,6 +15,7 @@ import { AuthModal } from "@repo/ui/components/auth/auth-modal";
 import { NavigationBar } from "@/components/navbar/NavigationBar";
 import { Open_Sans } from "next/font/google";
 import { HomeFooter } from "@/components/home/footer";
+import { NotFoundProvider } from "@/context/NotFoundContext";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -61,13 +62,15 @@ export default async function RootLayout({
                   <ChatProvider>
                     <ReactQueryProvider>
                       <FormDataProvider>
-                        <FindNavbar user={user} />
-                        <NavigationBar user={user} />
-                        {children}
-                        <AuthModal />
-                        <HomeFooter
-                          className="bg-gradient-to-b relative from-yellow-500 to-yellow-900 overflow-hidden px-4 md:px-12 lg:px-24 py-10 md:py-16 "
-                        />
+                        <NotFoundProvider>
+                          <FindNavbar user={user} />
+                          <NavigationBar user={user} />
+                          {children}
+                          <AuthModal />
+                          <HomeFooter
+                            className="bg-gradient-to-b relative from-yellow-500 to-yellow-900 overflow-hidden px-4 md:px-12 lg:px-24 py-10 md:py-16 "
+                          />
+                        </NotFoundProvider>
                       </FormDataProvider>
                     </ReactQueryProvider>
                   </ChatProvider>

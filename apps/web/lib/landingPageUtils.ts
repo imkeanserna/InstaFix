@@ -1,3 +1,4 @@
+import NotFound from "@/app/not-found";
 import { HomeFooter } from "@/components/home/footer";
 import { DiscoverComponent } from "@/components/home/homeContent";
 
@@ -181,3 +182,36 @@ export const FOOTER_SECTION = {
     ]
   }
 }
+
+export const NOT_FOUND_PAGE = {
+  component: NotFound,
+  config: {
+    image: "/404-page/freelancer-3d.avif",
+    sections: [
+      {
+        type: "heading",
+        title: "Sorry!,",
+        message: "this page isn't available",
+      },
+      {
+        type: "description",
+        text: "The page you were looking for couldn't be found.",
+      },
+      {
+        type: "links",
+        content: [
+          {
+            regularText: "Go back to the ",
+            linkText: "homepage",
+            href: "/",
+          },
+          {
+            regularText: " or visit our ",
+            linkText: "Help Center",
+            href: "/help-center",
+          },
+        ],
+      },
+    ],
+  },
+};
