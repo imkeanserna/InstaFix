@@ -1,5 +1,6 @@
-<h1 align="center">Instafix</h1>
-
+<p align="center">
+  <img src="https://instafix.pro/github/instafix-logo-github.webp" alt="Instafix Logo" width="200"/>
+</p>
 <p align="center">
     AI-Powered Repair Matching Platform
 </p>
