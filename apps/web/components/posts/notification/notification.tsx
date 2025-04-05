@@ -5,7 +5,7 @@ import { Currency } from "@/hooks/useCurrency";
 import { Button } from "@repo/ui/components/ui/button";
 import { Inbox } from "lucide-react";
 
-export function NotificationBell({ isScrolled }: { isScrolled: boolean }) {
+export function NotificationBell({ scrollProgress }: { scrollProgress: number }) {
   const { unreadCount, navigateToNotifications } = useNotificationHandler();
   return (
     <div className="flex flex-col items-center">
@@ -23,7 +23,16 @@ export function NotificationBell({ isScrolled }: { isScrolled: boolean }) {
           </div>
         )}
       </Button>
-      {!isScrolled && <p className="text-xs font-medium transition-opacity duration-300 ease-in-out opacity-100">Bookings</p>}
+      <p
+        className="text-xs font-medium transition-all duration-300 ease-in-out opacity-100"
+        style={{
+          opacity: scrollProgress < 0.5 ? 1 - scrollProgress * 2 : 0,
+          height: scrollProgress < 0.5 ? '16px' : '0px',
+          overflow: 'hidden'
+        }}
+      >
+        Bookings
+      </p>
     </div>
   );
 }

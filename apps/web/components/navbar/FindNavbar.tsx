@@ -26,7 +26,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const { currency, changeCurrency } = useCurrency();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const selectedConversationId = useRecoilValue(selectedConversationState);
@@ -127,11 +127,8 @@ export function FindNavbar({ user }: { user: User | undefined }) {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 30) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      const progress = Math.min(Math.max(window.scrollY / 60, 0), 1);
+      setScrollProgress(progress);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -144,25 +141,38 @@ export function FindNavbar({ user }: { user: User | undefined }) {
     return null;
   }
 
+  const logoSize = 16 - (scrollProgress * 4);
+  const fontSize = scrollProgress < 0.5 ? "text-3xl" : "text-2xl";
+  const paddingTop = 6 - (scrollProgress * 4);
+  const paddingBottom = 4 - (scrollProgress * 2);
+  const shadowClass = scrollProgress > 0.3 ? `shadow-lg` : "shadow-sm";
+
+  const bgClass = scrollProgress > 0.8
+    ? "bg-gradient-to-t from-yellow-500 to-yellow-600"
+    : "bg-white";
+
   if (isMobile) {
     return (
       <motion.div
         className={`sticky top-0 z-20
-        ${scrolled && !isSpecialPage
+        ${scrollProgress && !isSpecialPage
             ? "border-b-2 bg-gradient-to-t from-yellow-500 to-yellow-600 border-b-yellow-500 shadow-md"
             : "border-b bg-white border-b-gray-300 shadow-sm"} rounded-b-3xl`}
         animate={{
-          height: scrolled || isSpecialPage ? "72px" : "180px",
-          paddingTop: scrolled || isSpecialPage ? "12px" : "24px",
-          paddingBottom: scrolled ? "12px" : "36px"
+          height: scrollProgress || isSpecialPage ? "72px" : "180px",
+          paddingTop: scrollProgress || isSpecialPage ? "12px" : "24px",
+          paddingBottom: scrollProgress ? "12px" : "36px"
         }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
+        transition={{
+          duration: 0.4,
+          ease: [0.25, 0.1, 0.25, 1.0]
+        }}
       >
         <div className="px-4 flex flex-col h-full">
           <div className={`flex items-center ${isSpecialPage ? 'justify-start gap-20' : 'justify-between'}`}>
             <motion.div
-              animate={{ scale: scrolled ? 0.9 : 1 }}
-              transition={{ duration: 0.3 }}
+              animate={{ scale: scrollProgress ? 0.9 : 1 }}
+              transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
             >
               {isSpecialPage
                 ?
@@ -212,7 +222,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
               <div className={`relative transition-all duration-300 h-12 w-12`}>
                 <div className="absolute inset-0 z-10"></div>
                 <Image
-                  src={scrolled ? LOGO["black-logo"] : LOGO["yellow-logo"]}
+                  src={(scrollProgress > 0.2) ? LOGO["black-logo"] : LOGO["yellow-logo"]}
                   alt="Instafix Logo"
                   layout="fill"
                   className="object-cover mix-blend-multiply scale-110"
@@ -251,17 +261,33 @@ export function FindNavbar({ user }: { user: User | undefined }) {
           {/* Bottom row (search bar) */}
           <motion.div
             className="flex-grow flex items-center mt-4"
-            animate={{ opacity: scrolled ? 0 : 1 }}
-            transition={{ duration: 0.2 }}
+            animate={{
+              opacity: scrollProgress ? 0 : 1,
+              y: scrollProgress ? -10 : 0
+            }}
+            transition={{
+              duration: 0.4,
+              ease: [0.25, 0.1, 0.25, 1.0]
+            }}
           >
             <AnimatePresence>
-              {!scrolled && !isSpecialPage && (
+              {!scrollProgress && !isSpecialPage && (
                 <motion.div
                   className="w-full"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  exit={{
+                    opacity: 0,
+                    y: -10,
+                    transition: {
+                      duration: 0.2,
+                      ease: "easeOut"
+                    }
+                  }}
+                  transition={{
+                    duration: 0.4,
+                    ease: [0.25, 0.1, 0.25, 1.0]
+                  }}
                 >
                   <SearchEngine>
                     <Button
@@ -288,13 +314,23 @@ export function FindNavbar({ user }: { user: User | undefined }) {
     <div
       className={`sticky top-0 z-20 flex items-center justify-between border-b
       border-b-gray-200 px-24 transition-all duration-300 ease-in-out
-      ${scrolled ? "shadow-lg py-2 bg-gradient-to-t from-yellow-500 to-yellow-600" : "bg-white shadow-sm pt-6 pb-4"}`}
+      ${shadowClass} ${bgClass}`}
+      style={{
+        paddingTop: `${paddingTop * 0.25}rem`,
+        paddingBottom: `${paddingBottom * 0.25}rem`
+      }}
     >
       <div
         className="flex items-center gap-4 cursor-pointer group"
         onClick={() => router.push("/find")}
       >
-        <div className={`relative transition-all duration-300 ${scrolled ? "h-12 w-12" : "h-16 w-16"} rounded-[8px] bg-yellow-400`}>
+        <div
+          className="relative transition-all duration-300 rounded-[8px] bg-yellow-400"
+          style={{
+            height: `${logoSize * 0.25}rem`,
+            width: `${logoSize * 0.25}rem`
+          }}
+        >
           <div className="absolute inset-0 z-10"></div>
           <Image
             src={LOGO["black-logo"]}
@@ -303,7 +339,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
             className="object-cover mix-blend-multiply scale-110"
           />
         </div>
-        <h1 className={`transition-all duration-300 font-extrabold ${scrolled ? "text-2xl" : "text-3xl"}`}>
+        <h1 className={`transition-all duration-300 font-extrabold ${fontSize}`}>
           <span className="text-gray-900 inline-block transform -skew-x-12">
             insta
             <span
@@ -317,7 +353,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
               transform
               transition-all
               duration-500
-            ${scrolled
+            ${scrollProgress > 0.5
                   ? "skew-x-12 rotate-0 translate-y-0 ms-0"
                   : "skew-x-12 ms-1 group-hover:ms-0 -rotate-12 group-hover:rotate-0 translate-y-0 group-hover:translate-y-0"
                 }
@@ -348,7 +384,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
             </Button>
           </SearchEngine>
         }
-        <div className={`flex gap-9 ${scrolled ? "justify-center items-center" : "justify-center items-center"}`}>
+        <div className="flex gap-9 justify-center items-center">
           <LocationDialog
             onFilterChange={updateUrlParams}
           >
@@ -361,11 +397,20 @@ export function FindNavbar({ user }: { user: User | undefined }) {
                   <Earth className="h-6 w-6 text-gray-700" />
                 </div>
               </Button>
-              {!scrolled && <p className="text-xs font-medium transition-opacity duration-300 ease-in-out opacity-100">Location</p>}
+              <p
+                className="text-xs font-medium transition-all duration-300 ease-in-out opacity-100"
+                style={{
+                  opacity: scrollProgress < 0.5 ? 1 - scrollProgress * 2 : 0,
+                  height: scrollProgress < 0.5 ? '16px' : '0px',
+                  overflow: 'hidden'
+                }}
+              >
+                Location
+              </p>
             </div>
           </LocationDialog>
           {user && (
-            <NotificationBell isScrolled={scrolled} />
+            <NotificationBell scrollProgress={scrollProgress} />
           )}
           <CurrencyToggle currency={currency} changeCurrency={changeCurrency} />
           <ProfileDropdown user={user} pathname={pathname} />
