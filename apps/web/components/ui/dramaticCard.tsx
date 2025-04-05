@@ -51,30 +51,32 @@ const Effect3D = ({ urlImage }: {
 
     container.style.transform = `rotateX(${-ay}deg) rotateY(${ax}deg)`;
 
-    // Remove the shine effect entirely
-    shine.style.backgroundImage = 'none';
+    const xPercentage = (mouseX / w) * 100;
+    const yPercentage = (mouseY / h) * 100;
+    shine.style.backgroundImage = `linear-gradient(${angle}deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 80%)`;
+    shine.style.backgroundPosition = `${xPercentage}% ${yPercentage}%`;
   }, [mousePosition]);
 
   return (
-    <div className="page-container w-full">
+    <div className="page-container w-full px-4">
       <div
         ref={containerRef}
-        className="effect3d__container moveable-3d relative h-[250px] w-full md:h-[60vh] lg:h-[78vh] md:w-[800px] lg:w-[1300px] 
-            overflow-hidden z-10 rounded-xl border-[6px] border-gray-800"
+        className="relative w-full max-w-[1300px] aspect-[16/9] mx-auto overflow-hidden border-4 
+        border-gray-800 rounded-xl shadow-xl transition-transform duration-100 ease-out effect3d__container"
       >
         <div
           ref={shineRef}
-          className="effect3d--shine absolute top-0 left-0 right-0 bottom-0 z-10"
+          className="absolute inset-0 z-10 pointer-events-none rounded-xl effect3d--shine"
         />
         <Image
           src={urlImage}
           alt="testimonial overall"
           fill
           quality={100}
-          className="absolute h-full w-full object-cover lg:object-contain z-0"
+          className="object-cover z-0 rounded-xl"
           style={{
             transformStyle: 'preserve-3d',
-            transform: 'translateZ(-1px)'
+            transform: 'translateZ(-1px)',
           }}
         />
       </div>
