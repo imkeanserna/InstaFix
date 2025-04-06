@@ -187,10 +187,10 @@ export const PostCard = memo(function PostCard({
   );
 
   const handleClick = useCallback(() => {
-    if (!isImageLoading && !isAvatarLoading) {
+    if (!isImageLoading && !isAvatarLoading || (isFeatured && !isImageLoading)) {
       router.push(`/find/${post.user.name}/${post.title}/${post.id}`);
     }
-  }, [isImageLoading, isAvatarLoading, router, post.user.name, post.title, post.id]);
+  }, [isImageLoading, isAvatarLoading, router, post.user.name, post.title, post.id, isFeatured]);
 
   return (
     <div className="h-full group cursor-pointer transition-all duration-200 hover:translate-y-[-4px] active:scale-[0.98]"

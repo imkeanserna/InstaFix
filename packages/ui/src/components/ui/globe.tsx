@@ -19,7 +19,7 @@ const GLOBE_CONFIG: Omit<COBEOptions, 'markers'> = {
   onRender: () => { },
   devicePixelRatio: 2,
   phi: 0,
-  theta: 0,
+  theta: 0.2,
   dark: 0,
   diffuse: 0.4,
   mapSamples: 16000,
