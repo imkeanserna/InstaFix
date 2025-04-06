@@ -16,6 +16,7 @@ import { formatPrice } from "@/lib/postUtils";
 import { useLike } from "@/hooks/posts/useLike";
 import { LoadingSpinnerMore } from "@repo/ui/components/ui/loading-spinner-more";
 import { Currency, useCurrency } from "@/hooks/useCurrency";
+import { NoPostFound } from "./noPostFound";
 
 interface PostsGridProps {
   postsData: InfiniteData<PostPage> | undefined
@@ -103,8 +104,8 @@ export const PostsGrid = memo(function PostsGrid({
   }
 
   if (allPosts.length === 0) {
-    return <div className="text-center p-8 text-gray-500">
-      No posts found
+    return <div className="pt-8 md:pt-10">
+      <NoPostFound />
     </div>
   }
 

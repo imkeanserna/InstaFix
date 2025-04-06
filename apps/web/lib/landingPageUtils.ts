@@ -215,3 +215,14 @@ export const NOT_FOUND_PAGE = {
     ],
   },
 };
+
+export const LOCATIONSMARKERS = [
+  { location: [14.5995, 120.9842], size: 0.1 }, // Philippines (Manila)
+  { location: [10.3157, 123.8854], size: 0.07 }, // Cebu, Visayas
+  { location: [7.1907, 125.4553], size: 0.1 },
+  { location: [19.076, 72.8777], size: 0.03 },  // Hong Kong
+  { location: [39.9042, 116.4074], size: 0.08 }, // China (Beijing)
+  { location: [40.7128, -74.006], size: 0.1 },   // This is New York City, remove it or update to Tokyo
+  { location: [34.6937, 135.5022], size: 0.05 }, // Japan (Osaka)
+  { location: [41.0082, 28.9784], size: 0.06 },  // This is Istanbul, remove it or update to another city in Japan
+];
