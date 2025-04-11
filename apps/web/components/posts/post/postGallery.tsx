@@ -234,6 +234,8 @@ const DesktopGrid: React.FC<DesktopGridProps> = memo(({
             src={displayImages[0].url}
             alt="Main gallery image"
             className="object-cover"
+            sizes="66vw"
+            priority
             onLoadingChange={setIsImageLoading}
           />
         </div>

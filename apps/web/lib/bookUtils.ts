@@ -17,3 +17,5 @@ export const ABOUT_YOUR_SERVICE = [
 ];
 
 export const FINISH_POST_IMAGE = "/book/finish-post/create-post-finish.webp";
+
+export const TELL_ABOUT_SERVICE = "/book/about-your-service/tell-about-service.webp";

@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { TELL_ABOUT_SERVICE } from '@/lib/bookUtils';
 
 export function AboutYourService() {
   const fadeUpVariants = {
@@ -97,7 +98,7 @@ export function AboutYourService() {
             transition={{ delay: 0.4, duration: 0.6, ease: "easeOut" }}
           >
             <motion.div
-              className="absolute -inset-4 bg-gradient-to-r from-yellow-500 to-yellow-500 rounded-2xl opacity-20 blur-2xl rounded-full"
+              className="absolute -inset-4 bg-gradient-to-r from-yellow-500 to-yellow-500 opacity-20 blur-2xl rounded-full"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 0.2, scale: 1 }}
               transition={{ delay: 0.6, duration: 0.8 }}
@@ -110,7 +111,7 @@ export function AboutYourService() {
                 transition={{ delay: 0.5, duration: 0.7 }}
               >
                 <Image
-                  src="https://pub-e0bfb8aa11494284842ae2b0f72da1ef.r2.dev/overview-create-post.png"
+                  src={TELL_ABOUT_SERVICE}
                   alt="Service Preview"
                   fill
                   className="object-cover rounded-xl h-full w-full"

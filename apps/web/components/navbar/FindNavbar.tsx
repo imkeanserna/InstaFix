@@ -64,11 +64,11 @@ export function FindNavbar({ user }: { user: User | undefined }) {
 
     switch (pageType) {
       case 'specific-post':
-        extractedUsername = pathSegments[1];
+        extractedUsername = decodeURIComponent(pathSegments[1]);
         text = extractedUsername;
         break;
       case 'booking':
-        extractedUsername = pathSegments[1];
+        extractedUsername = decodeURIComponent(pathSegments[1]);
         text = `Book with ${extractedUsername}`;
         break;
       case 'messages':
