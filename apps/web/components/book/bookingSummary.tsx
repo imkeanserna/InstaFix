@@ -54,6 +54,7 @@ export const PostHeader = ({ post }: { post: PostWithUserInfo }) => (
         <div className="flex space-x-3">
           <Avatar className="h-10 w-10 border border-gray-500">
             <AvatarImage
+              className="object-cover"
               src={post.user?.image || '/default-avatar.png'}
               alt={post.user.name || 'User Avatar'}
             />

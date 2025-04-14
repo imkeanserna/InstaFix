@@ -1,7 +1,6 @@
 "use client";
 
 import { formatPrice, getPreviewPost } from "@/lib/postUtils";
-import { Button } from "@repo/ui/components/ui/button";
 import { Card, CardContent, CardFooter } from "@repo/ui/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
@@ -141,7 +140,7 @@ export function FinalSetup() {
               return (
                 <div key={title}>
                   {index === 0 && (
-                    <QRDialog qrValue={postId}>
+                    <QRDialog qrValue={`find/${post.user.name}/${post.title}/${postId}`}>
                       <NextStepCard
                         icon={Icon}
                         title={title}
