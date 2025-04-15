@@ -1,4 +1,4 @@
-import { Booking, BookingStatus, Post } from '@prisma/client/edge';
+import { AccountType, Booking, BookingStatus, Post } from '@prisma/client/edge';
 import { prisma } from '../db/index';
 import { startOfDay, endOfDay } from "date-fns";
 import { CreateBookingInput } from '../handlers/booking-manager';
@@ -101,6 +101,39 @@ export async function updateBooking({
 
     if (existingBooking.status === status) {
       throw new Error(`Booking is already in ${status} status`);
+    }
+
+    if (status === BookingStatus.CONFIRMED) {
+      const freelancer = await prisma.user.findUnique({
+        where: { id: freelancerId }
+      });
+
+      if (!freelancer) {
+        throw new Error('Freelancer not found');
+      }
+
+      // Check if freelancer has credits (unless they have premium account)
+      if (freelancer.accountType !== AccountType.PREMIUM && freelancer.credits <= 0) {
+        throw new Error('Insufficient credits to confirm this booking');
+      }
+
+      // If not premium, deduct 1 credit and record the transaction
+      if (freelancer.accountType !== AccountType.PREMIUM) {
+        await prisma.user.update({
+          where: { id: freelancerId },
+          data: {
+            credits: { decrement: 1 }
+          }
+        });
+
+        await prisma.creditTransaction.create({
+          data: {
+            userId: freelancerId,
+            amount: -1,
+            description: `Credit used for booking ${bookingId}`
+          }
+        });
+      }
     }
 
     if (status === BookingStatus.CANCELLED) {
