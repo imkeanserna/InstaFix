@@ -63,10 +63,74 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
           ? (
             <Button
               variant="ghost"
-              className="relative bg-yellow-400 hover:bg-yellow-500 flex group items-center justify-center gap-2 border border-gray-500 rounded-full py-7 px-4
+              className="relative bg-yellow-400 hover:bg-yellow-500 flex group items-center justify-center gap-2 border border-gray-500 rounded-full py-7 px-5
           transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 shadow-md"
             >
-              <p className="font-medium">{user?.name}</p>
+              <div>
+                <p className="font-medium">{user?.name}</p>
+                {user?.isFreelancer &&
+                  <div className="flex items-center justify-start gap-1 text-xs font-semibold text-gray-600">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      className="w-5 h-5"
+                    >
+                      <circle
+                        cx="8.00004"
+                        cy="7.99998"
+                        r="6.66667"
+                        fill="url(#paint0_linear_3_20)"
+                      />
+                      <circle
+                        cx="7.99996"
+                        cy="8.00002"
+                        r="5.33333"
+                        fill="url(#paint1_linear_3_20)"
+                      />
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M6.66671 5.33331H5.33337V6.66665H6V6.66667V10V11.3333H7.33333V10V6.66667V5.33333H6.66671V5.33331ZM8.66667 10H8V11.3333H8.66667C10.1394 11.3333 11.3333 10.1394 11.3333 8.66667V8C11.3333 6.52724 10.1394 5.33333 8.66667 5.33333H8V6.66667H8.66667C9.40305 6.66667 10 7.26362 10 8V8.66667C10 9.40305 9.40305 10 8.66667 10Z"
+                        fill="white"
+                      />
+                      <defs>
+                        <linearGradient
+                          id="paint0_linear_3_20"
+                          x1="8.00004"
+                          y1="1.33331"
+                          x2="8.00004"
+                          y2="14.6666"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop stopColor="#4B5563" />
+                          <stop offset="1" stopColor="#374151" />
+                        </linearGradient>
+                        <linearGradient
+                          id="paint1_linear_3_20"
+                          x1="7.99996"
+                          y1="2.66669"
+                          x2="7.99996"
+                          y2="13.3334"
+                          gradientUnits="userSpaceOnUse"
+                        >
+                          <stop stopColor="#374151" />
+                          <stop offset="1" stopColor="#4B5563" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    {user?.credits && user?.credits > 0
+                      ?
+                      <p>{user?.credits} {user?.credits > 1 ? "Credits" : "Credit"}</p>
+                      :
+                      <p>No Credits</p>
+                    }
+                  </div>
+                }
+              </div>
+
               <div className="relative">
                 <Avatar className={`h-12 w-12 border-transparent ${totalUnreadCount > 0 ? 'border-2' : 'border'} border-amber-500 transition-all`}>
                   <AvatarImage
@@ -111,23 +175,47 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
             < div className="px-4 py-4 border-b border-gray-200"
             >
               <div className="flex items-center space-x-3 text-gray-900">
-                <Avatar className="h-12 w-12 border-2 border-amber-500">
-                  <AvatarImage
-                    src={user?.image || "https://github.com/shadcn.png"}
-                    alt={user?.name || "User Profile"}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-neutral-700 text-neutral-300 group-hover:bg-amber-900/30">
-                    {user?.name!.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold transition-colors">
-                    {user?.name}
-                  </p>
-                  <p className="text-xs truncate transition-colors">
-                    {user?.email}
-                  </p>
+                <div className="flex items-start space-x-3">
+                  <Avatar className="h-12 w-12 border-2 border-amber-500">
+                    <AvatarImage
+                      src={user?.image || "https://github.com/shadcn.png"}
+                      alt={user?.name || "User Profile"}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-neutral-700 text-neutral-300 group-hover:bg-amber-900/30">
+                      {user?.name!.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold transition-colors">
+                      {user?.name}
+                    </p>
+                    <p className="text-xs truncate transition-colors">
+                      {user?.email}
+                    </p>
+                    {user?.isFreelancer && (
+                      <div className="flex items-center mt-1">
+                        {user?.accountType === "FREE" && (
+                          <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-lg font-medium flex items-center">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1"></span>
+                            Free Plan
+                          </span>
+                        )}
+                        {user?.accountType === "PRO" && (
+                          <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full font-medium flex items-center">
+                            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-1"></span>
+                            Pro Plan
+                          </span>
+                        )}
+                        {user?.accountType === "PREMIUM" && (
+                          <span className="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded-full font-medium flex items-center">
+                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mr-1"></span>
+                            Premium Plan
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <ChevronRight className="text-neutral-500 w-5 h-5 group-hover:text-amber-500 transition-colors" />
               </div>
@@ -171,9 +259,9 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user = null, pathname
                   },
                   {
                     icon: <BriefcaseBusiness className="menu-icon" />,
-                    text: 'Be a freelancer',
+                    text: (user?.isFreelancer ? 'Switch to dashboard' : 'Become a Freelancer'),
                     hoverClass: 'hover:text-amber-500',
-                    url: '/become-a-freelancer'
+                    url: (user?.isFreelancer ? '/dashboard' : '/become-a-freelancer')
                   },
                 ].map(({ icon, text, hoverClass, badge, url, badgeClass }) => (
                   <DropdownMenuItem

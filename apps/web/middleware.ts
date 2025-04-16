@@ -19,7 +19,8 @@ export default auth((req) => {
     '/messages',
     '/notifications',
     '/favorites',
-    '/profile'
+    '/profile',
+    '/dashboard'
   ];
 
   const isProtectedRoute = protectedRoutes.some(route =>
@@ -44,6 +45,10 @@ export default auth((req) => {
 });
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === '/dashboard') {
+    return NextResponse.redirect(new URL('/dashboard/all-posts', request.url));
+  }
+
   if (request.nextUrl.pathname.startsWith('/become-a-freelancer')) {
     try {
       const user = await currentUser();
@@ -63,7 +68,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const protectedPaths = ['/book', '/messages', '/notifications', '/favorites', '/profile'];
+  const protectedPaths = ['/book', '/messages', '/notifications', '/favorites', '/profile', '/dashboard'];
   const isProtectedRoute = protectedPaths.some(path =>
     request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(`${path}/`)
   );
@@ -72,11 +77,11 @@ export async function middleware(request: NextRequest) {
     try {
       const user = await currentUser();
       if (!user) {
-        return NextResponse.redirect(new URL('/auth/login', request.url));
+        return NextResponse.redirect(new URL('/find', request.url));
       }
     } catch (error) {
       console.error('[Auth Error]', error);
-      return NextResponse.redirect(new URL('/auth/login', request.url));
+      return NextResponse.redirect(new URL('/find', request.url));
     }
   }
 
@@ -157,6 +162,8 @@ const profileRoute = "/profile";
 export const config = {
   matcher: [
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/dashboard",
+    "/dashboard/:path*",
     "/become-a-freelancer/:path*",
     "/book/:path*",
     "/messages/:path*",

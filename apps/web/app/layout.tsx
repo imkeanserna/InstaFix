@@ -13,13 +13,14 @@ import { currentUser } from "@/lib";
 import { AuthModalProvider } from "@repo/ui/context/AuthModalProvider";
 import { AuthModal } from "@repo/ui/components/auth/auth-modal";
 import { NavigationBar } from "@/components/navbar/NavigationBar";
-import { Open_Sans } from "next/font/google";
 import { HomeFooter } from "@/components/home/footer";
 import { NotFoundProvider } from "@/context/NotFoundContext";
+import { Inter } from "next/font/google";
 
-const openSans = Open_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: '--font-open-sans'
+  variable: '--font-inter',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -53,7 +54,7 @@ export default async function RootLayout({
   const user = await currentUser();
   return (
     <html lang="en" className="text-black dark:text-white">
-      <body className={openSans.className}>
+      <body className={inter.className}>
         <ThemeProvider>
           <AuthModalProvider>
             <AuthProvider>

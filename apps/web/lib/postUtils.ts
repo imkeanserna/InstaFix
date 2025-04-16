@@ -1,5 +1,13 @@
 import { Post } from "@prisma/client/edge";
-import { ResponseDataWithCursor, ResponseDataWithLocationAndCursor, GetPostsResponse, SearchWithPaginationOptions, DynamicPostWithIncludes, StaticPostWithIncludesWithHighlights, PostWithUserInfo } from "@repo/types";
+import {
+  ResponseDataWithCursor,
+  ResponseDataWithLocationAndCursor,
+  GetPostsResponse,
+  SearchWithPaginationOptions,
+  DynamicPostWithIncludes,
+  StaticPostWithIncludesWithHighlights,
+  PostWithUserInfo
+} from "@repo/types";
 
 type PostResponse = {
   success: boolean;
@@ -297,6 +305,44 @@ export async function getPostDynamic({ postId }: { postId: string }) {
 
     if (!result.success) {
       throw new Error(result.error || 'Failed to get response from chat AI');
+    }
+
+    return result.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+type GetPostsByUserId = {
+  success: boolean;
+  data: PostWithUserInfo[];
+  error?: string;
+}
+
+export async function getPostsByUserId({
+  userId,
+}: {
+  userId: string;
+}) {
+  try {
+    if (!userId) {
+      throw new Error('user id is required');
+    }
+
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/user/${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result: GetPostsByUserId = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to get posts by user id');
     }
 
     return result.data;

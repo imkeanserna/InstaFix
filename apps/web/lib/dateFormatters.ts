@@ -16,6 +16,15 @@ export const getTimeAgo = (date: Date) => {
   }).replace('about', '');
 };
 
+export const formateDatePosts = (dateString: string | Date) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
 export const getFormattedTime = (date: Date): string => {
   const now = new Date();
 

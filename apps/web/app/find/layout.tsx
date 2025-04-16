@@ -1,4 +1,11 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: "Instafix | Find for experts, freelancers, & more",
@@ -11,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="px-0 sm:px-6 lg:px-24 min-h-screen">
+    <div className={`${inter.className} px-0 sm:px-6 lg:px-24 min-h-screen`}>
       {children}
     </div>
   );

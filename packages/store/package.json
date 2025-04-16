@@ -11,7 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "recoil-persist": "^5.1.0"
   },
   "exports": {
     ".": "./src/atoms/index.ts"

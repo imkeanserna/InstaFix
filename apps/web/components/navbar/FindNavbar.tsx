@@ -42,6 +42,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
     BOOK: '/book/',
     AUTH: '/auth',
     BECOME_FREELANCER: '/become-a-freelancer',
+    DASHBOARD: '/dashboard',
     HOME: '/'
   };
 
@@ -95,6 +96,7 @@ export function FindNavbar({ user }: { user: User | undefined }) {
 
   const shouldHideNavbar = useMemo(() => {
     return pathname.includes(ROUTES.BECOME_FREELANCER) ||
+      pathname.includes(ROUTES.DASHBOARD) ||
       pathname.includes(ROUTES.AUTH) ||
       pathname === ROUTES.HOME ||
       (pathname.includes(ROUTES.BOOK) && !isMobile) ||

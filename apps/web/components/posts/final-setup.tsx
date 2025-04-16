@@ -81,7 +81,7 @@ export function FinalSetup() {
       title: "Set your availability",
       description: "Choose which dates your space is available",
       onClick: () => {
-        /* Add calendar navigation */
+        router.push("/dashboard");
       },
     },
     {
@@ -89,7 +89,7 @@ export function FinalSetup() {
       title: "Adjust your settings",
       description: "Update pricing, house rules, and booking requirements",
       onClick: () => {
-        /* Add settings navigation */
+        router.push("/dashboard");
       },
     },
   ];

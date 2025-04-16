@@ -4,7 +4,7 @@ import { useNotificationCard, useNotifications } from "@/hooks/notification/useN
 import { MessageType, NotificationType, TypeBookingNotification } from "@repo/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar";
 import { Button } from "@repo/ui/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ArrowUpRight, ChevronLeft } from "lucide-react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { BookingActionData, useBookingMessage } from "@/hooks/useBooking";
 import { BookingEventType, BookingStatus } from "@prisma/client/edge";
@@ -24,12 +24,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/ui/components/ui/dialog";
+import Link from "next/link";
 
 export function Notifications() {
   const router = useRouter();
   const { notificationState, addNotification, error, isLoading } = useNotifications();
   const { lastMessage, clearMessage } = useWebSocket();
   const { data: session, status } = useSession();
+
+  const hasCreditsOrPremium = (
+    session?.user?.accountType === "PREMIUM" ||
+    (session?.user?.credits && session?.user?.credits > 0)
+  ) || false;
 
   useBookingMessage({
     lastMessage,
@@ -78,6 +84,7 @@ export function Notifications() {
         <div className="space-y-2 md:space-y-6">
           {notificationState.notifications.map((notification: TypeBookingNotification) => (
             <NotificationCard
+              hasCreditsOrPremium={hasCreditsOrPremium}
               key={notification.id}
               notification={notification}
               user={session?.user as User}
@@ -241,11 +248,13 @@ export const getStatusBadge = (status: BookingStatus) => {
 };
 
 interface NotificationCardProps {
+  hasCreditsOrPremium: boolean;
   notification: TypeBookingNotification;
   user: User
 }
 
 export function NotificationCard({
+  hasCreditsOrPremium,
   notification,
   user
 }: NotificationCardProps) {
@@ -332,15 +341,36 @@ export function NotificationCard({
                   className={"p-6"}
                   bookingEventType={BookingEventType.DECLINED}
                 />
-                <BookingActionButton
-                  bookingId={notification.booking.id}
-                  clientId={notification.booking.client.id}
-                  freelancerId={notification.booking.freelancer.id}
-                  handleAction={handleAction}
-                  isActionLoading={isActionLoading}
-                  className={"p-6"}
-                  bookingEventType={BookingEventType.CONFIRMED}
-                />
+
+                {hasCreditsOrPremium ? (
+                  <BookingActionButton
+                    bookingId={notification.booking.id}
+                    clientId={notification.booking.client.id}
+                    freelancerId={notification.booking.freelancer.id}
+                    handleAction={handleAction}
+                    isActionLoading={isActionLoading}
+                    className={"p-6"}
+                    bookingEventType={BookingEventType.CONFIRMED}
+                  />
+                ) : (
+                  <Link href="/dashboard/subscription" passHref className="pt-2">
+                    <Button
+                      className="py-6 px-4 group text-gray-900 flex items-center justify-between border border-gray-300 gap-4 rounded-xl bg-gradient-to-r bg-amber-500 hover:bg-amber-500 relative overflow-hidden active:scale-[0.99]"
+                    >
+                      <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-amber-200/30 to-transparent"></div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-medium">Upgrade to</span>
+                        <span className="rounded-md bg-white px-1 py-0.5 text-xs font-bold text-gray-950">
+                          PRO
+                        </span>
+                      </div>
+                      {/* Hover animated arrow */}
+                      <span className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">
+                        <ArrowUpRight className="h-4 w-4 text-gray-800" />
+                      </span>
+                    </Button>
+                  </Link>
+                )}
               </div>
             )}
           </div>

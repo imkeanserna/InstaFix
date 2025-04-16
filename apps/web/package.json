@@ -26,10 +26,11 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@huggingface/inference": "^2.8.1",
     "@repo/db": "workspace:*",
+    "@repo/services": "workspace:*",
     "@repo/store": "workspace:*",
     "@repo/types": "workspace:*",
-    "@repo/services": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@stripe/stripe-js": "^7.0.0",
     "@tanstack/query-sync-storage-persister": "^5.62.12",
     "@tanstack/react-query": "^5.62.11",
     "@tanstack/react-query-persist-client": "^5.62.12",
@@ -42,6 +43,7 @@
     "react": "^18",
     "react-confetti": "^6.2.2",
     "react-dom": "^18",
+    "stripe": "^18.0.0",
     "uuid": "^11.0.3"
   },
   "devDependencies": {

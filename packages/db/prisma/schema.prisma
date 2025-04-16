@@ -21,6 +21,9 @@ model User {
   name                 String?
   password             String?
   image                String?
+  accountType          AccountType           @default(FREE)
+  credits              Int                   @default(2)
+  lastCreditReset      DateTime              @default(now())
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   location             Location?             @relation(fields: [locationId], references: [id])
@@ -29,6 +32,7 @@ model User {
   payments             Payment[]
   payouts              Payout[]
   transactions         Transaction[]
+  creditTransactions   CreditTransaction[]
   reviews              Review[]
   clientBookings       Booking[]             @relation("ClientBookings")
   freelancerBookings   Booking[]             @relation("FreelancerBookings")
@@ -37,6 +41,15 @@ model User {
   participants         Participant[]
   chatMessages         ChatMessage[]
   deletedMessages      DeletedMessage[]
+}
+
+model CreditTransaction {
+  id          String   @id @default(cuid())
+  amount      Int
+  description String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 }
 
 model Post {
@@ -455,4 +468,10 @@ enum ChatEventType {
   DELETED
   START_CONVERSATION
   CONVERSATION_CREATED
+}
+
+enum AccountType {
+  FREE
+  PRO
+  PREMIUM
 }

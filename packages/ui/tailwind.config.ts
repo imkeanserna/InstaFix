@@ -111,7 +111,10 @@ const config = {
             opacity: '1',
             transform: 'translateY(0)'
           }
-        }
+        },
+        'shimmer': {
+          '100%': { transform: 'translateX(100%)' },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -121,7 +124,8 @@ const config = {
         "background-size": "200% 200%",
         "animation": "gradient-x 15s ease infinite",
         'scroll-left': 'scrollLeft 10s linear infinite',
-        'scroll-right': 'scrollRight 10s linear infinite'
+        'scroll-right': 'scrollRight 10s linear infinite',
+        'shimmer': 'shimmer 2s infinite'
       },
     },
   },

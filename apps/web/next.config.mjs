@@ -13,7 +13,8 @@ const nextConfig = {
   env: {
     NEXT_BACKEND_URL: process.env.NEXT_BACKEND_URL,
     MAPTILER_API_KEY: process.env.MAPTILER_API_KEY,
-    SOCKET_SERVER_URL: process.env.SOCKET_SERVER_URL
+    SOCKET_SERVER_URL: process.env.SOCKET_SERVER_URL,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
     // Add other environment variables here as needed
   },
   images: {
