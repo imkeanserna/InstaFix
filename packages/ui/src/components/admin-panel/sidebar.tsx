@@ -24,10 +24,10 @@ export function Sidebar() {
       )}
     >
       <SidebarToggle isOpen={sidebar.isOpen} setIsOpen={sidebar.setIsOpen} />
-      <div className="relative h-full flex flex-col px-0 py-4 overflow-y-auto shadow-md dark:shadow-zinc-800 mt-4">
+      <div className="relative h-full flex flex-col px-0 py-4 overflow-y-auto shadow-md dark:shadow-zinc-800">
         <Button
           className={cn(
-            "transition-transform ease-in-out duration-300 mb-1",
+            "transition-transform ease-in-out duration-300 mb-1 mt-4",
             sidebar.isOpen === false ? "translate-x-1" : "translate-x-0"
           )}
           variant="link"

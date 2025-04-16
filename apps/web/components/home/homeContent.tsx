@@ -19,6 +19,7 @@ import { ScrollingText } from "../ui/scrollingText";
 import { HomeFooter } from "./footer";
 import { useRouter } from "next/navigation";
 import { useMediaQuery } from "@/hooks/useMedia";
+import { motion, useInView } from "framer-motion";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
@@ -156,36 +157,67 @@ export function DiscoverComponent({
 }
 
 export function ShowMobileContent() {
+  const sectionRef = useRef(null);
+  const contentRef = useRef(null);
+  const isContentInView = useInView(contentRef, { once: true, amount: 0.2 });
+
   return (
-    <div className={`h-full w-full relative mt-32 md:mt-60 mb-0 gap-4 md:gap-8 lg:gap-36 grid grid-cols-1 
+    <div
+      ref={sectionRef}
+      className={`h-full w-full relative mt-32 md:mt-60 mb-0 gap-4 md:gap-8 lg:gap-36 grid grid-cols-1 
           md:grid-cols-2 px-4 md:px-12 lg:px-48 ${openSans.className}`}
     >
-      <div className="flex flex-col space-y-8 mb-4 md:mb-16">
-        <h1 className="text-center md:text-start text-[2.2rem] md:text-5xl font-bold leading-[1.3] whitespace-normal md:whitespace-nowrap">
+      <motion.div
+        ref={contentRef}
+        initial={{ opacity: 0, y: 50 }}
+        animate={isContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        transition={{ duration: 0.7, staggerChildren: 0.2 }}
+        className="flex flex-col space-y-8 mb-4 md:mb-16"
+      >
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={isContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-center md:text-start text-[2.2rem] md:text-5xl font-bold leading-[1.3] whitespace-normal md:whitespace-nowrap"
+        >
           {MOBILE_SECTION.title.main}{" "}
           <span className="italic">
             {MOBILE_SECTION.title.highlighted}
           </span>
-        </h1>
-        <p className="text-sm md:text-base lg:text-lg leading-[1.8] md:leading-8 w-full lg:w-3/4 text-gray-700 text-center md:text-start">
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={isContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="text-sm md:text-base lg:text-lg leading-[1.8] md:leading-8 w-full lg:w-3/4 text-gray-700 text-center md:text-start"
+        >
           {MOBILE_SECTION.description}
-        </p>
+        </motion.p>
         <div className="flex flex-col space-y-6 md:space-y-4">
           {MOBILE_SECTION.features.map((feature, index) => (
-            <div key={index} className="flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-start">
-              <div className="h-8 w-8 flex-shrink-0 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 
-                to-amber-500 flex items-center justify-center"
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={isContentInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+              transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
+              className="flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-start"
+            >
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="h-8 w-8 flex-shrink-0 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 
+                  to-amber-500 flex items-center justify-center"
               >
                 <Check className="text-white w-6 h-6 opacity-70" strokeWidth={5} />
-              </div>
+              </motion.div>
               <div className="w-full space-y-3">
                 <p className="text-lg font-bold">{feature.title}</p>
                 <p className="text-sm md:text-base lg:text-lg leading-[1.8] text-gray-800">{feature.description}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
+
       <div className="w-full flex justify-center md:justify-start">
         <Image
           src={MOBILE_SECTION.mobileImage}
@@ -268,6 +300,61 @@ export function IntroductionAI() {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const chatSectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(chatSectionRef, {
+    once: true,
+    amount: 0.2
+  });
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.3,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const messageVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const requestCardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+        delay: AI_MESSAGES.length * 0.3 + 0.2
+      }
+    }
+  };
+
+  const headingVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        ease: "easeOut"
+      }
+    }
+  };
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (containerRef.current) {
@@ -329,70 +416,100 @@ export function IntroductionAI() {
             )}
           </h1>
         </div>
-        <div
+        <motion.div
           className="font-bold block md:hidden text-center text-white text-[1.9rem] leading-[1.3]"
           dangerouslySetInnerHTML={{ __html: HEADING_AI_SECTION.mobileHeading }}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          variants={headingVariants}
         />
-        <div className="">
-          <div className="max-w-4xl mx-auto rounded-xl p-0 md:p-6 space-y-6">
-            <div className="space-y-6">
+
+        <div ref={chatSectionRef}>
+          <motion.div
+            className="max-w-4xl mx-auto rounded-xl p-0 md:p-6 space-y-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+          >
+            <motion.div className="space-y-6" variants={containerVariants}>
               {AI_MESSAGES.map((message, index) => (
-                <div
+                <motion.div
                   key={index}
+                  variants={messageVariants}
                   className={`flex items-end gap-1 space-x-2 ${message.sender === 'AI' ? 'flex-row' : 'flex-row-reverse'}`}
                 >
                   {message.sender === 'AI' ? (
-                    <div className="ps-1 relative">
+                    <motion.div
+                      className="ps-1 relative"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.3 + 0.2 }}
+                    >
                       <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 
-                          rounded-full blur opacity-75 group-hover:opacity-100 transition duration-200"
+                      rounded-full blur opacity-75 group-hover:opacity-100 transition duration-200"
                       />
                       <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-yellow-500 
-                            via-yellow-600 to-yellow-700 flex items-center justify-center ring-1 ring-violet-500/50 shadow-sm"
+                        via-yellow-600 to-yellow-700 flex items-center justify-center ring-1 ring-violet-500/50 shadow-sm"
                       >
                         <div className="text-sm font-medium text-white/90 select-none">
                           AI
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ) : (
-                    <div className="ps-1 relative">
+                    <motion.div
+                      className="ps-1 relative"
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={isInView ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.3 + 0.2 }}
+                    >
                       <div className="relative w-6 h-6 rounded-full flex items-center justify-center ring-1 ring-gray-500/50">
                         <User className="w-4 h-4 text-white" />
                       </div>
-                    </div>
+                    </motion.div>
                   )}
-                  <div
+                  <motion.div
+                    initial={{ opacity: 0, x: message.sender === "AI" ? -20 : 20 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: message.sender === "AI" ? -20 : 20 }}
+                    transition={{ duration: 0.5, delay: index * 0.3 }}
                     className={`px-6 py-4 text-white max-w-full leading-8 tracking-wide border border-gray-200/10 
                       ${message.sender === "AI"
                         ? `rounded-tl-3xl rounded-br-3xl rounded-tr-3xl bg-gray-800`
                         : `rounded-tr-3xl md:rounded-tr-full rounded-tl-3xl md:rounded-tl-full 
-                        rounded-bl-3xl md:rounded-bl-full bg-gray-950/50 text-right`
+                          rounded-bl-3xl md:rounded-bl-full bg-gray-950/50 text-right`
                       }`
-                    }>
+                    }
+                  >
                     <p>{message.text}</p>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
               ))}
-            </div>
-            <InstafixRequestCard
-              imageUrl={FREELANCERS_IMAGE["bathroom"]}
-              title="Broken Bathroom Sink Repair"
-              category="Home Repair"
-              userAvatar={FREELANCERS_IMAGE["freelancer-man"]}
-              userName="Michael Johnson"
-              joinedDate="3 months ago"
-              isThinking={true}
-            />
-          </div>
+            </motion.div>
+            <motion.div
+              variants={requestCardVariants}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+            >
+              <InstafixRequestCard
+                imageUrl={FREELANCERS_IMAGE["bathroom"]}
+                title="Broken Bathroom Sink Repair"
+                category="Home Repair"
+                userAvatar={FREELANCERS_IMAGE["freelancer-man"]}
+                userName="Michael Johnson"
+                joinedDate="3 months ago"
+                isThinking={true}
+              />
+            </motion.div>
+          </motion.div>
         </div>
+        <div className={`mt-48 mb-6 md:mb-12 w-full ${openSans.className}`}>
+          <ScrollingText />
+        </div>
+        <HomeFooter
+          className={"px-4 md:px-12 lg:px-48 py-10 md:py-16"}
+          isHome={true}
+        />
       </div>
-      <div className={`mt-48 mb-6 md:mb-12 w-full ${openSans.className}`}>
-        <ScrollingText />
-      </div>
-      <HomeFooter
-        className={"px-4 md:px-12 lg:px-48 py-10 md:py-16"}
-        isHome={true}
-      />
     </div>
   );
 }
