@@ -5,6 +5,7 @@ import { Button } from "@repo/ui/components/ui/button";
 import { Input } from "@repo/ui/components/ui/input";
 import { Instagram, Linkedin } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
@@ -83,10 +84,14 @@ export function HomeFooter({ className, isHome }: {
       </div>
       <div className="text-white/70 space-y-0 md:space-y-6 flex flex-row md:flex-col justify-between">
         <div className="flex gap-4 items-start">
-          <Instagram className="h-5 w-5 cursor-pointer hover:text-white" />
-          <div className="p-[0.8px] bg-white/70">
-            <Linkedin className="h-4 w-4 fill-gray-900 bg-white/70 text-gray-900 stroke-[0.5] cursor-pointer hover:bg-white" />
-          </div>
+          <Link href="https://instagram.com/instafix" target="_blank" rel="noopener noreferrer">
+            <Instagram className="h-5 w-5 cursor-pointer hover:text-white" />
+          </Link>
+          <Link href="https://www.linkedin.com/company/instafix-pro" target="_blank" rel="noopener noreferrer">
+            <div className="p-[0.8px] bg-white/70">
+              <Linkedin className="h-4 w-4 fill-gray-900 bg-white/70 text-gray-900 stroke-[0.5] cursor-pointer hover:bg-white" />
+            </div>
+          </Link>
         </div>
         <p>© 2025 Instafix. All Rights Reserved.</p>
       </div>
