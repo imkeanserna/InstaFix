@@ -6,6 +6,7 @@ import { Button } from "@repo/ui/components/ui/button";
 import Image from "next/image";
 import {
   AI_MESSAGES,
+  CALLTOACTION,
   DISCOVER_SECTION,
   FREELANCERS_IMAGE,
   HEADING_AI_SECTION,
@@ -37,6 +38,7 @@ export default function HomeContent() {
     <div>
       <HeroSection handleClickButton={handleClickButton} />
       <DiscoverComponent handleClickButton={handleClickButton} />
+      <InstafixHeroCTA handleClickButton={handleClickButton} />
       <ShowMobileContent />
       <IntroductionAI />
     </div >
@@ -164,69 +166,69 @@ export function ShowMobileContent() {
   return (
     <div
       ref={sectionRef}
-      className={`h-full w-full relative mt-32 md:mt-60 mb-0 gap-4 md:gap-8 lg:gap-36 grid grid-cols-1 
-          md:grid-cols-2 px-4 md:px-12 lg:px-48 ${openSans.className}`}
+      className={`h-full w-full relative mt-32 md:mt-[200px] lg:mt-[650px] mb-0 md:mb-10 flex items-center justify-center px-4 md:px-12 lg:px-48 ${openSans.className}`}
     >
-      <motion.div
-        ref={contentRef}
-        initial={{ opacity: 0, y: 50 }}
-        animate={isContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-        transition={{ duration: 0.7, staggerChildren: 0.2 }}
-        className="flex flex-col space-y-8 mb-4 md:mb-16"
-      >
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={isContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-center md:text-start text-[2.2rem] md:text-5xl font-bold leading-[1.3] whitespace-normal md:whitespace-nowrap"
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 lg:gap-0 max-w-6xl mx-auto relative">
+        <motion.div
+          ref={contentRef}
+          initial={{ opacity: 0, y: 50 }}
+          animate={isContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.7, staggerChildren: 0.2 }}
+          className="flex flex-col space-y-8 mb-4 md:mb-16 items-center md:items-start"
         >
-          {MOBILE_SECTION.title.main}{" "}
-          <span className="italic">
-            {MOBILE_SECTION.title.highlighted}
-          </span>
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={isContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-sm md:text-base lg:text-lg leading-[1.8] md:leading-8 w-full lg:w-3/4 text-gray-700 text-center md:text-start"
-        >
-          {MOBILE_SECTION.description}
-        </motion.p>
-        <div className="flex flex-col space-y-6 md:space-y-4">
-          {MOBILE_SECTION.features.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={isContentInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-              transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
-              className="flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-start"
-            >
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={isContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-center md:text-start text-[2.2rem] md:text-5xl font-bold leading-[1.3] whitespace-normal md:whitespace-nowrap"
+          >
+            {MOBILE_SECTION.title.main}{" "}
+            <span className="italic">
+              {MOBILE_SECTION.title.highlighted}
+            </span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={isContentInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-sm md:text-base lg:text-lg leading-[1.8] md:leading-8 w-full lg:w-3/4 text-gray-700 text-center md:text-start"
+          >
+            {MOBILE_SECTION.description}
+          </motion.p>
+          <div className="flex flex-col space-y-6 md:space-y-4 w-full">
+            {MOBILE_SECTION.features.map((feature, index) => (
               <motion.div
-                whileHover={{ scale: 1.1 }}
-                className="h-8 w-8 flex-shrink-0 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 
-                  to-amber-500 flex items-center justify-center"
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={isContentInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+                transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
+                className="flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-start"
               >
-                <Check className="text-white w-6 h-6 opacity-70" strokeWidth={5} />
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  className="h-8 w-8 flex-shrink-0 rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 
+                    to-amber-500 flex items-center justify-center"
+                >
+                  <Check className="text-white w-6 h-6 opacity-70" strokeWidth={5} />
+                </motion.div>
+                <div className="w-full space-y-3">
+                  <p className="text-lg font-bold">{feature.title}</p>
+                  <p className="text-sm md:text-base lg:text-lg leading-[1.8] text-gray-800">{feature.description}</p>
+                </div>
               </motion.div>
-              <div className="w-full space-y-3">
-                <p className="text-lg font-bold">{feature.title}</p>
-                <p className="text-sm md:text-base lg:text-lg leading-[1.8] text-gray-800">{feature.description}</p>
-              </div>
-            </motion.div>
-          ))}
+            ))}
+          </div>
+        </motion.div>
+        <div className="w-full flex justify-center items-center">
+          <Image
+            src={MOBILE_SECTION.mobileImage}
+            alt="Living Room Background"
+            width={700}
+            height={1200}
+            quality={100}
+            className={`h-auto w-48 md:w-72 lg:w-96 object-cover block md:absolute md:top-10 lg:-top-44 lg:-right-16 -rotate-12`}
+          />
         </div>
-      </motion.div>
-
-      <div className="w-full flex justify-center md:justify-start">
-        <Image
-          src={MOBILE_SECTION.mobileImage}
-          alt="Living Room Background"
-          width={700}
-          height={1200}
-          quality={100}
-          className={`h-auto w-48 md:w-96 object-cover block md:absolute md:-top-52 -rotate-12`}
-        />
       </div>
     </div>
   );
@@ -510,6 +512,134 @@ export function IntroductionAI() {
           isHome={true}
         />
       </div>
+    </div>
+  );
+}
+
+export function InstafixHeroCTA({
+  handleClickButton
+}: {
+  handleClickButton: () => void;
+}) {
+  const { config } = CALLTOACTION;
+  const titleParts = config.title.split('Instafix');
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { once: true, amount: 0.3 });
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const childVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" }
+    }
+  };
+
+  const imageVariants = {
+    hidden: { opacity: 0, scale: 0.8, rotate: -5 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      rotate: 0,
+      transition: { duration: 0.8, ease: "easeOut", delay: 0.3 }
+    }
+  };
+
+  return (
+    <div className="w-full px-4 md:px-12 lg:px-48" ref={containerRef}>
+      <motion.div
+        className="h-[600px] rounded-3xl relative bg-yellow-500"
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
+        variants={containerVariants}
+      >
+        <div className="absolute top-28 inset-0 flex lg:items-start justify-center text-center lg:text-start">
+          <div className="flex gap-32 justify-between">
+            <motion.div
+              className="w-[400px] relative hidden lg:block"
+              variants={imageVariants}
+            >
+              {/* Circle glow effect behind the image */}
+              <div className="absolute -left-16 top-20 inset-0 h-[500px] w-[500px] rounded-full bg-yellow-700 blur-2xl opacity-50 z-10 transform scale-110"></div>
+              {/* Image container with position relative to contain the overlay */}
+              <div className="relative z-20">
+                {/* Skeleton loading overlay */}
+                {!imageLoaded && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-600 via-yellow-800 to-gray-900 rounded-[30px] z-20 overflow-hidden animate-pulse">
+                  </div>
+                )}
+                {/* Main image with right-click protection */}
+                <div onContextMenu={(e) => e.preventDefault()}>
+                  <Image
+                    src={config.callToImage}
+                    alt="Living Room Background"
+                    width={700}
+                    height={1200}
+                    quality={100}
+                    className={`h-auto w-full object-cover rounded-[30px] shadow-2xl border-8 border-gray-950
+                    ${!imageLoaded ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+                    onLoad={() => setImageLoaded(true)}
+                    unoptimized={true}
+                    priority
+                  />
+                </div>
+              </div>
+            </motion.div>
+            <div className="max-w-xl space-y-11 p-16 md:p-0">
+              <motion.h1
+                className="text-3xl md:text-6xl font-bold text-gray-950 flex gap-4 justify-center md:justify-start"
+                variants={childVariants}
+              >
+                {titleParts[0]}
+                <span className="text-white inline-block transform -skew-x-12">
+                  Insta
+                  <span
+                    className={`
+                    bg-yellow-400 px-1 rounded-lg text-gray-900 relative 
+                    inline-block transform transition-all duration-500
+                    skew-x-12 ms-1 group-hover:ms-0 -rotate-12 group-hover:rotate-0 
+                    translate-y-0 group-hover:translate-y-0
+                `}
+                  >
+                    {/* Nail dot in the top right */}
+                    <span className="absolute -top-1 -right-1 h-[6px] w-[6px] bg-gray-500 rounded-full shadow-sm"></span>
+                    fix
+                  </span>
+                </span>
+              </motion.h1>
+
+              <motion.p
+                className="text-lg md:text-xl md:leading-9 text-gray-950"
+                variants={childVariants}
+              >
+                {config.description}
+              </motion.p>
+
+              <motion.div variants={childVariants}>
+                <Button
+                  onClick={handleClickButton}
+                  className="py-8 px-12 text-lg font-bold rounded-full bg-yellow-600 hover:bg-gray-50 border-2 border-yellow-600 text-white hover:text-yellow-600 active:scale-[0.99]"
+                >
+                  {config.buttonText}
+                </Button>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

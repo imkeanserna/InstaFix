@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Check, Copy, Facebook, Mail, Share2, Twitter } from 'lucide-react'
 import { Button } from "@repo/ui/components/ui/button"
@@ -22,8 +22,23 @@ interface QRDialogProps {
 export function QRDialog({ qrValue, children }: QRDialogProps) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
-  const postUrl = `${process.env.NEXT_BACKEND_URL}/post/${qrValue}`;
+  const [hashedValue, setHashedValue] = useState("")
+  const postUrl = `${process.env.NEXT_BACKEND_URL}/${qrValue}`;
   const postTitle = "Check out my post!";
+
+  useEffect(() => {
+    const generateBcryptLikeHash = (input: string) => {
+      const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+      let result = '$2b$10$';
+      const seed = input.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+      for (let i = 0; i < 22; i++) {
+        const index = (seed * (i + 1)) % base64Chars.length;
+        result += base64Chars[index];
+      }
+      return result;
+    };
+    setHashedValue(generateBcryptLikeHash(qrValue));
+  }, [qrValue]);
 
   const copyToClipboard = async () => {
     try {
@@ -45,6 +60,16 @@ export function QRDialog({ qrValue, children }: QRDialogProps) {
   const handleShare = (platform: string) => {
     const url = shareLinks[platform as keyof typeof shareLinks];
     window.open(url, '_blank', 'width=600,height=400');
+  };
+
+  const preventRightClick = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    return false;
+  };
+
+  const preventSelection = (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    return false;
   };
 
   const canUseNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
@@ -77,9 +102,12 @@ export function QRDialog({ qrValue, children }: QRDialogProps) {
 
           <div className="flex w-full items-center space-x-2">
             <input
-              className="flex-1 px-3 py-2 text-sm border rounded-md"
-              value={qrValue}
+              className="flex-1 px-3 py-2 text-sm border rounded-md user-select-none"
+              value={hashedValue}
               readOnly
+              onContextMenu={preventRightClick}
+              onMouseDown={preventSelection}
+              style={{ userSelect: 'none' }}
             />
             <Button size="sm" onClick={copyToClipboard} variant="outline">
               {copied ? (
