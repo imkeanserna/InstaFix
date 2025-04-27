@@ -1,6 +1,6 @@
 import NotFound from "@/app/not-found";
 import { HomeFooter } from "@/components/home/footer";
-import { DiscoverComponent } from "@/components/home/homeContent";
+import { DiscoverComponent, InstafixHeroCTA } from "@/components/home/homeContent";
 
 export const LOGO = {
   "black-logo": "/nav-bar/instafix-logo-black.svg",
@@ -163,6 +163,16 @@ export const DISCOVER_SECTION = {
     ]
   }
 };
+
+export const CALLTOACTION = {
+  component: InstafixHeroCTA,
+  config: {
+    title: 'Be Part of Instafix',
+    description: 'Find top freelancers, post your projects, and get matched instantly. Work on your schedule, hire with confidence, and fuel your success with Instafix.',
+    callToImage: '/home-page/call-to-action/home-camera-detection.gif',
+    buttonText: 'Get Started Instafix Now',
+  }
+}
 
 export const FOOTER_SECTION = {
   component: HomeFooter,
