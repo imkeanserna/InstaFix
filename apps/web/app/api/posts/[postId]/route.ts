@@ -102,6 +102,10 @@ export async function DELETE(
         mediaUrls.push(post.coverPhoto);
       }
 
+      await tx.media.deleteMany({
+        where: { postId: post.id }
+      });
+
       await tx.post.delete({
         where: { id: post.id }
       });

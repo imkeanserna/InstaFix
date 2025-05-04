@@ -1,4 +1,4 @@
-import { Like, Prisma, Review } from "@prisma/client/edge";
+import { Like, Prisma, Review, ServiceEngagement } from "@prisma/client/edge";
 import {
   EngagementType,
   Location,
@@ -64,9 +64,17 @@ export type UpdatePostData = {
   pricing: PostPricing;
 }
 
+export type UpdatePostByUserData = UpdatePostData & {
+  deleteImages: {
+    imageIds: string[]
+  }
+}
+
 export type PostWithUserInfo = Post & {
   location: Location | null;
   media: Media[];
+  tags?: PostWithTag[];
+  serviceEngagement?: ServiceEngagement[];
   reviews: {
     rating: number;
     createdAt: Date;
