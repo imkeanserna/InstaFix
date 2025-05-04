@@ -297,10 +297,29 @@ export async function draftPost(userId: string) {
 }
 
 export async function validatePostOwnership(postId: string, userId: string) {
-  const post = await prisma.post.findFirst({
+  const post: PostWithUserInfo | null = await prisma.post.findFirst({
     where: {
       id: postId,
       userId
+    },
+    include: {
+      media: true,
+      tags: true,
+      serviceEngagement: true,
+      location: true,
+      user: {
+        select: {
+          name: true,
+          image: true
+        }
+      },
+      likes: true,
+      reviews: {
+        select: {
+          rating: true,
+          createdAt: true
+        }
+      }
     }
   });
 
