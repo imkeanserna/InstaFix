@@ -245,6 +245,42 @@ export async function getPost({ postId }: { postId: string }) {
   }
 }
 
+type DeletePostResponseById = {
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
+export async function deletePost({ postId }: { postId: string }) {
+  try {
+    if (!postId) {
+      throw new Error('Post ID is required');
+    }
+
+    const response = await fetch(`${process.env.NEXT_BACKEND_URL}/api/posts/${postId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete post. status: ${response.status}`);
+    }
+
+    const result: DeletePostResponseById = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to delete post');
+    }
+
+    return result.message;
+  } catch (error) {
+    return null;
+  }
+}
+
 type StaticPostResponse = {
   success: boolean;
   data: StaticPostWithIncludesWithHighlights;

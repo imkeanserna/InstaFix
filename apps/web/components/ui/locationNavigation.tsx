@@ -179,8 +179,8 @@ export default function LocationNavigation({
       let address: string;
 
       if (storedLocation) {
-        center = { lat: storedLocation.lat, lng: storedLocation.lng };
-        address = storedLocation.address;
+        center = { lat: selectedLocation?.lat || storedLocation.lat, lng: selectedLocation?.lng || storedLocation.lng };
+        address = selectedLocation?.address || storedLocation.address;
       } else {
         try {
           const position = await getUserLocation();

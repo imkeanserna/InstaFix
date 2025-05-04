@@ -107,6 +107,7 @@ export default function Footer() {
       setIsNavigating(true);
       const updateConfig = updateMapping[currentStep];
 
+      // --TODO: can we use this in the update post in the dashboard? same logic?
       if (updateConfig) {
         const success = await updatePostData(
           updateConfig.type,

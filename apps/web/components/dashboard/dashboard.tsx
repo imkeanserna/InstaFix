@@ -1,13 +1,13 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger } from '@repo/ui/components/ui/tabs';
-import { Filter, MoreHorizontal, Pencil, Search } from "lucide-react";
+import { Edit, Filter, Loader2, MoreHorizontal, Search, Trash2 } from "lucide-react";
 import { Input } from "@repo/ui/components/ui/input";
 import { Button } from "@repo/ui/components/ui/button";
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { PostWithUserInfo } from '@repo/types';
-import { getPostsByUserId } from '@/lib/postUtils';
+import { deletePost, getPostsByUserId } from '@/lib/postUtils';
 import { formateDatePosts } from '@/lib/dateFormatters';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/components/ui/avatar';
@@ -15,6 +15,20 @@ import { getInitials } from '@/lib/profile';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Skeleton } from '@repo/ui/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@repo/ui/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@repo/ui/components/ui/dialog';
+import { toast } from '@repo/ui/components/ui/sonner';
 
 export const currencySymbols = {
   USD: '$',
@@ -28,6 +42,9 @@ export function DashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const router = useRouter();
 
   const fetchUserPosts = async (userId: string) => {
@@ -73,7 +90,42 @@ export function DashboardPage() {
     post.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // If loading and no posts yet, show skeleton
+  const handleEditPost = (postId: string) => {
+    router.push(`/dashboard/all-posts/${postId}`);
+  };
+
+  const handleDeleteClick = (postId: string) => {
+    setSelectedPostId(postId);
+    setDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+  };
+
+  const handleDeletePost = async () => {
+    if (!selectedPostId) return;
+
+    setIsDeleting(true);
+
+    try {
+      const result = await deletePost({ postId: selectedPostId });
+
+      if (result) {
+        setPosts(posts.filter(post => post.id !== selectedPostId));
+        setDeleteModalOpen(false);
+        toast.success("Post deleted successfully!");
+      } else {
+        toast.error("Failed to delete post");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete post');
+      toast.error(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (isLoading && posts.length === 0) {
     return <DashboardSkeleton />;
   }
@@ -217,12 +269,29 @@ export function DashboardPage() {
                     {post.averageRating ? `${post.averageRating.toFixed(1)}★` : 'N/A'}
                   </div>
                   <div className="col-span-2 flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:text-gray-700">
-                      <Pencil size={18} />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:text-gray-700">
-                      <MoreHorizontal size={18} />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:text-gray-700">
+                          <MoreHorizontal size={18} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className='!rounded-lg'>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() => handleEditPost(post.id)}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="cursor-pointer text-red-600 !hover:text-red-700"
+                          onClick={() => handleDeleteClick(post.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               ))}
@@ -230,6 +299,45 @@ export function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="sm:max-w-md p-6 !rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Delete Post</DialogTitle>
+            <DialogDescription className="text-gray-600 mt-2">
+              Are you sure you want to delete this post? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3 mt-6">
+            <Button
+              variant="outline"
+              onClick={handleCloseDeleteModal}
+              className="rounded-lg px-5 py-2"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeletePost}
+              disabled={isDeleting}
+              className="rounded-lg px-5 py-2"
+            >
+              {isDeleting ? (
+                <span className="flex items-center">
+                  Deleting...
+                  <Loader2 className="w-4 h-4 ms-2 animate-spin" />
+                </span>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 me-2" />
+                  Delete
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -330,7 +438,6 @@ export function DashboardSkeleton() {
                   <Skeleton className="h-5 w-10" />
                 </div>
                 <div className="col-span-2 flex items-center justify-end gap-2">
-                  <Skeleton className="h-8 w-8 rounded-full" />
                   <Skeleton className="h-8 w-8 rounded-full" />
                 </div>
               </div>

@@ -9,6 +9,7 @@ interface TagInputProps {
   helperText?: string;
   className?: string;
   onChange?: (tags: string[]) => void;
+  tagsInitial?: string[];
 }
 
 export function TagInput({
@@ -17,8 +18,9 @@ export function TagInput({
   helperText = "Press space or enter to add",
   className = "w-full max-w-2xl",
   onChange,
+  tagsInitial = [],
 }: TagInputProps) {
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>(tagsInitial);
   const [inputValue, setInputValue] = useState('');
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {

@@ -123,7 +123,7 @@ export function Subscription() {
       },
       features: [
         "2 client tokens per month",
-        "Limited to 1 active client at a time",
+        "Limited to 2 active client at a time",
         "Access to basic freelancer profile",
         "Community support"
       ],
@@ -140,7 +140,7 @@ export function Subscription() {
       },
       features: [
         "20 client tokens per month",
-        "Accept up to 10 clients",
+        "Accept up to 20 clients",
         "Highlighted profile for increased visibility",
         "Access to priority support",
         "Enhanced analytics",
