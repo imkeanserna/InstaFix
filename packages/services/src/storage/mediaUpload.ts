@@ -117,7 +117,7 @@ export async function deleteFilesFromR2(urls: string[]): Promise<void> {
   await Promise.allSettled(deletePromises);
 }
 
-async function deleteFileFromR2(fileName: string): Promise<void> {
+export async function deleteFileFromR2(fileName: string): Promise<void> {
   const r2 = getR2Client();
 
   try {
