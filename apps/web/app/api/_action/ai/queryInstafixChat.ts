@@ -1,5 +1,5 @@
 import { IFetchPredictionResponse } from "@repo/types";
-import { fetchChatGroq, fetchPrediction } from "./fetchPrediction";
+import { fetchChatGroq } from "./fetchPrediction";
 
 export const categories = {
   "Personal Services": [
