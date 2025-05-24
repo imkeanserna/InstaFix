@@ -16,7 +16,7 @@ class GradioClientSingleton {
     },
     imageAnalysis: {
       url: process.env.HUGGING_IMAGE_CLASSIFICATION_URL as string,
-      endpoint: "/predict"
+      endpoint: "/caption"
     }
   };
 
@@ -44,11 +44,21 @@ class GradioClientSingleton {
     return this.instances.get(clientType)!;
   }
 
-  public static async predict(clientType: string, data: any): Promise<any> {
+  public static async predict(clientType: string, data: {
+    image: Blob | File | Buffer;
+    text: string;
+  }): Promise<IFetchPredictionResponse> {
     try {
       const client = await this.getInstance(clientType);
       const config = this.CLIENT_CONFIGS[clientType];
-      return await client.predict(config.endpoint, data);
+      const predict = await client.predict(config.endpoint, data);
+      return {
+        type: predict.type,
+        time: predict.time,
+        data: predict.data as string[],
+        endpoint: predict.endpoint,
+        fn_index: predict.fn_index
+      };
     } catch (error) {
       throw error;
     }
@@ -103,14 +113,6 @@ class GroqClientSingleton {
   }
 }
 
-export const fetchPrediction = async (query: string) => {
-  try {
-    return await GradioClientSingleton.predict('chatbot', { Query: query });
-  } catch (error) {
-    throw error;
-  }
-};
-
 export const fetchChatGroq = async (query: string) => {
   try {
     const groqClient = GroqClientSingleton.getInstance();
@@ -122,10 +124,15 @@ export const fetchChatGroq = async (query: string) => {
 
 export async function analyzeImageWithHuggingFace(imageData: Blob): Promise<IHuggingFaceResponse> {
   try {
-    const response = await GradioClientSingleton.predict('imageAnalysis', { param_0: imageData }) as IFetchPredictionResponse;
-    const generatedText = response.data[0].match(/generated_text='([^']*)'/)![1];
+    const response = await GradioClientSingleton.predict('imageAnalysis',
+      {
+        image: imageData,
+        text: "A picture of",
+      }
+    ) as IFetchPredictionResponse;
+    console.log(response);
     return {
-      generated_text: generatedText
+      generated_text: response.data[0]
     };
   } catch (error) {
     throw error;
