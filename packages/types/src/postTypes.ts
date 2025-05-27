@@ -153,6 +153,11 @@ type DynamicPostInclude = {
   payments: true;
   reviews: true;
   likes: true;
+  user: {
+    select: {
+      credits: true
+    }
+  };
 };
 
 export type DynamicPostWithIncludes = Prisma.PostGetPayload<{

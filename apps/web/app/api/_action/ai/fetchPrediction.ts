@@ -130,7 +130,6 @@ export async function analyzeImageWithHuggingFace(imageData: Blob): Promise<IHug
         text: "A picture of",
       }
     ) as IFetchPredictionResponse;
-    console.log(response);
     return {
       generated_text: response.data[0]
     };

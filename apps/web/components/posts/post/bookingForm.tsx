@@ -32,7 +32,8 @@ export function BookingForm({
   rate,
   username,
   freelancerId,
-  pricingType
+  pricingType,
+  credits
 }: {
   postId: string,
   user: User | null
@@ -40,6 +41,7 @@ export function BookingForm({
   username: string
   freelancerId: string
   pricingType: PricingType
+  credits: number
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,6 +51,7 @@ export function BookingForm({
   const [error, setError] = useState("");
   const dateParam = searchParams.get('date');
   const selectedDate = dateParam ? new Date(dateParam) : undefined;
+  const isUnavailable = credits === 0;
   const [inputDate, setInputDate] = useState<string>('');
   const { currency } = useCurrency();
   const { openModal } = useAuthModal();
@@ -287,10 +290,14 @@ export function BookingForm({
       </div>
     </div>
     <Button
-      className="py-9 mt-6 text-sm font-medium text-white rounded-xl bg-yellow-500 hover:bg-yellow-500 active:scale-[0.98] transition duration-75"
-      onClick={handleSubmit}
+      className={`py-9 mt-6 text-sm font-medium rounded-xl transition duration-75 ${isUnavailable
+        ? "bg-yellow-100 text-yellow-600 cursor-not-allowed"
+        : "text-white bg-yellow-500 hover:bg-yellow-500 active:scale-[0.98]"
+        }`}
+      onClick={isUnavailable ? undefined : handleSubmit}
+      disabled={isUnavailable}
     >
-      Book Now
+      {isUnavailable ? "Freelancer Unavailable" : "Book Now"}
     </Button>
     <p className="text-xs text-gray-600 mt-4 text-center">{`You won't be charged until the booking is confirmed.`}</p>
   </div>;

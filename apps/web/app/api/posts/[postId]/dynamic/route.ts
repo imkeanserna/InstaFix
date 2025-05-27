@@ -22,13 +22,14 @@ export async function GET(
       include: {
         payments: true,
         reviews: true,
-        likes: true
+        likes: true,
+        user: {
+          select: {
+            credits: true
+          }
+        }
       },
     });
-
-    if (!post) {
-      return errorResponse('Post is not found', undefined, 404);
-    }
 
     return NextResponse.json({
       success: true,
