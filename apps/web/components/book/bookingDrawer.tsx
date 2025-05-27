@@ -15,7 +15,8 @@ export const BookingDrawerWrapper = ({
   rate,
   username,
   freelancerId,
-  pricingType
+  pricingType,
+  credits
 }: {
   className?: string;
   postId: string,
@@ -24,13 +25,17 @@ export const BookingDrawerWrapper = ({
   username: string
   freelancerId: string
   pricingType: PricingType
+  credits: number
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const isUnavailable = credits === 0;
+
   return (
     <>
       <Button variant="outline"
         className="w-full px-8 text-sm py-8 rounded-xl font-medium hover:bg-yellow-500 bg-yellow-400 border border-gray-900 active:scale-95 transition-all"
-        onClick={() => setIsVisible(!isVisible)}
+        onClick={isUnavailable ? undefined : () => setIsVisible(!isVisible)}
+        disabled={isUnavailable}
       >
         <Calendar1 className="h-4 w-4 mr-2" />
         Book now
@@ -46,6 +51,7 @@ export const BookingDrawerWrapper = ({
             user={user}
             username={username}
             pricingType={pricingType}
+            credits={credits}
           />
         )}
       </AnimatePresence>
@@ -61,7 +67,8 @@ export const Drawer = React.memo(({
   rate,
   username,
   freelancerId,
-  pricingType
+  pricingType,
+  credits
 }:
   {
     className?: string;
@@ -72,6 +79,7 @@ export const Drawer = React.memo(({
     username: string
     freelancerId: string
     pricingType: PricingType
+    credits: number
   }
 ) => {
   // Drawer state
@@ -190,6 +198,7 @@ export const Drawer = React.memo(({
               username={username}
               freelancerId={freelancerId}
               pricingType={pricingType}
+              credits={credits}
             />
           </div>
         </motion.div>

@@ -75,6 +75,7 @@ export function PostContent({ postId, username }: {
                 username={username}
                 freelancerId={staticData.post.user.id}
                 pricingType={dynamicData.pricingType || PricingType.HOURLY}
+                credits={dynamicData.user.credits}
               />
             </div>
           )}
@@ -124,6 +125,7 @@ export function PostContent({ postId, username }: {
                     username={username}
                     freelancerId={staticData.post.user.id}
                     pricingType={dynamicData.pricingType!}
+                    credits={dynamicData.user.credits}
                   />
                 </div>
               )}
@@ -275,6 +277,7 @@ export function PostContent({ postId, username }: {
               username={username}
               freelancerId={staticData.post.user.id}
               pricingType={dynamicData.pricingType!}
+              credits={dynamicData.user?.credits}
             />
           )}
         </div>
