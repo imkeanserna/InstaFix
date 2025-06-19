@@ -34,6 +34,7 @@
     "@tanstack/query-sync-storage-persister": "^5.62.12",
     "@tanstack/react-query": "^5.62.11",
     "@tanstack/react-query-persist-client": "^5.62.12",
+    "@vercel/analytics": "^1.5.0",
     "date-fns": "^4.1.0",
     "embla-carousel-autoplay": "^8.5.2",
     "groq-sdk": "^0.9.1",
