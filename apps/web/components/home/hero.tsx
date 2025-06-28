@@ -1,6 +1,9 @@
 "use client";
 
-import { useTestimonialCarousel, useTextRotator } from "@/hooks/home-page/useHooks";
+import {
+  useTestimonialCarousel,
+  useTextRotator,
+} from "@/hooks/home-page/useHooks";
 import {
   FREELANCERS_IMAGE,
   HERO_IMAGE,
@@ -21,11 +24,11 @@ import { useMediaQuery } from "@/hooks/useMedia";
 
 const openSans = Open_Sans({
   subsets: ["latin"],
-  variable: '--font-open-sans'
+  variable: "--font-open-sans",
 });
 
 export function HeroSection({
-  handleClickButton
+  handleClickButton,
 }: {
   handleClickButton: () => void;
 }) {
@@ -38,7 +41,8 @@ export function HeroSection({
     isReturningToSecond,
   } = useTestimonialCarousel();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const { button, description, smallDescription, staticText } = HERO_SECTION_CONFIG;
+  const { button, description, smallDescription, staticText } =
+    HERO_SECTION_CONFIG;
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -50,7 +54,9 @@ export function HeroSection({
           <div className="font-cocogoose w-full lg:w-1/2 pe-0 lg:pe-24 space-y-10 md:space-y-8 flex flex-col items-center lg:items-start">
             <div className="space-y-6 md:space-y-10">
               <div className="space-y-1 md:space-y-3 w-full text-center lg:text-left">
-                <h1 className="font-light md:text-7xl md:leading-[1.2] text-[2.5rem] leading-none">{staticText}</h1>
+                <h1 className="font-light md:text-7xl md:leading-[1.2] text-[2.5rem] leading-none">
+                  {staticText}
+                </h1>
                 <div className="flex justify-start">
                   <div className="min-h-[60px] flex items-center justify-center w-full">
                     <AnimatePresence mode="wait">
@@ -68,7 +74,8 @@ export function HeroSection({
                   </div>
                 </div>
               </div>
-              <p className={`text-xl/8 ${openSans.className} text-gray-900 
+              <p
+                className={`text-xl/8 ${openSans.className} text-gray-900 
                 md:text-gray-600 w-full text-center md:text-left tracking-normal md:tracking-wider`}
               >
                 {isMobile ? smallDescription : description}
@@ -84,7 +91,8 @@ export function HeroSection({
               </p>
             </Button>
           </div>
-          <div className="relative flex px-4 md:px-0 justify-center mt-28 lg:mt-0 items-center rounded-3xl h-auto w-full 
+          <div
+            className="relative flex px-4 md:px-0 justify-center mt-28 lg:mt-0 items-center rounded-3xl h-auto w-full 
             md:h-[500px] md:w-[670px] lg:h-[615px] lg:w-[700px] shadow-none md:shadow-[0_10px_50px_rgba(255,255,255,0.4)]
             border-none md:border border-white/10 bg-white/5 backdrop-blur-xl"
           >
@@ -113,24 +121,24 @@ export function HeroSection({
                 <motion.div
                   initial={{
                     opacity: 0,
-                    y: 50,  // Slides up from below
-                    scale: 0.9
+                    y: 50, // Slides up from below
+                    scale: 0.9,
                   }}
                   animate={{
                     opacity: 1,
-                    y: 0,   // Moves to original position
-                    scale: 1
+                    y: 0, // Moves to original position
+                    scale: 1,
                   }}
                   exit={{
                     opacity: 0,
-                    y: 50,  // Slides down
-                    scale: 0.9
+                    y: 50, // Slides down
+                    scale: 0.9,
                   }}
                   transition={{
                     type: "spring",
                     stiffness: 100,
                     damping: 10,
-                    duration: 0.6
+                    duration: 0.6,
                   }}
                   className="absolute -top-12 left-8 md:-top-10 md:-left-16 lg:-top-20 lg:-left-28 -space-y-4"
                 >
@@ -139,32 +147,31 @@ export function HeroSection({
                       key={src}
                       initial={{
                         scale: idx === activeIndex ? 1.05 : 0.9,
-                        opacity: 1
+                        opacity: 1,
                       }}
                       animate={{
                         scale: idx === activeIndex ? 1.05 : 0.9,
-                        opacity: 1
+                        opacity: 1,
                       }}
                       exit={{
                         opacity: 0,
                         y: 20,
-                        scale: 0.9
+                        scale: 0.9,
                       }}
                       transition={{
                         duration: 0.5,
-                        ease: "easeInOut"
+                        ease: "easeInOut",
                       }}
-                      className={`${idx === activeIndex ? 'z-10' : 'z-0'}`}
+                      className={`${idx === activeIndex ? "z-10" : "z-0"}`}
                     >
                       <motion.div
                         animate={{
-                          scale: (isReturningToSecond && idx === 1)
-                            ? [1, 1.1, 1]
-                            : 1
+                          scale:
+                            isReturningToSecond && idx === 1 ? [1, 1.1, 1] : 1,
                         }}
                         transition={{
                           duration: 0.3,
-                          times: [0, 0.5, 1]
+                          times: [0, 0.5, 1],
                         }}
                       >
                         <div className="relative z-0">
@@ -174,7 +181,7 @@ export function HeroSection({
                             width={650}
                             height={200}
                             quality={100}
-                            className={`md:h-24 w-64 md:w-80 object-cover ${idx === activeIndex ? 'rounded-2xl' : 'rounded-none'}`}
+                            className={`md:h-24 w-64 md:w-80 object-cover ${idx === activeIndex ? "rounded-2xl" : "rounded-none"}`}
                           />
                           <div
                             className="absolute inset-0 bg-yellow-100 mix-blend-multiply 
@@ -193,24 +200,24 @@ export function HeroSection({
                 <motion.div
                   initial={{
                     opacity: 0,
-                    y: 50,  // Slides up from below
-                    scale: 0.9
+                    y: 50, // Slides up from below
+                    scale: 0.9,
                   }}
                   animate={{
                     opacity: 1,
-                    y: 0,   // Moves to original position
-                    scale: 1
+                    y: 0, // Moves to original position
+                    scale: 1,
                   }}
                   exit={{
                     opacity: 0,
-                    y: 50,  // Slides down
-                    scale: 0.9
+                    y: 50, // Slides down
+                    scale: 0.9,
                   }}
                   transition={{
                     type: "spring",
                     stiffness: 100,
                     damping: 10,
-                    duration: 0.6
+                    duration: 0.6,
                   }}
                   className="absolute bottom-28 left-[40%] -translate-x-1/2 md:bottom-32 md:left-80 lg:bottom-32 lg:left-20 z-20"
                 >
@@ -233,37 +240,47 @@ export function HeroSection({
             </AnimatePresence>
           </div>
         </div>
-      </div >
+      </div>
       <div className="flex items-center justify-center mt-20 md:mt-24 lg:mt-48 relative w-full mb-40 md:mb-48 lg:mb-64">
         <GradientBlobSelection />
-        <div className={`flex flex-col w-full items-center ${openSans.className} justify-center z-10 gap-4 md:gap-12 px-4 md:px-0`}>
+        <div
+          className={`flex flex-col w-full items-center ${openSans.className} justify-center z-10 gap-4 md:gap-12 px-4 md:px-0`}
+        >
           <SectionSelector
             sections={SECTION_CONFIG}
             selectedSection={selectedSection}
             onSectionChange={setSelectedSection}
           />
-          <div className="relative w-full min-h-[250px] md:min-h-[60vh] lg:min-h-[78vh] 
+          <div
+            className="relative w-full min-h-[250px] md:min-h-[60vh] lg:min-h-[78vh] 
             flex items-center justify-center transition-all duration-300 ease-in-out"
           >
             <Effect3D
               key={selectedSection}
-              urlImage={SECTION_CONFIG.find(s => s.id === selectedSection)?.image || ""}
+              urlImage={
+                SECTION_CONFIG.find((s) => s.id === selectedSection)?.image ||
+                ""
+              }
+              videoUrl={
+                SECTION_CONFIG.find((s) => s.id === selectedSection)
+                  ?.videoUrl || ""
+              }
             />
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }
 
 const SectionSelector = ({
   sections,
   selectedSection,
-  onSectionChange
+  onSectionChange,
 }: {
-  sections: typeof SECTION_CONFIG,
-  selectedSection: string,
-  onSectionChange: (id: string) => void
+  sections: typeof SECTION_CONFIG;
+  selectedSection: string;
+  onSectionChange: (id: string) => void;
 }) => (
   <div className="w-auto bg-gray-900/30 rounded-3xl md:rounded-full text-white text-base font-semibold">
     <div className="flex flex-wrap justify-center items-center gap-2 p-2 relative">
@@ -277,7 +294,7 @@ const SectionSelector = ({
               animate={{
                 opacity: 1,
                 scale: 1,
-                transition: { type: "tween", duration: 0.4, ease: "easeOut" }
+                transition: { type: "tween", duration: 0.4, ease: "easeOut" },
               }}
               exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.3 } }}
             />
@@ -288,9 +305,10 @@ const SectionSelector = ({
             className={`
               inline-block px-3 py-1 rounded-full transition-colors 
               duration-300 relative z-10 hover:bg-gray-900/5 hover:text-white
-              ${selectedSection === section.id
-                ? 'text-white'
-                : 'text-white/70 hover:text-white'
+              ${
+                selectedSection === section.id
+                  ? "text-white"
+                  : "text-white/70 hover:text-white"
               }
             `}
           >
@@ -366,7 +384,7 @@ const GradientBlobSelection = () => {
       />
     </div>
   );
-}
+};
 
 const GradientBlobHero = () => {
   return (
@@ -429,4 +447,4 @@ const GradientBlobHero = () => {
       />
     </div>
   );
-}
+};
